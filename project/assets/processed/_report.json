@@ -797,5 +797,175 @@
   "transparent_pct": 63.4,
   "kb_raw": 1215.6,
   "kb_out": 635.1
+ },
+ "sheet_signs": {
+  "name": "sheet_signs",
+  "desc": "لافتات ولوحات فارغة بلا نص (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.4,
+  "kb_raw": 1395.3,
+  "kb_out": 769.0
+ },
+ "bg_parallax_sea_storm": {
+  "name": "bg_parallax_sea_storm",
+  "desc": "طبقة منظر — بحر عاصف (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1830.7,
+  "kb_out": 323.6
+ },
+ "bg_parallax_naval_base": {
+  "name": "bg_parallax_naval_base",
+  "desc": "طبقة منظر — قاعدة بحرية عند الفجر (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1442.6,
+  "kb_out": 180.5
+ },
+ "sheet_boats": {
+  "name": "sheet_boats",
+  "desc": "زوارق وقوارب بحرية (8 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 68.5,
+  "kb_raw": 1348.7,
+  "kb_out": 760.5
+ },
+ "sheet_ships_big": {
+  "name": "sheet_ships_big",
+  "desc": "سفن كبيرة (5 سفن، هياكل بلا شعارات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 72.3,
+  "kb_raw": 1224.0,
+  "kb_out": 774.3
+ },
+ "tileset_ship_interior": {
+  "name": "tileset_ship_interior",
+  "desc": "مجموعة تايلات — داخل سفينة/مركبة",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 20.2,
+  "kb_raw": 2142.0,
+  "kb_out": 636.1
+ },
+ "sheet_explosion_big": {
+  "name": "sheet_explosion_big",
+  "desc": "انفجار كبير (12 إطارًا 128×128)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.0,
+  "kb_raw": 1439.0,
+  "kb_out": 715.1
+ },
+ "sheet_gas_smoke_fx": {
+  "name": "sheet_gas_smoke_fx",
+  "desc": "غازات ودخان (10 عناصر مؤثرات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 62.9,
+  "kb_raw": 1294.9,
+  "kb_out": 632.2
+ },
+ "sheet_mode_icons": {
+  "name": "sheet_mode_icons",
+  "desc": "أيقونات أوضاع اللعب (16 أيقونة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 35.6,
+  "kb_raw": 1602.6,
+  "kb_out": 519.8
+ },
+ "sheet_buildings_large": {
+  "name": "sheet_buildings_large",
+  "desc": "مبانٍ كبيرة معيارية (8 مبانٍ)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 58.0,
+  "kb_raw": 1487.6,
+  "kb_out": 678.3
  }
 }

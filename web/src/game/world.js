@@ -41,6 +41,18 @@ export const MAPS = [
     layout: { platforms: 12, buildings: 2, crates: 26, trees: 5, water: 1 },
   },
   {
+    id: 'harbor', nameAr: 'الميناء البحري', theme: 'port', size: 'medium',
+    w: 3400, h: 1000, mode: ['dm', 'tdm', 'ctf', 'snd', 'gun'], weather: 'clear',
+    time: 'dawn', desc: 'أرصفة وحاويات وسفن راسية — قتال على المنصات فوق الماء.',
+    layout: { platforms: 16, buildings: 2, crates: 30, containers: 12, water: 3, ships: 2 },
+  },
+  {
+    id: 'sea_deck', nameAr: 'سطح السفينة', theme: 'port', size: 'small',
+    w: 2600, h: 900, mode: ['dm', 'tdm', 'melee', 'gun'], weather: 'storm',
+    time: 'night', desc: 'سطح سفينة في عرض البحر العاصف — لا مكان للهرب.',
+    layout: { platforms: 12, buildings: 1, crates: 18, containers: 6, water: 2, ships: 1 },
+  },
+  {
     id: 'port', nameAr: 'الميناء الحجري', theme: 'forest', size: 'small',
     w: 2400, h: 900, mode: ['dm', 'tdm', 'ctf', 'snd'], weather: 'clear',
     time: 'day', desc: 'أرصفة ومستودعات متلاصقة — قتال قريب وسريع.',

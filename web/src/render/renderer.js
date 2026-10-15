@@ -51,6 +51,7 @@ export class Renderer {
     this.animTime = new Map();      // id → زمن الحركة (لتشغيل المقاطع)
     this.stateAnim = new Map();
     this.parallax = null;
+    this.useAiTiles = false;   // يفعّلها الإعداد "أسلوب الرسم" إن أراد اللاعب
     this.minimap = null;
     this.minimapCtx = null;
     this.debug = { chunks: 0, draws: 0, fps: 0 };
@@ -186,6 +187,21 @@ export class Renderer {
 
   drawTile(ctx, t, tx, ty, dx, dy, above) {
     const theme = this.level.def.theme;
+    // مسار اختياري: أطالس بلاطات مولّدة بالذكاء الاصطناعي (تُفعّل من الإعدادات)
+    // الافتراضي مطفأ لأن بلاطات الكود مضمونة الاتساق (قرار 17 في DECISIONS.md).
+    if (this.useAiTiles) {
+      const ai = this.assets.get('tiles_' + theme);
+      if (ai) {
+        const map = { [T.SOLID]: 'solid', [T.TOP]: above === T.EMPTY || above === T.BACK ? 'top' : 'solid',
+                      [T.BACK]: 'back', [T.PLATFORM]: 'platform', [T.GIRDER]: 'platform' };
+        const base = map[t];
+        if (base) {
+          for (const key of [`tile/${theme}/${base}`, `tile/${theme}/${base}_1`, `tile/${theme}/${base}_2`]) {
+            if (ai.has(key)) { ai.draw(ctx, key, dx, dy, 1, false); return; }
+          }
+        }
+      }
+    }
     const world = this.assets.get('world');
     if (!world) return;
     const pick = (base, variants) => {
@@ -1108,6 +1124,8 @@ export const BACKDROP_FILES = {
   bg_parallax_space: 'backdrops/bg_parallax_space.png',
   bg_parallax_coast: 'backdrops/bg_parallax_coast.png',
   bg_parallax_oasis_night: 'backdrops/bg_parallax_oasis_night.png',
+  bg_parallax_sea_storm: 'backdrops/bg_parallax_sea_storm.png',
+  bg_parallax_naval_base: 'backdrops/bg_parallax_naval_base.png',
 };
 
 /**
@@ -1125,7 +1143,7 @@ export const THEME_BACKDROP = {
   base: 'bg_parallax_factory',
   factory: 'bg_parallax_factory',
   city: { day: 'bg_parallax_city_dusk', night: 'bg_parallax_factory' },
-  port: 'bg_parallax_coast',
+  port: { day: 'bg_parallax_naval_base', night: 'bg_parallax_sea_storm' },
   snow: 'bg_parallax_snow',
   mountain: 'bg_parallax_snow',
   space: 'bg_parallax_space',

@@ -13,7 +13,7 @@ const THEME_BACKDROP := {
 	"desert": "bg_parallax_desert|bg_parallax_oasis_night", "oasis": "bg_parallax_desert|bg_parallax_oasis_night",
 	"village": "bg_parallax_desert|bg_parallax_oasis_night", "ruins": "bg_parallax_desert|bg_parallax_oasis_night",
 	"forest": "bg_parallax_forest_night", "nightbase": "bg_parallax_forest_night",
-	"port": "bg_parallax_coast",
+	"port": "bg_parallax_naval_base|bg_parallax_sea_storm",
 	"base": "bg_parallax_factory", "factory": "bg_parallax_factory",
 	"city": "bg_parallax_city_dusk|bg_parallax_factory",
 	"snow": "bg_parallax_snow", "mountain": "bg_parallax_snow",
@@ -73,6 +73,8 @@ const MAPS := {
 	"village": {"name_ar": "القرية الجبلية", "theme": "village", "w": 3000, "h": 1200, "buildings": 6, "crates": 26, "trees": 12, "water": 1},
 	"factory": {"name_ar": "المصنع المهجور", "theme": "base", "w": 3200, "h": 900, "buildings": 5, "crates": 34, "trees": 2, "water": 0},
 	"bridge": {"name_ar": "الجسر المكسور", "theme": "city", "w": 4200, "h": 1100, "buildings": 4, "crates": 28, "trees": 6, "water": 3},
+	"harbor": {"name_ar": "الميناء البحري", "theme": "port", "w": 3400, "h": 1000, "buildings": 2, "crates": 30, "trees": 1, "water": 3, "time_of_day": 0.7},
+	"sea_deck": {"name_ar": "سطح السفينة", "theme": "port", "w": 2600, "h": 900, "buildings": 1, "crates": 18, "trees": 0, "water": 2, "time_of_day": 0.9},
 }
 
 

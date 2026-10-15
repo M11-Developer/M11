@@ -78,6 +78,13 @@ class Game {
     } catch (e) {
       console.warn('لم يُحمّل characters_meta.json', e);
     }
+    // أطالس البلاطات المولّدة بالذكاء الاصطناعي: تُحمّل إن وُجدت فقط (اختيارية)
+    let tileThemes = [];
+    try {
+      const man = await Assets.loadJson('tiles_manifest.json');
+      tileThemes = (man || []).map((t) => 'tiles_' + t.theme);
+      for (const t of tileThemes) names.push(t);
+    } catch (e) { /* لا يوجد ملف — نكمل بالأطالس البرمجية */ }
     Assets.onProgress = (n, total, name) => setProgress(0.05 + (n / total) * 0.7, `تحميل الرسوم (${n}/${total})…`);
     await Assets.load(names);
 
