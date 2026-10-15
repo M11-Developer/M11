@@ -644,5 +644,158 @@
   "transparent_pct": 0.0,
   "kb_raw": 1534.2,
   "kb_out": 113.5
+ },
+ "bg_parallax_coast": {
+  "name": "bg_parallax_coast",
+  "desc": "طبقة منظر — ساحل وميناء (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1497.9,
+  "kb_out": 180.3
+ },
+ "bg_parallax_oasis_night": {
+  "name": "bg_parallax_oasis_night",
+  "desc": "طبقة منظر — واحة ليلية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1094.1,
+  "kb_out": 85.8
+ },
+ "tileset_port": {
+  "name": "tileset_port",
+  "desc": "مجموعة تايلات — ميناء وحاويات",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 37.3,
+  "kb_raw": 2045.6,
+  "kb_out": 769.4
+ },
+ "tileset_swamp": {
+  "name": "tileset_swamp",
+  "desc": "مجموعة تايلات — مستنقع/أدغال",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 31.5,
+  "kb_raw": 2210.6,
+  "kb_out": 819.8
+ },
+ "sheet_trees_big": {
+  "name": "sheet_trees_big",
+  "desc": "أشجار ضخمة (5 أشجار، ارتفاع 110 بكسل)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.5,
+  "kb_raw": 1632.9,
+  "kb_out": 907.8
+ },
+ "sheet_debris_rubble": {
+  "name": "sheet_debris_rubble",
+  "desc": "أنقاض ودمار (14 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.4,
+  "kb_raw": 1681.4,
+  "kb_out": 964.5
+ },
+ "sheet_cars_wrecked": {
+  "name": "sheet_cars_wrecked",
+  "desc": "سيارات مدنية محطمة (8 مركبات)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.7,
+  "kb_raw": 1553.0,
+  "kb_out": 256.3
+ },
+ "sheet_platforms_industrial": {
+  "name": "sheet_platforms_industrial",
+  "desc": "منصات وجسور صناعية (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 72.2,
+  "kb_raw": 1414.3,
+  "kb_out": 830.1
+ },
+ "sheet_flags": {
+  "name": "sheet_flags",
+  "desc": "رايات وأعلام بلا شعارات (10 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 63.4,
+  "kb_raw": 1215.6,
+  "kb_out": 635.1
  }
 }

@@ -145,7 +145,7 @@
    "mb": 0.037
   }
  },
- "generated": "2026-10-15T16:54:43Z",
+ "generated": "2026-10-15T17:31:52Z",
  "from_disk": true,
  "audio": {
   "files": 111,
@@ -156,9 +156,9 @@
  "audio_mb": 6.37,
  "total_mb": 7.47,
  "raw": {
-  "files": 0,
-  "bytes": 0,
-  "mb": 0.0
+  "files": 49,
+  "bytes": 75703847,
+  "mb": 72.2
  },
  "fonts": {
   "files": 7,
@@ -166,8 +166,8 @@
   "mb": 0.35
  },
  "web": {
-  "files": 163,
-  "bytes": 8565450,
-  "mb": 8.17
+  "files": 172,
+  "bytes": 9950065,
+  "mb": 9.49
  }
 }

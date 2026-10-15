@@ -8,12 +8,14 @@ class_name GameWorld
 signal actor_damaged(actor, amount: float, info: Dictionary)
 
 # ثيم الخريطة → لوحة المنظر المولّدة (5 بيئات) — نفس الجدول المستخدم في نسخة الويب
+# القيمة إما "اسم لوحة" أو "نهار|ليل" — والاختيار حسب حقل time_of_day في تعريف الخريطة
 const THEME_BACKDROP := {
-	"desert": "bg_parallax_desert", "oasis": "bg_parallax_desert",
-	"village": "bg_parallax_desert", "ruins": "bg_parallax_desert",
+	"desert": "bg_parallax_desert|bg_parallax_oasis_night", "oasis": "bg_parallax_desert|bg_parallax_oasis_night",
+	"village": "bg_parallax_desert|bg_parallax_oasis_night", "ruins": "bg_parallax_desert|bg_parallax_oasis_night",
 	"forest": "bg_parallax_forest_night", "nightbase": "bg_parallax_forest_night",
-	"port": "bg_parallax_forest_night",
-	"base": "bg_parallax_factory", "factory": "bg_parallax_factory", "city": "bg_parallax_factory",
+	"port": "bg_parallax_coast",
+	"base": "bg_parallax_factory", "factory": "bg_parallax_factory",
+	"city": "bg_parallax_city_dusk|bg_parallax_factory",
 	"snow": "bg_parallax_snow", "mountain": "bg_parallax_snow",
 	"space": "bg_parallax_space", "station": "bg_parallax_space", "scifi": "bg_parallax_space",
 }
@@ -244,8 +246,16 @@ func _rebuild_dirty(_a: Vector2i, _b: Vector2i) -> void:
 # ---------------------------------------------------------------- الرسم
 func _load_backdrop() -> void:
 	# لوحة منظر بيئية من رصيد الصور المولّدة (القسم 15.2) — غيابها لا يُفشل شيء
-	var theme: String = MAPS.get(Config.map_id, MAPS["oasis"])["theme"]
-	var name: String = THEME_BACKDROP.get(theme, "")
+	var def: Dictionary = MAPS.get(Config.map_id, MAPS["oasis"])
+	var theme: String = def["theme"]
+	var spec: String = THEME_BACKDROP.get(theme, "")
+	var name := spec
+	if spec.contains("|"):
+		# نهار/ليل: نعتمد على تعريف الخريطة، ولو غاب فالليل هو الافتراضي للخرائط الداكنة
+		var parts := spec.split("|")
+		var tod: float = float(def.get("time_of_day", 0.5))
+		var night := tod < 0.2 or tod > 0.62
+		name = String(parts[1] if night else parts[0])
 	var path := BACKDROP_DIR + name + ".png"
 	if name != "" and ResourceLoader.exists(path):
 		backdrop_tex = load(path)

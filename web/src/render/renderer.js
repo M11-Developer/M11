@@ -356,8 +356,9 @@ export class Renderer {
     //     بشفافية، فتبقى ألوان اللوحة داخل مزاج الخريطة نفسه.
     //     الأولوية: لوحة ثيم الخريطة (5 بيئات) ← لوحة القائمة ← لا شيء. ---
     const themeKey = (world && world.level && world.level.def && world.level.def.theme) || '';
-    const artName = THEME_BACKDROP[themeKey]
-      || ((tod < 0.2 || tod > 0.62) ? 'poster_loading' : 'key_art_menu');
+    const themeArt = themeBackdropName(themeKey, tod);
+    const isEnvArtName = !!themeArt;
+    const artName = themeArt || ((tod < 0.2 || tod > 0.62) ? 'poster_loading' : 'key_art_menu');
     const art = backdropImages.get(artName)
       || backdropImages.get((tod < 0.2 || tod > 0.62) ? 'poster_loading' : 'key_art_menu');
     let artDrawn = false;
@@ -370,10 +371,12 @@ export class Renderer {
         ctx.drawImage(prep, Math.round(x), y);
       }
       artDrawn = true;
+      this._envArtName = isEnvArtName ? artName : null;
     }
-    const isEnvArt = artDrawn && !!THEME_BACKDROP[themeKey];
-    const aTop = isEnvArt ? 0.82 : 0.55;
-    const aBottom = isEnvArt ? 0.55 : 0.30;
+    const isEnvArt = artDrawn && isEnvArtName;
+    // لوحة البيئة تحمل سماءها الخاصة ومزاجها (نهار/ليل) ⇒ تلوين خفيف جدًا فقط
+    const aTop = isEnvArt ? 0.22 : 0.55;
+    const aBottom = isEnvArt ? 0.34 : 0.30;
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, artDrawn ? withAlpha(top, aTop) : top);
     g.addColorStop(1, artDrawn ? withAlpha(bottom, aBottom) : bottom);
@@ -411,16 +414,23 @@ export class Renderer {
         ctx.drawImage(p.stars, Math.round(x), Math.round(6 - cam.top * 0.02));
       }
     }
+    const envArt = !!this._envArtName;   // لوحة بيئة معروضة ⇒ نخفّف الطبقات البعيدة
+    let li = 0;
     for (const layer of p.layers) {
       const off = cam.left * layer.f;
       const yOff = cam.top * layer.fy;
       const tileW = layer.canvas.width;
       let x = -((off % tileW) + tileW) % tileW;
       const y = layer.y - yOff;
+      // الطبقتان البعيدتان شبه شفافتين فوق اللوحة الفنية (منع الشكل الرمادي المسطّح)
+      const a = envArt ? (li === 0 ? 0.35 : li === 1 ? 0.6 : 1) : 1;
+      if (a !== 1) ctx.globalAlpha = a;
       while (x < W) {
         ctx.drawImage(layer.canvas, Math.round(x), Math.round(y));
         x += tileW;
       }
+      if (a !== 1) ctx.globalAlpha = 1;
+      li++;
     }
     // سحاب/ضباب أمامي متحرك
     if (p.front) {
@@ -1096,6 +1106,8 @@ export const BACKDROP_FILES = {
   bg_parallax_factory: 'backdrops/bg_parallax_factory.png',
   bg_parallax_snow: 'backdrops/bg_parallax_snow.png',
   bg_parallax_space: 'backdrops/bg_parallax_space.png',
+  bg_parallax_coast: 'backdrops/bg_parallax_coast.png',
+  bg_parallax_oasis_night: 'backdrops/bg_parallax_oasis_night.png',
 };
 
 /**
@@ -1103,22 +1115,31 @@ export const BACKDROP_FILES = {
  * أي ثيم غير مذكور يسقط على لوحة القائمة الرئيسية.
  */
 export const THEME_BACKDROP = {
-  desert: 'bg_parallax_desert',
-  oasis: 'bg_parallax_desert',
-  village: 'bg_parallax_desert',
-  ruins: 'bg_parallax_desert',
+  // القيمة إما اسم لوحة واحدة، أو {day, night} لاختيار اللوحة حسب وقت الخريطة
+  desert: { day: 'bg_parallax_desert', night: 'bg_parallax_oasis_night' },
+  oasis: { day: 'bg_parallax_desert', night: 'bg_parallax_oasis_night' },
+  village: { day: 'bg_parallax_desert', night: 'bg_parallax_oasis_night' },
+  ruins: { day: 'bg_parallax_desert', night: 'bg_parallax_oasis_night' },
   forest: 'bg_parallax_forest_night',
   nightbase: 'bg_parallax_forest_night',
   base: 'bg_parallax_factory',
   factory: 'bg_parallax_factory',
-  city: 'bg_parallax_factory',
-  port: 'bg_parallax_forest_night',
+  city: { day: 'bg_parallax_city_dusk', night: 'bg_parallax_factory' },
+  port: 'bg_parallax_coast',
   snow: 'bg_parallax_snow',
   mountain: 'bg_parallax_snow',
   space: 'bg_parallax_space',
   station: 'bg_parallax_space',
   scifi: 'bg_parallax_space',
 };
+
+/** يختار اسم لوحة الثيم حسب وقت اليوم (نهار/ليل) */
+export function themeBackdropName(theme, tod) {
+  const v = THEME_BACKDROP[theme];
+  if (!v) return null;
+  const night = tod < 0.2 || tod > 0.62;
+  return typeof v === 'string' ? v : (night ? v.night : v.day);
+}
 
 /**
  * يحمّل لوحات المنظر المولّدة. تُستخدم من التطبيق ومن أدوات اللقطات معًا،

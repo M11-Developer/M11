@@ -68,6 +68,16 @@ JOBS: dict[str, dict] = {
     "ui_scoreboard": {"desc": "واجهة لوحة النتائج والأوامر السريعة", "target": (0, 0), "alpha": True},
     "sheet_props_nature": {"desc": "عناصر طبيعية للخرائط (12 عنصرًا)", "target": (0, 0), "alpha": True},
     # --- الدفعة الرابعة: عناصر داخلية + طقس + آثار + تايلات + أوسمة + عتاد + واجهة + منظر
+    # --- الدفعة الخامسة: بيئات (ساحل/واحة ليلية) + تايلات (ميناء/مستنقع) + أصول كبيرة
+    "bg_parallax_coast": {"desc": "طبقة منظر — ساحل وميناء (16:9)", "target": (1280, 720), "alpha": False},
+    "bg_parallax_oasis_night": {"desc": "طبقة منظر — واحة ليلية (16:9)", "target": (1280, 720), "alpha": False},
+    "tileset_port": {"desc": "مجموعة تايلات — ميناء وحاويات", "target": (0, 0), "alpha": True},
+    "tileset_swamp": {"desc": "مجموعة تايلات — مستنقع/أدغال", "target": (0, 0), "alpha": True},
+    "sheet_trees_big": {"desc": "أشجار ضخمة (5 أشجار، ارتفاع 110 بكسل)", "target": (0, 0), "alpha": True},
+    "sheet_debris_rubble": {"desc": "أنقاض ودمار (14 قطعة)", "target": (0, 0), "alpha": True},
+    "sheet_cars_wrecked": {"desc": "سيارات مدنية محطمة (8 مركبات)", "target": (0, 0), "alpha": True},
+    "sheet_platforms_industrial": {"desc": "منصات وجسور صناعية (12 قطعة)", "target": (0, 0), "alpha": True},
+    "sheet_flags": {"desc": "رايات وأعلام بلا شعارات (10 قطع)", "target": (0, 0), "alpha": True},
     "sheet_props_indoor": {"desc": "عناصر داخلية/صناعية (12 عنصرًا)", "target": (0, 0), "alpha": True},
     "sheet_weather_effects": {"desc": "طبقات طقس (مطر/ثلج/ضباب/رمال/شرر)", "target": (0, 0), "alpha": True},
     "sheet_impact_decals": {"desc": "آثار الطلقات والانفجارات (16 أثرًا)", "target": (0, 0), "alpha": True},
