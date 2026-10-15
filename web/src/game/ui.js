@@ -1,0 +1,692 @@
+// ============================================================================
+// واجهة القوائم — كلها عربية (RTL) ومن اليمين لليسار، بأيقونات أطلس ui ونصوص
+// متجهة (خط Cairo المقلم). تعمل باللمس والفأرة والكيبورد ويد التحكم.
+//
+// الشاشات: الرئيسية، الأوضاع، الخرائط، المشغلون، الإعدادات، التحكم،
+//          الشبكة المحلية (LAN)، الإنجازات، الإحصاءات، الإضافات، الائتمانات.
+// ============================================================================
+
+import { CONFIG } from '../core/assets.js';
+import { clamp, lerp, formatTime, TAU } from '../core/math.js';
+import { MODES, MODE_LIST } from './modes.js';
+import { MAPS } from './world.js';
+import { DIFFICULTY, BOT_NAMES } from './entities.js';
+import { RANKS, ACHIEVEMENTS } from '../core/storage.js';
+import { DEFAULT_CONTROLS } from '../core/input.js';
+
+const W = CONFIG.internalWidth;
+const H = CONFIG.internalHeight;
+
+export class MenuSystem {
+  constructor(assets, game) {
+    this.assets = assets;
+    this.game = game;
+    this.stack = [];
+    this.anim = { t: 0, fade: 0, cursor: 0, scroll: 0 };
+    this.fontStack = '"Cairo", "Tahoma", "Segoe UI", system-ui, sans-serif';
+    this.pixelFont = '"Press Start 2P", monospace';
+    this.selected = { items: [], index: 0 };
+    this.toast = null;
+    this.mouse = { x: -100, y: -100, down: false, pressed: false };
+    this.drag = null;
+    this.time = 0;
+    this.screens = this.buildScreens();
+    this.push('main');
+  }
+
+  open(screen) {
+    this.push(screen);
+  }
+
+  push(name) {
+    const screen = typeof name === 'string' ? this.screens[name] : name;
+    if (!screen) return;
+    this.stack.push({ name: typeof name === 'string' ? name : (screen.id || 'custom'), screen, index: 0, scroll: 0, t: 0 });
+    this.anim.fade = 1;
+  }
+
+  pop() {
+    if (this.stack.length > 1) this.stack.pop();
+  }
+
+  home() {
+    this.stack.length = 0;
+    this.push('main');
+  }
+
+  get current() {
+    return this.stack[this.stack.length - 1];
+  }
+
+  /** الشاشة الحالية (بلا حالة التنقل) */
+  get cur() {
+    const e = this.stack[this.stack.length - 1];
+    return e ? e.screen : null;
+  }
+
+  message(text, kind = 'info') {
+    this.toast = { text, kind, life: 2.6 };
+  }
+
+  // ------------------------------------------------------------- الأحداث
+  onPointerMove(x, y) {
+    this.mouse.x = x;
+    this.mouse.y = y;
+    if (this.drag) {
+      const delta = y - this.drag.lastY;
+      this.current.scroll = clamp(this.current.scroll - delta * 0.5, 0, this.current.maxScroll || 0);
+      this.drag.lastY = y;
+    }
+  }
+
+  onPointerDown(x, y) {
+    this.mouse.x = x;
+    this.mouse.y = y;
+    this.mouse.down = true;
+    this.mouse.pressed = true;
+    const hit = this.hitTest(x, y);
+    if (hit && hit.item && !hit.item.disabled) {
+      this.current.index = hit.index;
+      this.activate(hit.item, hit.index);
+    } else if (!hit) {
+      this.drag = { lastY: y };
+    }
+  }
+
+  onPointerUp() {
+    this.mouse.down = false;
+    this.drag = null;
+  }
+
+  moveCursor(delta) {
+    const items = this.cur.items().filter((i) => !i.hidden);
+    if (!items.length) return;
+    let i = this.current.index;
+    for (let k = 0; k < items.length; k++) {
+      i = (i + delta + items.length) % items.length;
+      if (!items[i].disabled) break;
+    }
+    this.current.index = i;
+    this.playUiSound('click');
+  }
+
+  activate(item, index) {
+    if (!item) return;
+    if (item.type === 'slider') {
+      // السلايدرات تتغير بالأسهم؛ بالنقر نحرّك 10%
+      item.onChange(clamp(item.get() + (item.step || 0.1), item.min, item.max));
+    } else if (item.onSelect) {
+      item.onSelect(item);
+    }
+    this.playUiSound(item.type === 'danger' ? 'back' : 'confirm');
+  }
+
+  /** تُنادى من main عند ضغط مفتاح في القوائم */
+  key(code, cmd) {
+    const items = this.cur.items();
+    const item = items[this.current.index];
+    switch (code) {
+      case 'ArrowUp': case 'KeyW': this.moveCursor(-1); return true;
+      case 'ArrowDown': case 'KeyS': this.moveCursor(1); return true;
+      case 'ArrowLeft': case 'KeyA':
+        if (item && item.type === 'slider') item.onChange(clamp(item.get() - (item.step || 0.1), item.min, item.max));
+        else if (item && item.type === 'choice') item.onChange(item.cycle(-1));
+        else this.moveCursor(-1);
+        return true;
+      case 'ArrowRight': case 'KeyD':
+        if (item && item.type === 'slider') item.onChange(clamp(item.get() + (item.step || 0.1), item.min, item.max));
+        else if (item && item.type === 'choice') item.onChange(item.cycle(1));
+        else this.moveCursor(1);
+        return true;
+      case 'Enter': case 'Space': case 'NumpadEnter':
+        if (item) this.activate(item, this.current.index);
+        return true;
+      case 'Escape': case 'Backspace':
+        this.playUiSound('back');
+        if (this.stack.length > 1) this.pop();
+        else if (this.game.state === 'playing') this.game.pause();
+        return true;
+      default: return false;
+    }
+  }
+
+  playUiSound(kind) {
+    const audio = this.game.audio;
+    if (audio && audio.ready) audio.playUi ? audio.playUi(kind) : audio.ui && audio.ui(kind);
+  }
+
+  hitTest(x, y) {
+    const rows = this.cur.rows(this);
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i].rect;
+      if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
+        return { item: rows[i].item, index: rows[i].index, rect: r };
+      }
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------- التحديث
+  update(dt, input) {
+    this.time += dt;
+    this.anim.fade = Math.max(0, this.anim.fade - dt * 3);
+    this.current.t += dt;
+    if (this.toast) {
+      this.toast.life -= dt;
+      if (this.toast.life <= 0) this.toast = null;
+    }
+    // سكرول بالعجلة
+    if (input && input.mouse.wheel) {
+      this.current.scroll = clamp(this.current.scroll - input.mouse.wheel * 14, 0, this.current.maxScroll || 0);
+    }
+    // تصحيح الفهرس إن تجاوز الحد
+    const items = this.cur.items();
+    if (this.current.index >= items.length) this.current.index = Math.max(0, items.length - 1);
+    this.mouse.pressed = false;
+    if (input) {
+      this.mouse.x = input.mouse.x * (W / this.game.canvas.width);
+      this.mouse.y = input.mouse.y * (H / this.game.canvas.height);
+      this.mouse.down = input.mouse.down;
+    }
+  }
+
+  // ------------------------------------------------------------- الرسم
+  draw(ctx, settings) {
+    const cur = this.current;
+    ctx.save();
+    this.drawBackground(ctx);
+    const rows = cur.screen.rows(this);
+    cur.maxScroll = Math.max(0, rows.length && rows[rows.length - 1] ? rows[rows.length - 1].rect.y + 30 - (H - 30) : 0);
+    // العنوان
+    const title = cur.screen.title || '';
+    if (title) {
+      this.text(ctx, title, W - 24, 34, { size: 17, bold: true, color: '#F2C14E', shadow: true });
+      if (cur.screen.subtitle) this.text(ctx, cur.screen.subtitle, W - 24, 48, { size: 9, color: '#9BB8C4' });
+    }
+    // الصفوف
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 56, W, H - 56);
+    ctx.clip();
+    let hovered = this.hitTest(this.mouse.x, this.mouse.y);
+    for (const row of rows) {
+      const y = row.rect.y - cur.scroll;
+      if (y < 40 || y > H + 20) continue;
+      this.drawRow(ctx, row, y, row.index === cur.index, hovered && hovered.index === row.index);
+    }
+    ctx.restore();
+    // شريط سكرول
+    if (cur.maxScroll > 0) {
+      const trackH = H - 70;
+      const barH = Math.max(20, trackH * (trackH / (cur.maxScroll + trackH)));
+      const barY = 60 + (trackH - barH) * (cur.scroll / cur.maxScroll);
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillRect(4, 60, 3, trackH);
+      ctx.fillStyle = '#F2C14E';
+      ctx.fillRect(4, barY, 3, barH);
+    }
+    // تذييل
+    this.drawFooter(ctx, cur);
+    if (this.toast) {
+      const t = this.toast;
+      const a = clamp(t.life, 0, 1);
+      ctx.save();
+      ctx.globalAlpha = a;
+      const col = t.kind === 'error' ? '#E8523F' : t.kind === 'ok' ? '#5ED67B' : '#F2C14E';
+      const w = Math.min(W - 60, this.measure(ctx, t.text, 10) + 24);
+      this.panel(ctx, W / 2 - w / 2, H - 42, w, 20, true);
+      this.text(ctx, t.text, W / 2 + w / 2 - 12, H - 28, { size: 10, bold: true, color: col, align: 'right' });
+      ctx.restore();
+    }
+    if (this.anim.fade > 0.01) {
+      ctx.fillStyle = `rgba(6,8,11,${this.anim.fade * 0.55})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
+  }
+
+  drawBackground(ctx) {
+    const t = this.time;
+    // خلفية متحركة: تدرّج + طبقات جبال من طابع اللعبة
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#101A28');
+    g.addColorStop(0.55, '#1B2A3A');
+    g.addColorStop(1, '#0B1017');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // شمس/هالة
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const sg = ctx.createRadialGradient(W * 0.22, H * 0.3, 0, W * 0.22, H * 0.3, 160);
+    sg.addColorStop(0, 'rgba(242,193,78,0.22)');
+    sg.addColorStop(1, 'rgba(242,193,78,0)');
+    ctx.fillStyle = sg;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    // جبال بخمس طبقات
+    for (let l = 0; l < 5; l++) {
+      const f = 0.12 + l * 0.16;
+      const off = (t * (6 + l * 3)) % 200;
+      ctx.fillStyle = `rgba(${18 + l * 12},${28 + l * 14},${40 + l * 16},1)`;
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (let x = -200; x < W + 200; x += 20) {
+        const y = H - 60 - l * 18 - Math.sin((x + off) * 0.02 + l) * (18 - l * 2) - Math.sin((x + off) * 0.06 + l * 2) * 7;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // نقاط رمادية (حبيبات) لطابع البكسل
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = '#FFFFFF';
+    for (let i = 0; i < 90; i++) {
+      const x = (i * 97 + Math.sin(t * 0.4 + i) * 12) % W;
+      const y = (i * 53) % H;
+      ctx.fillRect(x | 0, y | 0, 1, 1);
+    }
+    ctx.restore();
+  }
+
+  drawRow(ctx, row, y, focused, hovered) {
+    const item = row.item;
+    const r = row.rect;
+    const x = r.x, w = r.w, h = r.h;
+    const isHeader = item.type === 'header';
+    if (isHeader) {
+      this.text(ctx, item.label, x + w - 8, y + 14, { size: 10, bold: true, color: '#7FD2F5' });
+      ctx.fillStyle = 'rgba(127,210,245,0.25)';
+      ctx.fillRect(x + w - 8 - this.measure(ctx, item.label, 10), y + 18, this.measure(ctx, item.label, 10), 1);
+      return;
+    }
+    // لوحة الصف
+    const active = focused || hovered;
+    ctx.save();
+    if (active) {
+      ctx.fillStyle = item.type === 'danger' ? 'rgba(232,82,63,0.24)' : 'rgba(242,193,78,0.16)';
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = item.type === 'danger' ? '#E8523F' : '#F2C14E';
+      ctx.fillRect(x + w - 2, y, 2, h);
+    } else {
+      ctx.fillStyle = 'rgba(12,16,21,0.55)';
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = 'rgba(255,255,255,0.07)';
+      ctx.fillRect(x, y + h - 1, w, 1);
+    }
+    ctx.restore();
+    if (item.disabled) {
+      ctx.save();
+      ctx.globalAlpha = 0.45;
+    }
+    // أيقونة
+    let labelX = x + w - 10;
+    if (item.icon) {
+      const ui = this.assets.get('ui');
+      const key = 'ui/' + item.icon;
+      if (ui && ui.has(key)) {
+        ui.draw(ctx, key, x + w - 22, y + h / 2 - 8, 1, false);
+        labelX -= 22;
+      }
+    }
+    // نصوص
+    this.text(ctx, item.label, labelX, y + h / 2 + 4, { size: item.size || 10, bold: true, color: item.color || '#EAF2F6' });
+    if (item.desc) {
+      this.text(ctx, item.desc, labelX - this.measure(ctx, item.label, item.size || 10) - 12, y + h / 2 + 4, { size: 8, color: '#7E8C99' });
+    }
+    // قيمة / سلايدر / اختيار
+    if (item.type === 'slider') {
+      const v = item.get();
+      const pct = (v - item.min) / (item.max - item.min);
+      const sw = 64, sx = x + 8;
+      ctx.fillStyle = 'rgba(11,13,16,0.8)';
+      ctx.fillRect(sx - 1, y + h / 2 - 3, sw + 2, 7);
+      ctx.fillStyle = '#5ED67B';
+      ctx.fillRect(sx, y + h / 2 - 2, Math.round(sw * pct), 5);
+      ctx.fillStyle = '#EAF2F6';
+      ctx.fillRect(sx + Math.round(sw * pct) - 1, y + h / 2 - 4, 2, 9);
+      this.num(ctx, item.format ? item.format(v) : `${Math.round(v * 100)}%`, sx + sw + 6, y + h / 2 + 4, { size: 8, color: '#9BB8C4' });
+    } else if (item.type === 'choice' || item.type === 'sliderChoice') {
+      const val = item.get();
+      const txt = typeof item.format === 'function' ? item.format(val) : String(val);
+      this.num(ctx, txt, x + 10, y + h / 2 + 4, { size: 9, bold: true, color: active ? '#F2C14E' : '#9BB8C4' });
+      this.text(ctx, '◄ ►', x + 10 + this.measure(ctx, txt, 9) + 6, y + h / 2 + 4, { size: 8, color: '#5C6B78' });
+    } else if (item.value != null) {
+      this.num(ctx, String(item.value), x + 10, y + h / 2 + 4, { size: 9, color: active ? '#F2C14E' : '#9BB8C4' });
+    }
+    if (item.disabled) ctx.restore();
+    if (item.badge) {
+      ctx.fillStyle = '#E85D9B';
+      ctx.beginPath();
+      ctx.arc(x + 14, y + 8, 3, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  drawFooter(ctx, cur) {
+    const hints = cur.screen.hints || [
+      ['▲▼', 'تنقّل'], ['Enter', 'اختيار'], ['Esc', 'رجوع'],
+    ];
+    let x = 12;
+    for (const [key, label] of hints) {
+      ctx.fillStyle = 'rgba(255,255,255,0.10)';
+      ctx.fillRect(x, H - 16, this.measure(ctx, key, 8) + 4, 10);
+      this.num(ctx, key, x + 2, H - 8, { size: 8, color: '#EAF2F6' });
+      x += this.measure(ctx, key, 8) + 8;
+      this.text(ctx, label, x + 30, H - 8, { size: 8, color: '#7E8C99' });
+      x += this.measure(ctx, label, 8) + 12;
+    }
+    // اسم اللاعب ورتبته
+    const p = this.game.profile;
+    if (p) {
+      const rank = RANKS[Math.min(RANKS.length - 1, p.rank || 0)];
+      this.text(ctx, `${p.name} — ${rank.nameAr}`, W - 12, H - 8, { size: 8, color: '#F2C14E' });
+    }
+  }
+
+  panel(ctx, x, y, w, h, deep = false) {
+    const ui = this.assets.get('ui');
+    const key = deep ? 'ui/panel_deep' : 'ui/panel';
+    if (ui && ui.has(key)) {
+      const f = ui.frame(key);
+      if (f.ox >= w && f.oy >= h) { ui.draw(ctx, key, x, y, 1, false); return; }
+    }
+    ctx.fillStyle = deep ? 'rgba(9,11,15,0.92)' : 'rgba(14,17,22,0.82)';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    ctx.fillRect(x, y, w, 1);
+  }
+
+  text(ctx, str, x, y, opts = {}) {
+    ctx.save();
+    ctx.font = `${opts.bold ? '700 ' : ''}${opts.size || 10}px ${opts.pixel ? this.pixelFont : this.fontStack}`;
+    ctx.textAlign = opts.align || 'right';
+    ctx.direction = 'rtl';
+    if (opts.shadow !== false) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillText(str, x + 1, y + 1);
+    }
+    ctx.fillStyle = opts.color || '#EAF2F6';
+    ctx.fillText(str, x, y);
+    ctx.restore();
+  }
+
+  num(ctx, str, x, y, opts = {}) {
+    ctx.save();
+    ctx.font = `${opts.bold ? '700 ' : ''}${opts.size || 9}px ${this.fontStack}`;
+    ctx.textAlign = opts.align || 'left';
+    ctx.direction = 'ltr';
+    ctx.fillStyle = opts.color || '#EAF2F6';
+    ctx.fillText(str, x, y);
+    ctx.restore();
+  }
+
+  measure(ctx, str, size) {
+    ctx.save();
+    ctx.font = `700 ${size}px ${this.fontStack}`;
+    const w = ctx.measureText(str).width;
+    ctx.restore();
+    return w;
+  }
+
+  // ------------------------------------------------------------- الشاشات
+  buildScreens() {
+    const g = this.game;
+    const S = {};
+    const row = (item, y, x = 40, w = W - 80, h = 22) => ({ item, rect: { x, y, w, h } });
+
+    const choice = (label, opts, get, set, extra = {}) => ({
+      type: 'choice', label, options: opts, get, onChange: set,
+      format: (v) => (typeof opts[0] === 'object' ? (opts.find((o) => o.id === v) || opts[0]).label : String(v)),
+      cycle: (d) => {
+        const ids = opts.map((o) => (typeof o === 'object' ? o.id : o));
+        const i = ids.indexOf(get());
+        const ni = clamp(i + d, 0, ids.length - 1);
+        set(ids[ni]);
+        return ids[ni];
+      },
+      ...extra,
+    });
+    const slider = (label, min, max, step, get, set, format, extra = {}) =>
+      ({ type: 'slider', label, min, max, step, get, onChange: set, format, ...extra });
+    const action = (label, onSelect, extra = {}) => ({ type: 'action', label, onSelect, ...extra });
+    const header = (label) => ({ type: 'header', label });
+
+    // ---------------- الرئيسية
+    S.main = {
+      id: 'main', title: 'ميكا 11 — ساحة النار', subtitle: 'الحرب المحلية بلا إنترنت: 8 لاعبين على شبكة واحدة',
+      hints: [['▲▼', 'تنقّل'], ['Enter', 'اختيار']],
+      items: () => [
+        action('لعب سريع — ضد بوتات', () => { g.startMatch({ mode: 'dm', bots: true }); g.state = 'playing'; }, { icon: 'icon_star', desc: 'ابدأ فورًا' }),
+        action('اختيار الوضع', () => this.push('modes'), { icon: 'icon_skull', desc: `${MODE_LIST.length} وضعًا` }),
+        action('اختيار الخريطة', () => this.push('maps'), { icon: 'icon_map', desc: `${MAPS.length} خرائط` }),
+        action('تخصيص المقاتل', () => this.push('operators'), { icon: 'icon_team', desc: '10 مشغلين وأسلحة البداية' }),
+        action('شبكة محلية (LAN)', () => this.push('lan'), { icon: 'icon_ping', desc: 'حتى 8 لاعبين على نقطة اتصال' }),
+        action('محرّر الخرائط', () => { g.openEditor(); }, { icon: 'icon_settings', desc: 'ابنِ خريطتك وصدّرها JSON' }),
+        action('الإحصاءات والإنجازات', () => this.push('stats'), { icon: 'icon_crown', desc: `${g.progression ? g.progression.profile.achievements.length : 0}/${ACHIEVEMENTS.length} إنجازًا` }),
+        action('الإعدادات', () => this.push('settings'), { icon: 'icon_settings' }),
+        action('تخصيص التحكم', () => this.push('controls'), { icon: 'icon_settings', desc: 'عصا مزدوجة، أحجام، شفافية، جيروسكوب' }),
+        action('كيف تجعل هوت سبوت؟', () => this.push('hotspot'), { icon: 'icon_warning', desc: 'دليل مصوّر قصير' }),
+        action('الائتمانات', () => this.push('credits'), { icon: 'icon_star' }),
+        action('تغيير الاسم', () => {
+          const name = prompt('اكتب اسمك (بالعربية أو الإنجليزية):', g.profile.name);
+          if (name && name.trim()) { g.profile.name = name.trim().slice(0, 16); g.saveProfile(); this.message('تم تغيير الاسم إلى ' + g.profile.name, 'ok'); }
+        }, { icon: 'icon_team', value: g.profile.name }),
+        action('خروج', () => { this.message('يمكنك إغلاق التبويب أو الضغط على Alt+F4', 'info'); }, { type: 'danger', label: 'خروج', icon: 'icon_warning' }),
+      ],
+    };
+
+    // ---------------- الأوضاع
+    S.modes = {
+      id: 'modes', title: 'أوضاع اللعب', subtitle: 'اختر وضعًا ثم اضغط Enter للبدء فورًا',
+      items: () => MODE_LIST.map((id) => {
+        const m = MODES[id];
+        return action(m.nameAr, () => {
+          g.startMatch({ mode: id, bots: true });
+          g.state = 'playing';
+        }, { desc: m.descAr, icon: m.icon || 'icon_skull', size: 11 });
+      }),
+    };
+
+    // ---------------- الخرائط
+    S.maps = {
+      id: 'maps', title: 'الخرائط', subtitle: 'كل خريطة تولَّد إجرائيًا بنفس البذرة لجميع اللاعبين',
+      items: () => MAPS.map((m) => action(`${m.nameAr} (${m.size === 'br' ? 'كبيرة' : m.size === 'medium' ? 'متوسطة' : 'صغيرة'})`, () => {
+        g.settings.map = m.id;
+        g.saveSettings();
+        this.message('تم اختيار الخريطة: ' + m.nameAr, 'ok');
+      }, { desc: m.desc, icon: 'icon_map', color: g.settings.map === m.id ? '#F2C14E' : '#EAF2F6' })),
+    };
+
+    // ---------------- المشغلون
+    S.operators = {
+      id: 'operators', title: 'المشغلون', subtitle: '10 مشغلين — كل مشغل له 4 أشكال ألوان (Skins)',
+      items: () => {
+        const meta = this.assets.json.get('characters_meta.json') || {};
+        const ops = Object.keys(meta.operators || {});
+        const rows = [header('المشغل')];
+        for (const key of ops) {
+          const info = meta.operators[key];
+          rows.push(action(info.name, () => {
+            g.settings.opKey = key;
+            g.saveSettings();
+            this.message('اخترت: ' + info.name, 'ok');
+          }, {
+            desc: (info.bio || '').split('\n')[0].slice(0, 46),
+            color: g.settings.opKey === key ? '#F2C14E' : '#EAF2F6',
+            icon: 'icon_team',
+          }));
+        }
+        rows.push(header('شكل اللون (Skin)'));
+        rows.push(choice('لون الزي', [0, 1, 2, 3].map((i) => ({ id: i, label: 'شكل ' + (i + 1) })), () => g.settings.skinIndex, (v) => { g.settings.skinIndex = v; g.saveSettings(); }));
+        rows.push(header('أسلحة البداية'));
+        rows.push(choice('السلاح الأساسي', g.primaryOptions(), () => g.settings.loadout[0], (v) => { g.settings.loadout[0] = v; g.saveSettings(); }));
+        rows.push(choice('السلاح الثانوي', g.secondaryOptions(), () => g.settings.loadout[1], (v) => { g.settings.loadout[1] = v; g.saveSettings(); }));
+        rows.push(choice('القنبلة', [['grenade', 'قنبلة يدوية'], ['shama', 'شمعة إشارة']], () => g.settings.throwable, (v) => { g.settings.throwable = v; g.saveSettings(); }));
+        return rows;
+      },
+    };
+
+    // ---------------- الإعدادات
+    S.settings = {
+      id: 'settings', title: 'الإعدادات', subtitle: 'كل شيء يعمل دون إنترنت، وتُحفظ في جهازك',
+      items: () => [
+        header('الشاشة والرسم'),
+        choice('جودة الرسم', [{ id: 0, label: 'منخفضة' }, { id: 1, label: 'متوسطة' }, { id: 2, label: 'عالية' }, { id: 3, label: 'قصوى' }], () => g.settings.quality, (v) => { g.settings.quality = v; g.saveSettings(); g.applyQuality(); }),
+        choice('حد الإطارات', [{ id: 30, label: '30' }, { id: 60, label: '60' }, { id: 120, label: '120' }, { id: 0, label: 'غير محدود' }], () => g.settings.fpsLimit, (v) => { g.settings.fpsLimit = v; g.saveSettings(); }),
+        choice('تكبير البكسل (عدد صحيح)', [{ id: true, label: 'مضبوط (أفضل)' }, { id: false, label: 'ملء الشاشة' }], () => g.settings.integerScaling, (v) => { g.settings.integerScaling = v; g.saveSettings(); }),
+        slider('اهتزاز الشاشة', 0, 1.5, 0.05, () => g.settings.shakeScale, (v) => { g.settings.shakeScale = v; g.saveSettings(); }, (v) => `${Math.round(v * 100)}%`),
+        choice('مؤثرات ما بعد المعالجة', [{ id: true, label: 'مفعّلة' }, { id: false, label: 'موقوفة (أسرع)' }], () => g.settings.postFx, (v) => { g.settings.postFx = v; g.saveSettings(); g.applyQuality(); }),
+        choice('الإضاءة الديناميكية', [{ id: true, label: 'مفعّلة' }, { id: false, label: 'موقوفة' }], () => g.settings.lighting, (v) => { g.settings.lighting = v; g.saveSettings(); g.applyQuality(); }),
+        choice('حبيبات الفيلم', [{ id: 0, label: 'بدون' }, { id: 0.06, label: 'خفيفة' }, { id: 0.14, label: 'قوية' }], () => g.settings.grain, (v) => { g.settings.grain = v; g.saveSettings(); g.applyQuality(); }),
+        choice('وضع توفير الطاقة', [{ id: false, label: 'إيقاف' }, { id: true, label: 'تشغيل' }], () => g.settings.powerSaving, (v) => { g.settings.powerSaving = v; g.saveSettings(); g.applyQuality(); }),
+        header('الصوت'),
+        slider('الصوت العام', 0, 1, 0.05, () => g.audioSettings.master, (v) => { g.audioSettings.master = v; g.applyAudio(); }, (v) => `${Math.round(v * 100)}%`),
+        slider('الموسيقى', 0, 1, 0.05, () => g.audioSettings.music, (v) => { g.audioSettings.music = v; g.applyAudio(); }, (v) => `${Math.round(v * 100)}%`),
+        slider('المؤثرات', 0, 1, 0.05, () => g.audioSettings.sfx, (v) => { g.audioSettings.sfx = v; g.applyAudio(); }, (v) => `${Math.round(v * 100)}%`),
+        slider('الأصوات البشرية', 0, 1, 0.05, () => g.audioSettings.voice, (v) => { g.audioSettings.voice = v; g.applyAudio(); }, (v) => `${Math.round(v * 100)}%`),
+        header('اللعب'),
+        choice('اللغة', [{ id: 'ar', label: 'العربية (RTL)' }, { id: 'en', label: 'English (LTR)' }], () => g.settings.language, (v) => { g.settings.language = v; g.saveSettings(); this.message(v === 'ar' ? 'اللغة: العربية' : 'Language: English', 'ok'); }),
+        choice('نمط التصويب', [{ id: 'hold', label: 'استمر بالضغط' }, { id: 'toggle', label: 'تبديل' }], () => g.settings.adsMode, (v) => { g.settings.adsMode = v; g.saveSettings(); }),
+        choice('إطلاق تلقائي عند التصويب', [{ id: true, label: 'مفعّل' }, { id: false, label: 'موقوف' }], () => g.settings.autoFire, (v) => { g.settings.autoFire = v; g.saveSettings(); }),
+        choice('وضع لوني (عمى الألوان)', [{ id: 'none', label: 'عادي' }, { id: 'deuter', label: 'ديوترانوبيا' }, { id: 'prot', label: 'بروتانوبيا' }, { id: 'trit', label: 'تريتانوبيا' }], () => g.settings.colorblind, (v) => { g.settings.colorblind = v; g.saveSettings(); g.applyColorblind(); }),
+        slider('مساعد التصويب', 0, 1, 0.05, () => g.settings.aimAssist, (v) => { g.settings.aimAssist = v; g.saveSettings(); }, (v) => `${Math.round(v * 100)}%`),
+        header('البوتات'),
+        slider('عدد البوتات', 0, 11, 1, () => g.settings.botCount, (v) => { g.settings.botCount = v; g.saveSettings(); }, (v) => `${v}`),
+        choice('صعوبة البوتات', DIFFICULTY.map((d, i) => ({ id: i, label: d.nameAr })), () => g.settings.difficulty, (v) => { g.settings.difficulty = v; g.saveSettings(); }),
+        choice('قتال الفريق (Friendly Fire)', [{ id: false, label: 'موقوف' }, { id: true, label: 'مفعّل (خطر!)' }], () => g.settings.friendlyFire, (v) => { g.settings.friendlyFire = v; g.saveSettings(); }),
+        header('خيارات متقدمة'),
+        choice('شبكة/تشخيص (Overlay)', [{ id: false, label: 'مخفي' }, { id: true, label: 'ظاهر' }], () => g.settings.netOverlay, (v) => { g.settings.netOverlay = v; g.saveSettings(); }),
+        action('تصفير الإعدادات', () => { g.resetSettings(); this.message('أُعيدت الإعدادات الافتراضية', 'ok'); }),
+        action('حذف كل البيانات المحفوظة', () => { g.wipeData(); this.message('حُذفت البيانات', 'error'); }, { type: 'danger' }),
+      ],
+    };
+
+    // ---------------- التحكم
+    S.controls = {
+      id: 'controls', title: 'تخصيص التحكم', subtitle: 'اضبط التحكم كما تحب — يُحفظ تلقائيًا',
+      items: () => [
+        header('العصا اللمسية'),
+        choice('موضع العصا', [{ id: 'floating', label: 'عائم (حيث تلمس)' }, { id: 'fixed', label: 'ثابت' }], () => g.controls.joystickMode, (v) => { g.controls.joystickMode = v; g.saveControls(); }),
+        slider('حجم العصا', 40, 100, 2, () => g.controls.stickSize, (v) => { g.controls.stickSize = v; g.saveControls(); }, (v) => `${v} بكسل`),
+        slider('شفافية العصا', 0.1, 1, 0.05, () => g.controls.stickAlpha, (v) => { g.controls.stickAlpha = v; g.saveControls(); }, (v) => `${Math.round(v * 100)}%`),
+        slider('شفافية الأزرار', 0.1, 1, 0.05, () => g.controls.buttonAlpha, (v) => { g.controls.buttonAlpha = v; g.saveControls(); }, (v) => `${Math.round(v * 100)}%`),
+        header('التصويب'),
+        slider('حساسية الحركة', 0.3, 2, 0.05, () => g.controls.sensitivity, (v) => { g.controls.sensitivity = v; g.saveControls(); }, (v) => `${v.toFixed(2)}×`),
+        slider('حساسية التصويب', 0.3, 2, 0.05, () => g.controls.aimSensitivity, (v) => { g.controls.aimSensitivity = v; g.saveControls(); }, (v) => `${v.toFixed(2)}×`),
+        choice('تصويب بالجيروسكوب', [{ id: false, label: 'موقوف' }, { id: true, label: 'مفعّل (يتطلب صلاحية)' }], () => g.controls.gyro, async (v) => { g.controls.gyro = v; g.saveControls(); if (v && g.input.enableGyro) { const ok = await g.input.enableGyro(); this.message(ok ? 'تم تشغيل الجيروسكوب' : 'لم تُمنح الصلاحية', ok ? 'ok' : 'error'); } }),
+        slider('مساعد التصويب باللمس', 0, 1, 0.05, () => g.controls.aimAssist, (v) => { g.controls.aimAssist = v; g.saveControls(); }, (v) => `${Math.round(v * 100)}%`),
+        header('التخطيط والأزرار'),
+        choice('تخطيط Claw', [{ id: 2, label: 'إصبعان' }, { id: 3, label: 'ثلاثة أصابع' }, { id: 4, label: 'أربعة أصابع' }], () => g.controls.clawLayout, (v) => { g.controls.clawLayout = v; g.saveControls(); g.rebuildTouchButtons(); }),
+        choice('الاستخدام باليد اليسرى', [{ id: false, label: 'يمين' }, { id: true, label: 'يسار' }], () => g.controls.leftHanded, (v) => { g.controls.leftHanded = v; g.saveControls(); g.rebuildTouchButtons(); }),
+        choice('إطلاق عند اللمس', [{ id: true, label: 'مفعّل' }, { id: false, label: 'موقوف' }], () => g.controls.tapToFire, (v) => { g.controls.tapToFire = v; g.saveControls(); }),
+        choice('الاستمرار بالتصويب', [{ id: false, label: 'اضغط واحتفظ' }, { id: true, label: 'اضغط مرة' }], () => g.controls.holdToAim, (v) => { g.controls.holdToAim = v; g.saveControls(); }),
+        choice('الاهتزاز (هاتف)', [{ id: true, label: 'مفعّل' }, { id: false, label: 'موقوف' }], () => g.controls.haptics, (v) => { g.controls.haptics = v; g.saveControls(); }),
+        action('استعادة التحكم الافتراضي', () => { Object.assign(g.controls, DEFAULT_CONTROLS); g.saveControls(); this.message('أُعيد التحكم الافتراضي', 'ok'); }),
+      ],
+    };
+
+    // ---------------- الشبكة المحلية
+    S.lan = {
+      id: 'lan', title: 'شبكة محلية (LAN)', subtitle: 'بلا إنترنت: نقطة اتصال واحدة تكفي',
+      items: () => [
+        action('إنشاء غرفة (استضافة)', () => { g.hostLan(); }, { icon: 'icon_crown', desc: 'أنت المضيف — البقية ينضمون' }),
+        action('الانضمام المباشر بأقرب مضيف', () => { g.joinLanAuto(); }, { icon: 'icon_ping', desc: 'بحث تلقائي بالإرسال العام (3 ثوانٍ)' }),
+        action('الانضمام بعنوان IP يدوي', () => {
+          const ip = prompt('اكتب عنوان المضيف (مثال: 192.168.1.5:41980):', g.settings.lastIp || '');
+          if (ip) { g.settings.lastIp = ip; g.saveSettings(); g.joinLanManual(ip); }
+        }, { icon: 'icon_map', desc: g.settings.lastIp || 'لم يُستخدم بعد' }),
+        action('دليل نقطة الاتصال (هوت سبوت)', () => this.push('hotspot'), { icon: 'icon_warning' }),
+        header('خيارات الشبكة'),
+        choice('منفذ الشبكة', [{ id: 41980, label: '41980 (افتراضي)' }, { id: 41981, label: '41981' }, { id: 27015, label: '27015' }], () => g.settings.port, (v) => { g.settings.port = v; g.saveSettings(); }),
+        choice('نوع الاتصال في نسخة الويب', [{ id: 'bots', label: 'بوتات فقط (الويب)' }, { id: 'ws', label: 'وسيط WebSocket (تجربة)' }], () => g.settings.webNet, (v) => { g.settings.webNet = v; g.saveSettings(); this.message('ملاحظة: نسخة أندرويد تستخدم UDP مباشرًا', 'info'); }),
+        slider('حجم إعادة الإرسال', 0, 8, 1, () => g.settings.maxResend, (v) => { g.settings.maxResend = v; g.saveSettings(); }, (v) => `${v} حزم`),
+        action('الاتصال يعمل عبر نقطة الاتصال فقط — لا يخرج للإنترنت أبدًا', () => {}, { disabled: true, icon: 'icon_warning' }),
+      ],
+    };
+
+    // ---------------- الهوت سبوت
+    S.hotspot = {
+      id: 'hotspot', title: 'كيف تجعل هوت سبوت؟', subtitle: 'بوابة شبكة من هاتفك ليلعب الجميع',
+      items: () => [
+        header('أندرويد'),
+        action('١) الإعدادات ← الشبكة والإنترنت', () => {}, { disabled: true }),
+        action('٢) نقطة اتصال/مشاركة ← نقطة اتصال Wi-Fi', () => {}, { disabled: true }),
+        action('٣) شغّلها واكتب اسمًا وكلمة مرور', () => {}, { disabled: true }),
+        action('٤) دع أصدقاءك يتصلون بنفس النقطة', () => {}, { disabled: true }),
+        action('٥) المضيف: إنشاء غرفة. البقية: الانضمام التلقائي', () => {}, { disabled: true }),
+        header('آيفون'),
+        action('١) الإعدادات ← نقطة اتصال شخصية', () => {}, { disabled: true }),
+        action('٢) شغّل «السماح للآخرين بالانضمام»', () => {}, { disabled: true }),
+        action('٣) البقية يدخلون نفس كلمة المرور', () => {}, { disabled: true }),
+        header('تنبيهات مهمة'),
+        action('أوقف تشغيل بيانات الهاتف (LAN فقط)', () => {}, { disabled: true, icon: 'icon_warning' }),
+        action('أوقف VPN — قد يمنع بثّ الاكتشاف', () => {}, { disabled: true, icon: 'icon_warning' }),
+        action('تأكد من صلاحية «الأجهزة القريبة» على أندرويد 13', () => {}, { disabled: true, icon: 'icon_warning' }),
+        action('البِنج المثالي أقل من 30 م.ث — العب قريبًا من جهاز الاستضافة', () => {}, { disabled: true }),
+      ],
+    };
+
+    // ---------------- الإحصاءات
+    S.stats = {
+      id: 'stats', title: 'الإحصاءات والإنجازات', subtitle: 'كل التقدم محلي على جهازك، مشفّر',
+      items: () => {
+        const p = g.profile;
+        const s = p.stats || {};
+        const rows = [
+          header('ملخّص'),
+          action(`المستوى ${p.level} — ${p.xp} نقطة خبرة`, () => {}, { disabled: true, icon: 'icon_crown' }),
+          action(`قتلات: ${s.kills || 0} | موت: ${s.deaths || 0} | مباريات: ${s.matches || 0}`, () => {}, { disabled: true }),
+          action(`الدقة العامة: ${s.matches ? Math.round(((s.hits || 0) / Math.max(1, s.shots || 0)) * 100) : 0}%`, () => {}, { disabled: true }),
+          action(`أطول قتلة: ${Math.round(s.longestKill || 0)} مترًا`, () => {}, { disabled: true }),
+          action(`إحياءات: ${s.revives || 0} | مساعدات: ${s.assists || 0}`, () => {}, { disabled: true }),
+          header('التحديات اليومية/الأسبوعية'),
+        ];
+        for (const c of (g.progression ? g.progression.challenges : [])) {
+          rows.push(action(`${c.text} — ${c.progress}/${c.goal}`, () => {}, { disabled: true, color: c.done ? '#5ED67B' : '#EAF2F6' }));
+        }
+        rows.push(header(`الإنجازات (${p.achievements.length}/${ACHIEVEMENTS.length})`));
+        for (const a of ACHIEVEMENTS) {
+          const done = p.achievements.includes(a.id);
+          rows.push(action(`${done ? '✔ ' : '✖ '}${a.nameAr}`, () => {}, { disabled: true, desc: a.descAr, color: done ? '#5ED67B' : '#7E8C99' }));
+        }
+        return rows;
+      },
+    };
+
+    // ---------------- الائتمانات
+    S.credits = {
+      id: 'credits', title: 'الائتمانات', subtitle: 'كل شيء هنا صُنع من الصفر بالكود',
+      items: () => [
+        header('التصميم والبرمجة'),
+        action('فريق ميكا 11', () => {}, { disabled: true }),
+        header('الرسوم'),
+        action('كل الأطالس مولّدة برمجيًا (Python + Pillow)', () => {}, { disabled: true, desc: 'لا صور جاهزة من الإنترنت' }),
+        action('لوحة ألوان واحدة 64 لونًا + حد خارجي 1 بكسل', () => {}, { disabled: true }),
+        header('الصوت'),
+        action('مولّد صوت إجرائي (NumPy + soundfile)', () => {}, { disabled: true, desc: '108 ملفًا' }),
+        header('الخطوط'),
+        action('Cairo — رخصة SIL Open Font License 1.1', () => {}, { disabled: true }),
+        action('Noto Sans Arabic — SIL OFL 1.1', () => {}, { disabled: true }),
+        action('Press Start 2P — SIL OFL 1.1', () => {}, { disabled: true }),
+        header('التراخيص'),
+        action('لا مكتبات تتطلب إذن الإنترنت — لا إعلانات ولا تتبّع', () => {}, { disabled: true }),
+      ],
+    };
+
+    // ---------------- الإيقاف المؤقت
+    S.pause = {
+      id: 'pause', title: 'إيقاف مؤقت', subtitle: 'المباراة متوقفة',
+      items: () => [
+        action('استئناف', () => { g.state = 'playing'; }, { icon: 'icon_star' }),
+        action('الإعدادات', () => this.push('settings'), { icon: 'icon_settings' }),
+        action('تخصيص التحكم', () => this.push('controls'), { icon: 'icon_settings' }),
+        action('إعادة المباراة', () => { g.restartMatch(); }, { icon: 'icon_map' }),
+        action('الخروج للقائمة', () => { g.toMenu(); this.home(); }, { type: 'danger', icon: 'icon_warning' }),
+      ],
+    };
+
+    return S;
+  }
+}
