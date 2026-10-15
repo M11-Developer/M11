@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://m11actor00001"]
+
+[ext_resource type="Script" path="res://src/game/player.gd" id="1_actor"]
+
+[sub_resource type="RectangleShape2D" id="rect_body"]
+resource_local_to_scene = true
+size = Vector2(16, 62)
+
+[node name="Actor" type="CharacterBody2D"]
+collision_layer = 6
+collision_mask = 5
+script = ExtResource("1_actor")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("rect_body")
+position = Vector2(0, 31)

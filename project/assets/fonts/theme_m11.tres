@@ -1,0 +1,16 @@
+; ثيم الواجهة — يضمن رسم العربية بشكل صحيح في كل النصوص
+; Cairo للأرقام اللاتينية واللاتينية، و Noto Sans Arabic كخط احتياطي للتشكيل
+[gd_resource type="Theme" load_steps=5 format=3 uid="uid://m11theme0001"]
+
+[ext_resource type="FontFile" path="res://assets/fonts/cairo_400.ttf" id="1_reg"]
+[ext_resource type="FontFile" path="res://assets/fonts/cairo_700.ttf" id="2_bold"]
+[ext_resource type="FontFile" path="res://assets/fonts/noto_ar_500.ttf" id="3_fall"]
+
+[resource]
+default_font = ExtResource("1_reg")
+default_font_size = 15
+Label/fonts/font = ExtResource("1_reg")
+RichTextLabel/fonts/normal_font = ExtResource("1_reg")
+RichTextLabel/fonts/bold_font = ExtResource("2_bold")
+Button/fonts/font = ExtResource("1_reg")
+Button/font_size = 15

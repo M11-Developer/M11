@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://m11world00001"]
+
+[ext_resource type="Script" path="res://src/game/world.gd" id="1_world"]
+[ext_resource type="Script" path="res://src/game/player.gd" id="2_player"]
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_world")
+
+[node name="Terrain" type="Node2D" parent="."]
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(1, 1, 1, 1)
+
+[node name="Lighting" type="CanvasLayer" parent="."]
+layer = 2
