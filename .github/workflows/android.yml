@@ -299,43 +299,14 @@ jobs:
         if: always()
         run: bash tools/emit_annotations.sh "$BUILD_LOG" "ERROR|error:|Failed|failed|Unable|not found|Missing|missing|Could not|invalid|Exception|فشل|خطأ" error 9
 
-      - name: بثّ تحذيرات البناء (تعليقات)
-        if: always()
-        run: bash tools/emit_annotations.sh "$BUILD_LOG" "WARNING|warning:|WARN|تعذّر|تحذير" warning 9
-
-      - name: بثّ نهاية السجل (تعليقات)
-        if: always()
-        run: bash tools/emit_annotations.sh "$BUILD_LOG" "." notice 9
-      - name: بثّ سطور التصدير (تعليقات)
-        if: always()
-        run: bash tools/emit_annotations.sh "$BUILD_LOG" "Android APK|Android AAB|preset|Export|export|template|Template|keystore|Keystore|apk|AAB" warning 9
-
       - name: بثّ أسباب أخطاء الإعداد (تعليقات)
         if: always()
         run: bash tools/emit_annotations.sh "$BUILD_LOG" "configuration errors|valid when|template is missing|Android build template|SDK|keystore|sign" error 9 10
-
-      - name: بثّ بداية السجل (تعليقات)
-        if: always()
-        run: |
-          head -12 "$BUILD_LOG" > /tmp/m11-head.txt
-          bash tools/emit_annotations.sh /tmp/m11-head.txt "." notice 9
-
-      - name: بثّ أخطاء تحليل الشيفرة (تعليقات)
-        if: always()
-        run: bash tools/emit_annotations.sh "$BUILD_LOG" "world.gd|Parse Error|parse error|Failed to load script|Cannot infer|Invalid|Compile Error" error 9 3
 
       - name: بثّ أول أخطاء التحليل (تعليقات)
         if: always()
         run: |
           bash tools/emit_annotations.sh "$BUILD_LOG" 'SCRIPT ERROR|Parse Error|ERROR: Failed|Failed to load|Cannot' error 9 2 head
-
-      - name: بثّ أنواع الأخطاء الفريدة (تعليقات)
-        if: always()
-        run: |
-          grep -oE "SCRIPT ERROR: [^\"]{0,120}" "$BUILD_LOG" | sort -u | head -9 > /tmp/m11-uniq.txt
-          grep -oE "ERROR: Failed to load script [^ ]+ with error \"[^\"]+\"" "$BUILD_LOG" | sort -u | head -9 >> /tmp/m11-uniq.txt
-          grep -c "" /tmp/m11-uniq.txt
-          bash tools/emit_annotations.sh /tmp/m11-uniq.txt "." warning 9
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
