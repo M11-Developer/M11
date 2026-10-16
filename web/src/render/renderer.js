@@ -1184,8 +1184,17 @@ export class Renderer {
 export const BACKDROPS = {
   key_art_menu: 'backdrops/key_art_menu.png',
   poster_loading: 'backdrops/poster_loading.png',
+  // جولة ١١: لوحات الفن الرئيسية والشاشات الختامية (القسم 15.2)
+  key_art_main: 'backdrops/key_art_main.png',
+  key_art_naval: 'backdrops/key_art_naval.png',
+  poster_victory: 'backdrops/poster_victory.png',
+  poster_defeat: 'backdrops/poster_defeat.png',
 };
 export const backdropImages = new Map();
+
+export function getBackdrop(name) {
+  return backdropImages.get(name) || null;
+}
 
 export function setBackdrop(name, img) {
   backdropImages.set(name, img);
@@ -1195,6 +1204,11 @@ export function setBackdrop(name, img) {
 export const BACKDROP_FILES = {
   key_art_menu: 'backdrops/key_art_menu.png',
   poster_loading: 'backdrops/poster_loading.png',
+  // جولة ١١: لوحات الفن الرئيسية والشاشات الختامية (القسم 15.2)
+  key_art_main: 'backdrops/key_art_main.png',
+  key_art_naval: 'backdrops/key_art_naval.png',
+  poster_victory: 'backdrops/poster_victory.png',
+  poster_defeat: 'backdrops/poster_defeat.png',
   bg_parallax_desert: 'backdrops/bg_parallax_desert.png',
   bg_parallax_forest_night: 'backdrops/bg_parallax_forest_night.png',
   bg_parallax_factory: 'backdrops/bg_parallax_factory.png',

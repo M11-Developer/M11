@@ -75,6 +75,9 @@ func start_match(opts: Dictionary = {}) -> void:
 	var map_id: String = opts.get("map", Config.map_id)
 	var mode_id: String = opts.get("mode", Config.mode_id)
 	world.setup(mode_id, map_id, int(opts.get("seed", randi())))
+	# نهاية المباراة (حدّ النقاط/الوقت) تفتح شاشة النتائج — لا تبقى المباراة معلّقة بلا خاتمة
+	if not world.match_finished.is_connected(_on_match_finished):
+		world.match_finished.connect(_on_match_finished)
 	# اللاعب
 	var data := {
 		"name": Config.player_name, "team": 0, "op_key": Config.op_key, "is_bot": false,
@@ -115,7 +118,52 @@ func start_match(opts: Dictionary = {}) -> void:
 		im.rebuild_buttons()
 
 
+func _on_match_finished(res: Dictionary) -> void:
+	# 1) تجميد اللعب فورًا حتى لا تستمر البوتات بالقتال خلف شاشة النتائج
+	get_tree().paused = true
+	state = "results"
+	if hud:
+		hud.visible = false
+	# 2) حفظ الإحصاءات والخبرة محليًا (تشفير بسيط، بلا أي اتصال بالإنترنت)
+	var won: bool = int(res.get("winner_team", -1)) == 0
+	var saved := Save.record_match({
+		"kills": int(res.get("player_kills", 0)), "deaths": int(res.get("player_deaths", 0)),
+		"won": won,
+	})
+	# 3) شاشة النتائج — لوحة النصر أو الهزيمة المولّدة
+	if menu:
+		var payload := res.duplicate()
+		payload["xp"] = saved["xp"]
+		payload["level"] = saved["level"]
+		menu.show_results(payload)
+		menu.visible = true
+	# 4) ننبّه المشاهد ليتوقف عن التحديث
+	if world and world.has_method("set_process"):
+		world.set_process(false)
+	AudioBus.play_music("menu_theme")
+
+
+func back_to_menu() -> void:
+	# رجوع نظيف: نوقف الإيقاف المؤقت، نحذف العالم، ونعيد القائمة
+	get_tree().paused = false
+	if world:
+		world.queue_free()
+		world = null
+	if hud:
+		hud.queue_free()
+		hud = null
+	if menu:
+		menu.screen = 0
+		menu.index = 0
+		menu.visible = true
+	state = "menu"
+	AudioBus.play_music("menu_theme")
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if state == "results" and menu and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")):
+		back_to_menu()
+		return
 	if event.is_action_pressed("pause"):
 		if state == "playing":
 			state = "paused"

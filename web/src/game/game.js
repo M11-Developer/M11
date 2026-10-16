@@ -846,15 +846,24 @@ export class GameWorld {
 
   buildResults(reason) {
     const sorted = [...this.actors].sort((a, b) => (b.kills - a.kills) || (a.deaths - b.deaths));
+    const teams = this.teamScores || [];
+    const teamMode = teams.length > 1;
+    const me = sorted.find((a) => !a.isBot);
+    // الفوز: في الأوضاع الفرقية بمقارنة نقاط الفريقين، وفي الفردية بالترتيب الأول
+    const won = teamMode
+      ? (!!me && me.team === (teams[0] >= teams[1] ? 0 : 1))
+      : (!!me && sorted.indexOf(me) === 0);
     return {
       reason,
       duration: this.time,
-      teams: this.teamScores,
+      teams,
+      won,
+      teamMode,
       standings: sorted.map((a, i) => ({
         id: a.id, name: a.name, team: a.team, kills: a.kills, deaths: a.deaths,
         assists: a.assists, headshots: a.headshots, damage: Math.round(a.damage),
         accuracy: a.shotsFired ? Math.round((a.shotsHit / a.shotsFired) * 100) : 0,
-        placement: i + 1, isBot: a.isBot, opKey: a.opKey,
+        placement: i + 1, isBot: !!a.isBot, opKey: a.opKey,
         longestKill: Math.round(a.longestKill), revives: a.revives,
       })),
     };

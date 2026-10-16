@@ -126,7 +126,7 @@ class Game {
     // إنشاء عالم معاينة في الخلفية للقائمة (جو حربي متحرك)
     this.menuWorld = new GameWorld({ mode: 'dm', mapDef: MAP_BY_ID[this.settings.map], seed: 777, warmup: 999, difficulty: 1 });
     for (let i = 0; i < 5; i++) {
-      this.menuWorld.addActor({ isBot: true, team: 0, name: BOT_NAMES[i], difficulty: 2, seed: 900 + i, opKey: Object.keys(this.charMeta.operators)[i % 10] });
+      this.menuWorld.addActor({ isBot: true, team: 0, name: BOT_NAMES[i], difficulty: 2, seed: 900 + i, opKey: Object.keys(this.charMeta.operators)[i % Math.max(1, Object.keys(this.charMeta.operators).length)] });
     }
     this.camera.setBounds(this.menuWorld.level);
     setProgress(1, 'جاهز');
@@ -279,7 +279,7 @@ class Game {
       const b = this.world.addActor({
         isBot: true, team, name: BOT_NAMES[i % BOT_NAMES.length],
         difficulty: this.settings.difficulty, seed: (seed + i * 913) | 0,
-        opKey: Object.keys(this.charMeta.operators)[(i + 3) % 10],
+        opKey: Object.keys(this.charMeta.operators)[(i + 3) % Math.max(1, Object.keys(this.charMeta.operators).length)],
         startWeapons: mode.loadout === 'none' ? null : null,
       });
       b.serverBots = true;
@@ -342,23 +342,32 @@ class Game {
   onMatchEnd(results) {
     this.state = 'results';
     this.results = results;
-    audio.setMusic && audio.setMusic(results.standings[0] && results.standings[0].isBot === false ? 'victory' : 'defeat');
+    const won = !!results.won;
+    audio.setMusic && audio.setMusic(won ? 'victory' : 'defeat');
     if (this.progression) {
       const me = results.standings.find((s) => s.name === this.profile.name);
-      this.progression.recordMatch({
+      const actor = this.player;
+      const gained = this.progression.recordMatch({
         kills: me ? me.kills : 0, deaths: me ? me.deaths : 0, assists: me ? me.assists : 0,
         headshots: me ? me.headshots : 0, damage: me ? me.damage : 0,
         placement: me ? me.placement : results.standings.length,
         accuracy: me ? me.accuracy : 0, revives: me ? me.revives : 0,
-        longestKill: me ? me.longestKill : 0, won: results.standings[0] && results.standings[0].name === this.profile.name,
+        longestKill: me ? me.longestKill : 0,
+        // كانت هذه الحقول لا تُمرّر إطلاقًا ⇒ الانتصارات وأسلحة القتل لا تُحفظ في الملف الشخصي
+        win: won, won: won,
+        shotsFired: actor ? actor.shotsFired : 0, shotsHit: actor ? actor.shotsHit : 0,
+        survival: actor ? actor.survivalTime : 0, duration: results.duration || 0,
+        weaponKills: actor ? actor.weaponKills : null, weaponShots: actor ? actor.weaponShots : null,
       });
-      const gained = this.progression.checkAchievements({
+      this.lastXp = gained && typeof gained === 'object' ? gained : null;
+      const got = this.progression.checkAchievements({
         kills: me ? me.kills : 0, headshots: me ? me.headshots : 0,
         placement: me ? me.placement : 0, accuracy: me ? me.accuracy : 0,
         longestKill: me ? me.longestKill : 0, revives: me ? me.revives : 0,
         damage: me ? me.damage : 0,
       });
-      for (const a of gained) this.hud.toast('إنجاز: ' + a.nameAr, '#F2C14E', 4);
+      this.achievementsGained = got || [];
+      for (const a of got || []) this.hud.toast('إنجاز: ' + a.nameAr, '#F2C14E', 4);
       Storage.saveProfile(this.profile);
     }
     if (this.world && this.world.replay && this.world.replay.length) {
@@ -722,7 +731,12 @@ class Game {
     const ctx = this.renderer.main;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this.world) this.renderer.draw(this.world, this.camera, this.player, dt * 0.2);
-    this.hud.drawResults(ctx, this.results || (this.world && this.world.results) || { standings: [] });
+    this.hud.drawResults(ctx, this.results || (this.world && this.world.results) || { standings: [] }, {
+      mode: this.world ? this.world.modeId : this.settings.mode,
+      map: this.world ? this.world.level.def.id : this.settings.map,
+      xp: this.lastXp,
+      achievements: this.achievementsGained || [],
+    });
     this.hud.update(dt);
     if (this.input.pressed.has('Enter') || this.input.pressed.has('Space') || this.input.pressed.has('Escape')) {
       this.state = 'menu';

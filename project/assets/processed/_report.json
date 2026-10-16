@@ -1613,5 +1613,158 @@
   "transparent_pct": 0.0,
   "kb_raw": 1314.4,
   "kb_out": 122.9
+ },
+ "sheet_map_thumbs_a": {
+  "name": "sheet_map_thumbs_a",
+  "desc": "مصغّرات خرائط — الجزء الأول (12 خريطة)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 26.4,
+  "kb_raw": 2045.5,
+  "kb_out": 466.1
+ },
+ "sheet_map_thumbs_b": {
+  "name": "sheet_map_thumbs_b",
+  "desc": "مصغّرات خرائط — الجزء الثاني (8 خرائط)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 21.9,
+  "kb_raw": 2128.2,
+  "kb_out": 693.5
+ },
+ "key_art_main": {
+  "name": "key_art_main",
+  "desc": "الفن الرئيسي — الفريق في الميناء (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 2240.8,
+  "kb_out": 551.4
+ },
+ "key_art_naval": {
+  "name": "key_art_naval",
+  "desc": "ملصق — هجوم بحري ليلي (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1882.6,
+  "kb_out": 241.1
+ },
+ "poster_victory": {
+  "name": "poster_victory",
+  "desc": "شاشة النصر — الفريق على الأنقاض (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1944.7,
+  "kb_out": 303.8
+ },
+ "poster_defeat": {
+  "name": "poster_defeat",
+  "desc": "شاشة الهزيمة — خوذة وبندقية في المطر (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1896.8,
+  "kb_out": 264.4
+ },
+ "sheet_achievements_2": {
+  "name": "sheet_achievements_2",
+  "desc": "أوسمة إنجازات (12 وسامًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 56.4,
+  "kb_raw": 1702.6,
+  "kb_out": 237.6
+ },
+ "sheet_operators_1_10": {
+  "name": "sheet_operators_1_10",
+  "desc": "بورتريهات المشغّلين الأصليين (10 وجوه)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 41.0,
+  "kb_raw": 1634.8,
+  "kb_out": 188.6
+ },
+ "sheet_supply_crates": {
+  "name": "sheet_supply_crates",
+  "desc": "صناديق عتاد وذخيرة (12 صندوقًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 55.1,
+  "kb_raw": 1585.3,
+  "kb_out": 282.6
  }
 }

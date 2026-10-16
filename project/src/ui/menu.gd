@@ -11,6 +11,7 @@ const S_SETTINGS := 4
 const S_LAN := 5
 const S_STATS := 6
 const S_CREDITS := 7
+const S_RESULTS := 8
 
 var screen := S_MAIN
 var index := 0
@@ -22,20 +23,68 @@ var message_life := 0.0
 var host_list: Array = []
 var key_art: Texture2D = null
 var poster: Texture2D = null
+var hero_art: Texture2D = null          # الفن الرئيسي (فريق في الميناء)
+var naval_art: Texture2D = null         # ملصق الهجوم البحري لشاشة الشبكة
+var p_victory: Texture2D = null         # لوحة النصر
+var p_defeat: Texture2D = null          # لوحة الهزيمة
+var thumbs: Dictionary = {}             # map_id -> Texture2D (مصغّرة الخريطة الحقيقية)
+var portraits: Dictionary = {}          # op_key -> Texture2D (بورتريه المشغّل)
+var result: Dictionary = {}             # نتيجة المباراة لشاشة النتائج
 
 
 func _ready() -> void:
+	# القائمة تبقى حيّة أثناء إيقاف الشجرة المؤقت (شاشة النتائج تُوقف اللعب)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	font = ThemeDB.fallback_font
 	NetMgr.host_found.connect(_on_host_found)
 	# لوحتا المنظر المولّدتان (أصول التطبيق) — غيابهما لا يُفشل الإقلاع
 	for pair in [["key_art", "res://assets/atlases/backdrops/key_art_menu.png"],
-			["poster", "res://assets/atlases/backdrops/poster_loading.png"]]:
+			["poster", "res://assets/atlases/backdrops/poster_loading.png"],
+			["hero_art", "res://assets/atlases/backdrops/key_art_main.png"],
+			["naval_art", "res://assets/atlases/backdrops/key_art_naval.png"],
+			["p_victory", "res://assets/atlases/backdrops/poster_victory.png"],
+			["p_defeat", "res://assets/atlases/backdrops/poster_defeat.png"]]:
 		if ResourceLoader.exists(pair[1]):
 			var tex: Texture2D = load(pair[1])
-			if pair[0] == "key_art":
-				key_art = tex
-			else:
-				poster = tex
+			match pair[0]:
+				"key_art":
+					key_art = tex
+				"poster":
+					poster = tex
+				"hero_art":
+					hero_art = tex
+				"naval_art":
+					naval_art = tex
+				"p_victory":
+					p_victory = tex
+				"p_defeat":
+					p_defeat = tex
+	# مصغّرات الخرائط: صورة حقيقية لكل خريطة، مرسومة من أصول اللعبة نفسها
+	# (tools/gen_map_previews.mjs) — فلا تعرض القائمة وعدًا لا يطابق ما سيلعبه اللاعب.
+	for map_key in GameWorld.MAPS.keys():
+		var mp := "res://assets/atlases/thumb_%s.png" % String(map_key)
+		if ResourceLoader.exists(mp):
+			thumbs[String(map_key)] = load(mp)
+	# بورتريهات المشغّلين: العشرة الأولى من أطلس portraits_orig، والعشرة الجديدة من portraits_new
+	_load_portraits()
+
+
+func _load_portraits() -> void:
+	# بورتريه لكل مشغّل: ملف PNG مستقل مولّد من أطلس البورتريهات (أدوات Python)
+	# — أبسط وأضمن من قصّ الأطلس وقت التشغيل، ويُقرأ مرة واحدة عند الإقلاع.
+	for op in M11Data.OPERATORS:
+		var key := String(op["key"])
+		var path := "res://assets/atlases/portraits/%s.png" % key
+		if ResourceLoader.exists(path):
+			portraits[key] = load(path)
+
+
+## يُستدعى من main عند انتهاء المباراة — يعرض شاشة النتائج بلوحة النصر أو الهزيمة
+func show_results(data: Dictionary) -> void:
+	result = data
+	screen = S_RESULTS
+	index = 0
+	visible = true
 
 
 func _on_host_found(info: Dictionary) -> void:
@@ -86,6 +135,15 @@ func _rows() -> Array:
 				"إحياءات: %d | مساعدات: %d" % [s["revives"], s["assists"]],
 				"أطول قتلة: %d مترًا" % int(s["longest_kill"]), "إنجازات: %d" % Save.profile["achievements"].size(),
 				"رجوع"]
+		S_RESULTS:
+			var r := result
+			var win := int(r.get("winner_team", -1)) == 0
+			return ["%s — %d : %d" % ["فوز" if win else ("تعادل" if int(r.get("winner_team", -1)) == -1 else "خسارة"),
+					int(r.get("scores", [0, 0])[0]), int(r.get("scores", [0, 0])[1])],
+				"قتلاتك: %d | موتك: %d" % [int(r.get("player_kills", 0)), int(r.get("player_deaths", 0))],
+				"الوضع: %s | الخريطة: %s | المدة: %s" % [String(r.get("mode", "")), String(r.get("map", "")),
+					"%d:%02d" % [int(float(r.get("time", 0.0)) / 60.0), int(float(r.get("time", 0.0))) % 60]],
+				"مباراة أخرى", "الرجوع للقائمة"]
 		S_CREDITS:
 			return ["كل الرسوم مولّدة برمجيًا (Python + Pillow)", "كل الأصوات مولّدة برمجيًا (NumPy)",
 				"الخطوط: Cairo / Noto Sans Arabic / Press Start 2P (SIL OFL 1.1)",
@@ -190,6 +248,17 @@ func activate(i: int) -> void:
 						toast("جارٍ الاتصال بـ %s…" % host["host_name"])
 					else:
 						toast("فشل الاتصال")
+		S_RESULTS:
+			if i == 3:
+				# مباراة أخرى بنفس الوضع والخريطة
+				if main and main.has_method("start_match"):
+					main.start_match({"mode": String(result.get("mode", Config.mode_id))})
+					visible = false
+			elif i == 4:
+				if main and main.has_method("back_to_menu"):
+					main.back_to_menu()
+				else:
+					screen = S_MAIN
 		S_CREDITS:
 			if i == 4:
 				screen = S_MAIN
@@ -237,7 +306,13 @@ func _draw() -> void:
 	# خلفية متدرجة بطبقات
 	draw_rect(Rect2(Vector2.ZERO, vp), Color(0.05, 0.08, 0.11))
 	# لوحة المنظر المولّدة خلف كل شيء (اختزال بالعدد 2 → 640×360 بلا أي تنعيم)
-	var art: Texture2D = key_art if screen == S_MAIN or screen == S_MODES or screen == S_MAPS else poster
+	var art: Texture2D = poster
+	if screen == S_MAIN or screen == S_MODES:
+		art = hero_art if hero_art != null else key_art
+	elif screen == S_MAPS:
+		art = key_art if key_art != null else hero_art
+	elif screen == S_LAN or screen == S_OPERATORS:
+		art = naval_art if naval_art != null else key_art
 	if art == null:
 		art = key_art if key_art != null else poster
 	if art != null:
@@ -257,6 +332,55 @@ func _draw() -> void:
 			x += 16.0
 		pts.append(Vector2(vp.x + 200.0, vp.y))
 		draw_colored_polygon(pts, col)
+	# --- معاينة الخريطة المختارة: مصغّرة حقيقية مرسومة من أصول اللعبة + معلوماتها ---
+	if screen == S_MAPS and not thumbs.is_empty():
+		var mkeys: Array = GameWorld.MAPS.keys()
+		var key := String(mkeys[clampi(index, 0, mkeys.size() - 1)])
+		var tex: Texture2D = thumbs.get(key)
+		if tex:
+			var pw := minf(vp.x * 0.46, 480.0)
+			var ph := pw * 0.5625
+			var px := vp.x * 0.04
+			var py := vp.y * 0.5 - ph * 0.5
+			draw_rect(Rect2(px - 4, py - 4, pw + 8, ph + 8), Color(0.03, 0.04, 0.06, 0.85))
+			draw_rect(Rect2(px - 4, py - 4, pw + 8, ph + 8), Color(0.95, 0.76, 0.31, 0.55), false, 2.0)
+			draw_texture_rect(tex, Rect2(px, py, pw, ph), false)
+			var info: Dictionary = GameWorld.MAPS[key]
+			var line_y := py + ph + 22
+			draw_string(font, Vector2(px, line_y), String(info["name_ar"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.98, 0.86, 0.5))
+			draw_string(font, Vector2(px, line_y + 20),
+				"الحجم %d×%d — الثيم: %s" % [int(info["w"]), int(info["h"]), String(info["theme"])],
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.80, 0.86, 0.90))
+	# --- بورتريه المشغّل المختار (صورة كبيرة) + سيرته ---
+	if screen == S_OPERATORS and not portraits.is_empty():
+		var ops: Array = M11Data.OPERATORS
+		var oi := clampi(index, 0, ops.size() - 1)
+		var op: Dictionary = ops[oi]
+		var ptex: Texture2D = portraits.get(String(op["key"]))
+		if ptex:
+			var scale_f := 2.6
+			var pw2 := ptex.get_width() * scale_f
+			var ph2 := ptex.get_height() * scale_f
+			var px2 := vp.x * 0.06
+			var py2 := vp.y * 0.5 - ph2 * 0.5
+			draw_rect(Rect2(px2 - 6, py2 - 6, pw2 + 12, ph2 + 12), Color(0.03, 0.04, 0.06, 0.85))
+			draw_rect(Rect2(px2 - 6, py2 - 6, pw2 + 12, ph2 + 12), Color(0.95, 0.76, 0.31, 0.55), false, 2.0)
+			draw_texture_rect(ptex, Rect2(px2, py2, pw2, ph2), false)
+			draw_string(font, Vector2(px2, py2 + ph2 + 24), String(op["name_ar"]),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.98, 0.86, 0.5))
+			draw_string(font, Vector2(px2, py2 + ph2 + 46),
+				"%s — %s" % [("أنثى" if op["gender"] == "f" else "ذكر"), String(op.get("style", ""))],
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.80, 0.86, 0.90))
+	# --- شاشة النتائج: لوحة النصر أو الهزيمة تعبر الشاشة كاملة ---
+	if screen == S_RESULTS:
+		var won := int(result.get("winner_team", -1)) == 0
+		var pt: Texture2D = p_victory if won else p_defeat
+		if pt == null:
+			pt = poster if poster != null else key_art
+		if pt:
+			draw_texture_rect(pt, Rect2(Vector2(0, 0), Vector2(vp.x, vp.x * 0.5625)), false,
+				Color(1, 1, 1, 0.95))
+		draw_rect(Rect2(0, vp.y * 0.42, vp.x, vp.y * 0.58), Color(0.04, 0.05, 0.07, 0.72))
 	# العنوان (يمين)
 	draw_string(font, Vector2(vp.x - 20, 34), _title(), HORIZONTAL_ALIGNMENT_RIGHT, -1, 22, Color(0.95, 0.76, 0.31))
 	var rows := _rows()
@@ -289,13 +413,15 @@ func _title() -> String:
 		S_MAPS:
 			return "الخرائط (%d)" % GameWorld.MAPS.size()
 		S_OPERATORS:
-			return "المشغلون (10)"
+			return "المشغلون (%d)" % M11Data.OPERATORS.size()
 		S_SETTINGS:
 			return "الإعدادات"
 		S_LAN:
 			return "الشبكة المحلية — منفذ %d" % Config.NET_PORT
 		S_STATS:
 			return "الإحصاءات"
+		S_RESULTS:
+			return "نتيجة المباراة"
 		S_CREDITS:
 			return "الائتمانات"
 	return ""

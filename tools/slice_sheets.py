@@ -153,9 +153,34 @@ SHEETS: dict[str, dict] = {
         "names": ["calm", "ripple", "choppy", "storm", "shallow", "oily", "waterfall", "shore"],
     },
     "sheet_operators_new": {
-        "atlas": "portraits_new", "key": "portrait", "h": 96, "expect": 10,
+        "atlas": "portraits_new", "key": "portrait", "h": 96, "expect": 10, "grid": (2, 5),
         "names": ["portrait_11", "portrait_12", "portrait_13", "portrait_14", "portrait_15",
                   "portrait_16", "portrait_17", "portrait_18", "portrait_19", "portrait_20"],
+    },
+    "sheet_map_thumbs_a": {
+        "atlas": "map_thumbs_a", "key": "thumb", "h": 0, "expect": 12, "grid": (3, 4),
+        "names": ["oasis", "harbor", "sea_deck", "nightbase", "village", "ruinedcity",
+                  "factory", "darkforest", "bridge", "snowpeak", "swamp", "docks"],
+    },
+    "sheet_map_thumbs_b": {
+        "atlas": "map_thumbs_b", "key": "thumb", "h": 0, "expect": 8, "grid": (2, 4),
+        "names": ["orbital", "cavern", "warzone", "valleys", "oil_rig", "port",
+                  "starfield", "spare"],
+    },
+    "sheet_achievements_2": {
+        "atlas": "medals_2", "key": "medal", "h": 56, "expect": 12, "grid": (4, 6),
+        "names": ["star", "shield_wrench", "bullet", "parachute", "flame", "heart",
+                  "skull", "target", "anchor", "bolt", "stopwatch", "laurel_blank"],
+    },
+    "sheet_operators_1_10": {
+        "atlas": "portraits_orig", "key": "portrait", "h": 96, "expect": 10, "grid": (2, 5),
+        "names": ["rashid", "karim", "yusuf", "tariq", "adam",
+                  "layla", "noor", "hala", "sara", "mariam"],
+    },
+    "sheet_supply_crates": {
+        "atlas": "props_supply", "key": "props_supply", "h": 52, "expect": 12,
+        "names": ["ammo_crate", "med_box", "ammo_tin", "supply_bundle", "loot_box", "rifle_case",
+                  "jerry_can", "water_can", "shell_crate", "electronics_case", "grenade_tin", "airdrop_pallet"],
     },
     "sheet_debris_rubble": {
         "atlas": "props_debris", "key": "props_debris", "h": 40, "expect": 14,
@@ -278,11 +303,50 @@ def find_elements(img: np.ndarray, min_area: int = 60, gap: int = 6) -> list[tup
     return ordered
 
 
+def find_by_grid(img: np.ndarray, rows: int, cols: int, pad: int = 2) -> list[tuple[int, int, int, int]]:
+    """يقطّع ورقة إلى شبكة منتظمة (صفوف×أعمدة) — تُستعمل للأوراق المستطيلة المتلاصقة.
+
+    مصغّرات الخرائط والبورتريهات والأوسمة تُرسم متلاصقة بلا فجوات واضحة، فيفشل كشف
+    العناصر المنفصلة. هنا نقسّم مساحة المحتوى بالتساوي ثم نقصّ هوامش كل خلية.
+    """
+    mask = img[..., 3] > 40
+    ys = np.where(mask.any(axis=1))[0]
+    xs = np.where(mask.any(axis=0))[0]
+    if len(ys) == 0 or len(xs) == 0:
+        return []
+    y0, y1 = int(ys[0]), int(ys[-1]) + 1
+    x0, x1 = int(xs[0]), int(xs[-1]) + 1
+    boxes: list[tuple[int, int, int, int]] = []
+    for r in range(rows):
+        cy0 = y0 + (y1 - y0) * r // rows
+        cy1 = y0 + (y1 - y0) * (r + 1) // rows
+        for c in range(cols):
+            cx0 = x0 + (x1 - x0) * c // cols
+            cx1 = x0 + (x1 - x0) * (c + 1) // cols
+            sub = mask[cy0:cy1, cx0:cx1]
+            if sub.mean() < 0.05:
+                continue
+            sy = np.where(sub.any(axis=1))[0]
+            sx = np.where(sub.any(axis=0))[0]
+            if len(sy) < 4 or len(sx) < 4:
+                continue
+            bx = cx0 + int(sx[0]) - pad
+            by = cy0 + int(sy[0]) - pad
+            bw = int(sx[-1] - sx[0] + 1) + pad * 2
+            bh = int(sy[-1] - sy[0] + 1) + pad * 2
+            boxes.append((max(0, bx), max(0, by), bw, bh))
+    return boxes
+
+
 def slice_sheet(sheet: str, cfg: dict) -> dict | None:
     src = os.path.join(PROCESSED, sheet + ".png")
     if not os.path.exists(src):
         return None
     img = kill_shadow_purple(np.array(Image.open(src).convert("RGBA")))
+    cfg = dict(cfg, _img=img)
+    if cfg.get("grid"):
+        boxes = find_by_grid(img, cfg["grid"][0], cfg["grid"][1])
+        return _pack(boxes, sheet, cfg)
     # نختار فجوة الدمج التي تعطي أقرب عدد للعناصر المتوقّعة (من التلقينة الأصلية)
     expect = cfg.get("expect", 0)
     best = None
@@ -294,6 +358,11 @@ def slice_sheet(sheet: str, cfg: dict) -> dict | None:
     boxes = best[2]
     if not boxes:
         return None
+    return _pack(boxes, sheet, cfg)
+
+
+def _pack(boxes: list[tuple[int, int, int, int]], sheet: str, cfg: dict) -> dict:
+    img = cfg["_img"]
     names = cfg["names"]
     frames: dict[str, np.ndarray] = {}
     for i, (x, y, w, h) in enumerate(boxes):
@@ -311,6 +380,7 @@ def slice_sheet(sheet: str, cfg: dict) -> dict | None:
             with open(s, "rb") as fi, open(os.path.join(WEB_DIR, f"{cfg['atlas']}{ext}"), "wb") as fo:
                 fo.write(fi.read())
     return {"atlas": cfg["atlas"], "count": len(frames), "size": info["size"]}
+
 
 
 def main() -> int:

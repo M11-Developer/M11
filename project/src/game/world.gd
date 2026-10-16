@@ -132,6 +132,11 @@ var match_state := "warmup"
 var warmup := 3.0
 var quality := 2
 var team_scores: Array = [0, 0]
+# --- نهاية المباراة: حدّ النقاط أو حدّ الوقت، ثم شاشة نتائج (القسم 8 من الدفتر) ---
+var score_limit := 30
+var time_limit := 300.0
+var winner_team := -1
+signal match_finished(result: Dictionary)
 var input_manager: InputManager = null
 
 const MAPS := {
@@ -142,6 +147,7 @@ const MAPS := {
 	"forest": {"name_ar": "الغابة المسكونة", "theme": "forest", "w": 3400, "h": 1100, "buildings": 3, "crates": 24, "trees": 26, "water": 2},
 	"village": {"name_ar": "القرية الجبلية", "theme": "village", "w": 3000, "h": 1200, "buildings": 6, "crates": 26, "trees": 12, "water": 1},
 	"factory": {"name_ar": "المصنع المهجور", "theme": "base", "w": 3200, "h": 900, "buildings": 5, "crates": 34, "trees": 2, "water": 0},
+	"darkforest": {"name_ar": "الغابة المظلمة", "theme": "forest", "w": 3100, "h": 1150, "buildings": 2, "crates": 18, "trees": 20, "water": 2, "time_of_day": 0.9, "backdrop": "bg_parallax_forest_night"},
 	"bridge": {"name_ar": "الجسر المكسور", "theme": "city", "w": 4200, "h": 1100, "buildings": 4, "crates": 28, "trees": 6, "water": 3},
 	"harbor": {"name_ar": "الميناء البحري", "theme": "port", "w": 3400, "h": 1000, "buildings": 2, "crates": 30, "trees": 1, "water": 3, "time_of_day": 0.7},
 	"snowpeak": {"name_ar": "قمة الثلوج", "theme": "snow", "w": 3200, "h": 1100, "buildings": 4, "crates": 24, "trees": 8, "water": 2, "time_of_day": 0.75, "backdrop": "bg_sky_snowfall"},
@@ -150,6 +156,9 @@ const MAPS := {
 	"warzone": {"name_ar": "منطقة الحرب", "theme": "city", "w": 3800, "h": 1150, "buildings": 12, "crates": 34, "trees": 5, "water": 2, "time_of_day": 0.2, "backdrop": "bg_sky_war_red"},
 	"cavern": {"name_ar": "الكهوف المتوهجة", "theme": "cave", "w": 3100, "h": 1050, "buildings": 2, "crates": 24, "trees": 0, "water": 4, "time_of_day": 0.9, "backdrop": "bg_sky_cave_glow"},
 	"starfield": {"name_ar": "حقل النجوم", "theme": "base", "w": 2600, "h": 950, "buildings": 6, "crates": 20, "trees": 4, "water": 0, "time_of_day": 0.95, "backdrop": "bg_sky_galaxy"},
+	# --- جولة ١٠: الجانب البحري (مصدر الحقيقة: web/src/game/world.js) ---
+	"oil_rig": {"name_ar": "المنصة النفطية", "theme": "oil", "w": 3000, "h": 1000, "buildings": 5, "crates": 24, "trees": 0, "water": 10, "time_of_day": 0.8, "backdrop": "bg_parallax_oil_rig"},
+	"docks": {"name_ar": "الأرصفة الفجرية", "theme": "port", "w": 3600, "h": 1050, "buildings": 8, "crates": 36, "trees": 2, "water": 6, "time_of_day": 0.25, "backdrop": "bg_sky_harbor_dawn"},
 	"sea_deck": {"name_ar": "سطح السفينة", "theme": "port", "w": 2600, "h": 900, "buildings": 1, "crates": 18, "trees": 0, "water": 2, "time_of_day": 0.9},
 }
 
@@ -167,6 +176,7 @@ func setup(mode: String, map_id: String, seed_v: int) -> void:
 	_build_visuals()
 	match_state = "warmup"
 	match_time = 0.0
+	winner_team = -1
 
 
 # ---------------------------------------------------------------- التوليد
@@ -456,8 +466,43 @@ func _process(dt: float) -> void:
 		warmup -= dt
 		if warmup <= 0.0:
 			match_state = "playing"
+	if match_state == "playing":
+		_check_match_end()
 	if zone["active"]:
 		_update_zone(dt)
+
+
+func _check_match_end() -> void:
+	# شروط النهاية: بلوغ حدّ النقاط، أو انتهاء الوقت، أو مقتل الصامد الأخير في القتال الحر
+	var top: int = maxi(int(team_scores[0]), int(team_scores[1]))
+	var done := false
+	if top >= score_limit:
+		done = true
+		winner_team = 0 if int(team_scores[0]) >= int(team_scores[1]) else 1
+	elif match_time >= time_limit:
+		done = true
+		winner_team = -1 if int(team_scores[0]) == int(team_scores[1]) else (0 if int(team_scores[0]) > int(team_scores[1]) else 1)
+	var alive := 0
+	for a in actors:
+		if a.alive:
+			alive += 1
+	if mode_id == "survival" or mode_id == "infection":
+		if alive <= 1 and actors.size() > 1:
+			done = true
+			winner_team = 0
+	if not done:
+		return
+	match_state = "over"
+	var stats := {"kills": 0, "deaths": 0}
+	for a in actors:
+		if not a.is_bot:
+			stats["kills"] = int(a.kills)
+			stats["deaths"] = int(a.deaths)
+	match_finished.emit({
+		"winner_team": winner_team, "scores": team_scores.duplicate(),
+		"time": match_time, "mode": mode_id, "map": Config.map_id,
+		"player_kills": int(stats["kills"]), "player_deaths": int(stats["deaths"]),
+	})
 
 
 func _update_zone(dt: float) -> void:
@@ -576,6 +621,12 @@ func build_snapshot() -> PackedByteArray:
 
 
 # إعادة بثّ إصابة أي مقاتل إلى الواجهة (أسهم اتجاه الضرر + وميض الإصابة)
+func register_kill(team: int) -> void:
+	# يسجّله المقاتل عند كل قتل — منه تُحسب نقاط الفريق ونهاية المباراة
+	if team >= 0 and team < team_scores.size():
+		team_scores[team] = int(team_scores[team]) + 1
+
+
 func _on_actor_damaged(actor, amount: float, info: Dictionary) -> void:
 	actor_damaged.emit(actor, amount, info)
 

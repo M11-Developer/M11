@@ -6,10 +6,13 @@
 // عجلة الأوامر (Ping)، سجل القتل، مؤشر اتجاه الضرر، العدّاد، لوحة الفريق،
 // وصفحة الإحصاءات. كل الأرقام إنجليزية لكن التسميات عربية (قاعدة الأرقام).
 // ============================================================================
+import { getBackdrop } from '../render/renderer.js';
 
 import { CONFIG, WEAPON_CLASS_AR, RARITY_AR, RARITY_COLOR } from '../core/assets.js';
 import { clamp, lerp, formatTime, TAU } from '../core/math.js';
 import { WEAPONS, resolveStats } from '../game/weapons.js';
+import { MODES } from './modes.js';
+import { MAPS } from './world.js';
 
 const W = CONFIG.internalWidth;
 const H = CONFIG.internalHeight;
@@ -633,27 +636,76 @@ export class HUD {
     }
   }
 
-  /** شاشة النتائج النهائية */
+  /** يحمّل صورة واجهة مرة واحدة (مصغّرة الخريطة في شاشة النتائج) */
+  uiImage(path) {
+    if (!this._imgs) this._imgs = new Map();
+    if (this._imgs.has(path)) return this._imgs.get(path);
+    this._imgs.set(path, null);
+    const img = new Image();
+    img.onload = () => { this._imgs.set(path, img); };
+    img.onerror = () => { this._imgs.set(path, false); };
+    img.src = (this.assets && this.assets.base ? this.assets.base : 'assets/') + path;
+    return null;
+  }
+
+  /** شاشة النتائج النهائية — بلوحة النصر أو الهزيمة المولّدة خلف الجدول */
   drawResults(ctx, results, opts = {}) {
     ctx.fillStyle = 'rgba(5,7,10,0.9)';
     ctx.fillRect(0, 0, W, H);
-    this.panel(ctx, 60, 24, W - 120, H - 48, true);
-    this.text(ctx, 'نتائج المباراة', W / 2, 46, { size: 14, bold: true, color: '#F2C14E', align: 'center' });
+    const me = (results.standings || []).find((s) => s.isBot === false) || (results.standings || [])[0];
+    // فوز/هزيمة: في الأوضاع الفرقية نقارن نقاط الفريقين، وفي الفردية نقارن الترتيب
+    const teams = results.teams || [];
+    const teamMode = teams.length > 1;
+    const iWon = teamMode
+      ? (!!me && me.team === (teams[0] >= teams[1] ? 0 : 1))
+      : (!!me && me.placement === 1);
+    const wonFinal = results.won !== undefined ? !!results.won : iWon;
+    const poster = getBackdrop(wonFinal ? 'poster_victory' : 'poster_defeat');
+    const bannerH = Math.round(H * 0.46);
+    if (poster) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.globalAlpha = 0.95;
+      // اللوحة في الشريط العلوي (بعرض الشاشة) ليبقى فنها ظاهرًا كاملًا
+      const ar = poster.width / poster.height;
+      const dh = bannerH, dw = Math.min(W, dh * ar);
+      ctx.drawImage(poster, 0, 0, poster.width, poster.height, (W - dw) / 2, 0, dw, dh);
+      ctx.restore();
+      // ستارة علوية خفيفة ليبقى نص "فوز/هزيمة" مقروءًا فوق أي لوحة
+      const gTop = ctx.createLinearGradient(0, 0, 0, 64);
+      gTop.addColorStop(0, 'rgba(5,7,10,0.82)');
+      gTop.addColorStop(1, 'rgba(5,7,10,0)');
+      ctx.fillStyle = gTop;
+      ctx.fillRect(0, 0, W, 64);
+      // تدرّج سفلي يدمج اللوحة مع الجدول
+      const g2 = ctx.createLinearGradient(0, bannerH - 30, 0, bannerH + 6);
+      g2.addColorStop(0, 'rgba(5,7,10,0)');
+      g2.addColorStop(1, 'rgba(5,7,10,1)');
+      ctx.fillStyle = g2;
+      ctx.fillRect(0, bannerH - 30, W, 36);
+    }
+    this.panel(ctx, 60, bannerH - 8, W - 120, H - bannerH + 4, true);
+    // شريط النتيجة العلوي: نص عربي واضح فوق اللوحة
+    const title = wonFinal ? 'فوز' : 'هزيمة';
+    this.text(ctx, title, W / 2, 30, { size: 18, bold: true, color: wonFinal ? '#5ED67B' : '#E8523F', align: 'center', shadow: true });
+    this.text(ctx, wonFinal ? 'أحسنت — ساحة النار لك' : 'خسارة… حاول مرة أخرى', W / 2, 44, { size: 9, color: '#EAF2F6', align: 'center', shadow: true });
+    this.text(ctx, 'نتائج المباراة', W / 2, bannerH + 8, { size: 11, bold: true, color: '#F2C14E', align: 'center' });
     const winner = results.standings[0];
     if (winner) {
-      this.text(ctx, `الفائز: ${winner.name}  —  ${winner.kills} قتلة`, W / 2, 60, { size: 10, color: '#EAF2F6', align: 'center' });
+      this.text(ctx, `الأول: ${winner.name}`, W / 2, bannerH, { size: 10, color: '#EAF2F6', align: 'center' });
     }
     // رؤوس الأعمدة
     const cols = [
       ['#', 74], ['اللاعب', 92], ['قتل', 250], ['موت', 282], ['مساعدة', 312], ['رأس', 348],
       ['دقة', 380], ['ضرر', 414], ['أطول', 460],
     ];
+    const headerY = bannerH + 22;
     ctx.save();
     ctx.font = `700 8px ${this.fontStack}`;
     ctx.fillStyle = '#9BB8C4';
-    for (const [label, x] of cols) this.text(ctx, label, x + 26, 78, { size: 8, bold: true, color: '#9BB8C4', align: 'right' });
+    for (const [label, x] of cols) this.text(ctx, label, x + 26, headerY, { size: 8, bold: true, color: '#9BB8C4', align: 'right' });
     ctx.restore();
-    let y = 92;
+    let y = headerY + 14;
     results.standings.forEach((s, i) => {
       if (i % 2 === 0) {
         ctx.fillStyle = 'rgba(255,255,255,0.04)';
@@ -672,6 +724,36 @@ export class HUD {
       y += 13;
       if (y > H - 60) return;
     });
-    this.text(ctx, 'اضغط Enter للمتابعة', W / 2, H - 34, { size: 9, color: '#9BB8C4', align: 'center' });
+    // ملخّص المباراة: الوضع والخريطة والمدة + الخبرة المكتسبة والإنجازات
+    const mapName = (MAPS.find((m) => m.id === opts.map) || {}).nameAr || opts.map || '';
+    const mins = Math.floor((results.duration || 0) / 60), secs = Math.floor((results.duration || 0) % 60);
+    const summary = `الوضع: ${MODES[opts.mode] ? MODES[opts.mode].nameAr : (opts.mode || '')} | الخريطة: ${mapName} | المدة: ${mins}:${String(secs).padStart(2, '0')}`;
+    this.text(ctx, summary, W / 2, H - 52, { size: 9, color: '#EAF2F6', align: 'center' });
+    if (opts.xp && (opts.xp.xp != null)) {
+      const lv = opts.xp.level != null ? ` — المستوى ${opts.xp.level}` : '';
+      const up = opts.xp.leveled ? '  ⬆ ترقية!' : '';
+      this.text(ctx, `خبرة: +${opts.xp.xp}${lv}${up}`, W / 2, H - 42, { size: 9, bold: true, color: '#5ED67B', align: 'center' });
+    }
+    // مصغّرة الخريطة التي لُعبت (صورة حقيقية مولّدة من أصول اللعبة) — تملأ الفراغ ذا معنى
+    const thumb = this.uiImage ? this.uiImage(`thumb_${opts.map}.png`) : null;
+    if (thumb) {
+      const tw = 120, th = 68;
+      const tx = 68, ty = H - th - 26;
+      ctx.save();
+      ctx.fillStyle = 'rgba(3,5,8,0.8)';
+      ctx.fillRect(tx - 3, ty - 3, tw + 6, th + 6);
+      ctx.strokeStyle = 'rgba(242,193,78,0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(tx - 2.5, ty - 2.5, tw + 5, th + 5);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(thumb, tx, ty, tw, th);
+      ctx.restore();
+      this.text(ctx, 'خريطة المباراة', tx + tw / 2, ty + th + 12, { size: 7, color: '#9BB8C4', align: 'center' });
+    }
+    if (opts.achievements && opts.achievements.length) {
+      const names = opts.achievements.map((a) => a.nameAr).join(' • ');
+      this.text(ctx, `إنجازات جديدة: ${names}`, W / 2, H - 32, { size: 8, color: '#F2C14E', align: 'center' });
+    }
+    this.text(ctx, 'اضغط Enter للمتابعة', W / 2, H - 18, { size: 9, color: '#9BB8C4', align: 'center' });
   }
 }

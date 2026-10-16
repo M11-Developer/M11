@@ -155,8 +155,42 @@ export class MenuSystem {
     if (audio && audio.ready) audio.playUi ? audio.playUi(kind) : audio.ui && audio.ui(kind);
   }
 
+  /**
+   * يبني صفوف الشاشة الحالية: مستطيل لكل عنصر (أساس الرسم واللمس معًا).
+   * كان الرسم سابقًا يطلب cur.screen.rows وهي غير معرّفة ⇒ استثناء يمنع رسم القوائم.
+   */
+  rowsFor(frame) {
+    // يقبل إطار الشاشة (فيه screen) أو الشاشة نفسها — لأن this.cur يعيد الشاشة
+    const screen = frame && frame.screen ? frame.screen : frame;
+    if (!screen) return [];
+    const items = screen.items(this);
+    const rows = [];
+    let y = 62;
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
+      const h = item.type === 'header' ? 20 : 24;
+      rows.push({ item, index, rect: { x: W - 348, y, w: 330, h } });
+      y += h + 4;
+    }
+    return rows;
+  }
+
+  /** الصف المختار حاليًا، أو أقرب صف سابق يحمل الحقل المطلوب (يتجاوز العناوين) */
+  selectedItem(field) {
+    const cur = this.current;
+    if (!cur) return null;
+    const rows = this.rowsFor(cur);
+    if (!rows.length) return null;
+    for (let i = Math.min(cur.index, rows.length - 1); i >= 0; i--) {
+      const item = rows[i].item;
+      if (!field) return item;
+      if (item && item[field] != null) return item;
+    }
+    return null;
+  }
+
   hitTest(x, y) {
-    const rows = this.cur.rows(this);
+    const rows = this.rowsFor(this.cur);
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i].rect;
       if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
@@ -195,7 +229,7 @@ export class MenuSystem {
     const cur = this.current;
     ctx.save();
     this.drawBackground(ctx);
-    const rows = cur.screen.rows(this);
+    const rows = this.rowsFor(cur);
     cur.maxScroll = Math.max(0, rows.length && rows[rows.length - 1] ? rows[rows.length - 1].rect.y + 30 - (H - 30) : 0);
     // العنوان
     const title = cur.screen.title || '';
@@ -203,8 +237,15 @@ export class MenuSystem {
       this.text(ctx, title, W - 24, 34, { size: 17, bold: true, color: '#F2C14E', shadow: true });
       if (cur.screen.subtitle) this.text(ctx, cur.screen.subtitle, W - 24, 48, { size: 9, color: '#9BB8C4' });
     }
-    // الصفوف
+    // الصفوف — ستارة داكنة خلف عمود القائمة حتى تبقى النصوص واضحة فوق أي لوحة فنية
     ctx.save();
+    const scrimW = 352;
+    const sg = ctx.createLinearGradient(W - scrimW, 0, W, 0);
+    sg.addColorStop(0, 'rgba(5,7,10,0)');
+    sg.addColorStop(0.35, 'rgba(5,7,10,0.72)');
+    sg.addColorStop(1, 'rgba(5,7,10,0.86)');
+    ctx.fillStyle = sg;
+    ctx.fillRect(W - scrimW, 50, scrimW, H - 50);
     ctx.beginPath();
     ctx.rect(0, 56, W, H - 56);
     ctx.clip();
@@ -215,6 +256,95 @@ export class MenuSystem {
       this.drawRow(ctx, row, y, row.index === cur.index, hovered && hovered.index === row.index);
     }
     ctx.restore();
+    // معاينة الخريطة المختارة: مصغّرة حقيقية مرسومة من أصول اللعبة نفسها
+    if (cur.name === 'maps') {
+      const chosen = this.selectedItem('mapId');
+      const m = (chosen && MAPS.find((x) => x.id === chosen.mapId)) || MAPS[0];
+      if (m) {
+        const pw = 168, ph = 94;
+        const px = 14, py = H - ph - 52;
+        const thumb = this.uiImage(`thumb_${m.id}.png`);
+        if (thumb) {
+          this.drawArt(ctx, thumb, px, py, pw, ph, { smooth: false });
+        } else {
+          this.panel(ctx, px, py, pw, ph, true);
+          this.text(ctx, 'جارٍ رسم المعاينة…', px + pw / 2, py + ph / 2 + 3, { size: 8, color: '#9BB8C4', align: 'center' });
+        }
+        // لوحة نصية أسفل الصورة ليبقى النص مقروءًا فوق أي خلفية
+        ctx.fillStyle = 'rgba(6,8,11,0.82)';
+        ctx.fillRect(px - 3, py + ph + 4, pw + 6, 30);
+        this.text(ctx, m.nameAr, px + pw, py + ph + 15, { size: 9, bold: true, color: '#F2C14E', align: 'right' });
+        this.text(ctx, `${m.w}×${m.h} — ${m.theme}`, px + pw, py + ph + 27, { size: 7, color: '#9BB8C4', align: 'right' });
+      }
+    }
+
+    // بورتريه المشغّل المختار: مقطوع من أطلس البورتريهات (10 + 10 مشغلين)
+    if (cur.name === 'operators') {
+      const meta = this.assets.json.get('characters_meta.json') || {};
+      const keys = Object.keys(meta.operators || {});
+      const chosen = this.selectedItem('opKey');
+      const key = (chosen && chosen.opKey) || keys[0];
+      const info = key ? meta.operators[key] : null;
+      if (key && info) {
+        const pw = 84, ph = 104;
+        const px = 16, py = H - ph - 40;
+        // أطلس البورتريهات: العشرة الأولى في portraits_orig، والعشرة الجديدة في portraits_new
+        const origKeys = ['rashid', 'karim', 'yusuf', 'tariq', 'adam', 'layla', 'noor', 'hala', 'sara', 'mariam'];
+        const idx = keys.indexOf(key);
+        const atlasName = (idx >= 0 && idx < 10) ? 'portraits_orig' : 'portraits_new';
+        const frameKey = idx < 10 ? `portrait/${origKeys[idx]}` : `portrait/portrait_${idx + 1}`;
+        const atlas = this.assets.get(atlasName);
+        let drawn = false;
+        if (atlas && atlas.has(frameKey)) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(3,5,8,0.82)';
+          ctx.fillRect(px - 3, py - 3, pw + 6, ph + 6);
+          ctx.strokeStyle = 'rgba(242,193,78,0.55)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px - 2.5, py - 2.5, pw + 5, ph + 5);
+          const f = atlas.frame(frameKey);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(atlas.image, f.x, f.y, f.w, f.h, px, py, pw, ph);
+          ctx.restore();
+          drawn = true;
+        }
+        if (!drawn) {
+          const img = this.uiImage(`portrait_${key}.png`);
+          if (img) this.drawArt(ctx, img, px, py, pw, ph, { smooth: false });
+        }
+        ctx.fillStyle = 'rgba(6,8,11,0.82)';
+        ctx.fillRect(px - 3, py + ph + 4, pw + 6, 26);
+        this.text(ctx, info.name, px + pw, py + ph + 15, { size: 10, bold: true, color: '#F2C14E', align: 'right' });
+        // سطران من السيرة: نأخذ أول جملتين قصيرتين
+        const bioLines = (info.bio || '').split('\n').slice(0, 2).map((l) => l.slice(0, 34));
+        bioLines.forEach((l, i) => this.text(ctx, l, px + pw, py + ph + 25 + i * 8, { size: 6.5, color: '#9BB8C4', align: 'right' }));
+      }
+    }
+
+    // شريط الميداليات: ميدالية لكل إنجاز مفتوح (أطلس medals_2) — يجعل التقدّم مرئيًا
+    if (cur.name === 'stats') {
+      const atlas = this.assets.get('medals_2');
+      const p = (this.game && this.game.profile) || { achievements: [] };
+      if (atlas) {
+        const unlocked = p.achievements || [];
+        const keys = Object.keys(atlas.frames).sort();
+        const y0 = H - 34;
+        let x = W - 18;
+        for (let i = 0; i < Math.min(keys.length, ACHIEVEMENTS.length); i++) {
+          const done = i < unlocked.length;
+          const f = atlas.frame(keys[i]);
+          const s2 = 13 / Math.max(f.w, f.h);
+          ctx.save();
+          ctx.imageSmoothingEnabled = false;
+          ctx.globalAlpha = done ? 1 : 0.22;
+          ctx.drawImage(atlas.image, f.x, f.y, f.w, f.h, x - 13, y0 - 13, f.w * s2, f.h * s2);
+          ctx.restore();
+          x -= 17;
+          if (x < 14) break;
+        }
+      }
+    }
+
     // شريط سكرول
     if (cur.maxScroll > 0) {
       const trackH = H - 70;
@@ -245,6 +375,42 @@ export class MenuSystem {
     ctx.restore();
   }
 
+  /** يحمّل صورة واجهة مرة واحدة (مصغّرة خريطة، ملصق، بورتريه مقطوع) ويخزّنها */
+  uiImage(path) {
+    if (!this._imgs) this._imgs = new Map();
+    if (this._imgs.has(path)) return this._imgs.get(path);
+    this._imgs.set(path, null);
+    const img = new Image();
+    img.onload = () => { this._imgs.set(path, img); };
+    img.onerror = () => { this._imgs.set(path, false); };
+    img.src = (this.assets && this.assets.base ? this.assets.base : 'assets/') + path;
+    return null;
+  }
+
+  /** يرسم صورة داخل إطار ذهبي مع تعبئة نسبية (contain) وحفظ نسبة الأبعاد */
+  drawArt(ctx, img, x, y, w, h, opts = {}) {
+    if (!img) return false;
+    ctx.save();
+    if (opts.frame !== false) {
+      ctx.fillStyle = 'rgba(3,5,8,0.82)';
+      ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+      ctx.strokeStyle = opts.frameColor || 'rgba(242,193,78,0.55)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x - 2.5, y - 2.5, w + 5, h + 5);
+    }
+    const ar = img.width / img.height;
+    const box = w / h;
+    let dw = w, dh = h;
+    if (ar > box) { dh = w / ar; } else { dw = h * ar; }
+    const dx = x + (w - dw) / 2;
+    const dy = y + (h - dh) / 2;
+    ctx.imageSmoothingEnabled = !!opts.smooth;
+    ctx.globalAlpha = opts.alpha === undefined ? 1 : opts.alpha;
+    ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+    ctx.restore();
+    return true;
+  }
+
   drawBackground(ctx) {
     const t = this.time;
     // خلفية متحركة: تدرّج + طبقات جبال من طابع اللعبة
@@ -254,6 +420,10 @@ export class MenuSystem {
     g.addColorStop(1, '#0B1017');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
+    // لوحة الفن الرئيسية خلف القائمة (إن حُمّلت) — تعطي هوية بصرية فورية
+    const hero = this.uiImage('backdrops/key_art_main.png');
+    if (hero) this.drawArt(ctx, hero, -8, -6, W + 16, H + 12, { frame: false, alpha: 0.42 });
+    else if (this._imgs && this._imgs.get('backdrops/key_art_main.png') === false) { /* لا صورة: نبقى على التدرّج */ }
     // شمس/هالة
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
@@ -496,7 +666,7 @@ export class MenuSystem {
         g.settings.map = m.id;
         g.saveSettings();
         this.message('تم اختيار الخريطة: ' + m.nameAr, 'ok');
-      }, { desc: m.desc, icon: 'icon_map', color: g.settings.map === m.id ? '#F2C14E' : '#EAF2F6' })),
+      }, { desc: m.desc, icon: 'icon_map', mapId: m.id, color: g.settings.map === m.id ? '#F2C14E' : '#EAF2F6' })),
     };
 
     // ---------------- المشغلون
@@ -515,7 +685,7 @@ export class MenuSystem {
           }, {
             desc: (info.bio || '').split('\n')[0].slice(0, 46),
             color: g.settings.opKey === key ? '#F2C14E' : '#EAF2F6',
-            icon: 'icon_team',
+            icon: 'icon_team', opKey: key,
           }));
         }
         rows.push(header('شكل اللون (Skin)'));

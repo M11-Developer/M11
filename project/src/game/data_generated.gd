@@ -684,6 +684,16 @@ const OPERATORS: Array = [
 	{"key": "hala", "name_ar": "هالة", "gender": "f", "style": "demolition", "uniform": "sand_dark", "accent": "team_red"},
 	{"key": "sara", "name_ar": "سارة", "gender": "f", "style": "engineer", "uniform": "olive_dark", "accent": "team_yellow"},
 	{"key": "mariam", "name_ar": "مريم", "gender": "f", "style": "recon", "uniform": "steel_blue", "accent": "accent_teal"},
+	{"key": "faisal", "name_ar": "فيصل", "gender": "m", "style": "commander", "uniform": "sand_dark", "accent": "team_orange"},
+	{"key": "zayd", "name_ar": "زيد", "gender": "m", "style": "sailor", "uniform": "steel_blue", "accent": "team_blue"},
+	{"key": "omar", "name_ar": "عمر", "gender": "m", "style": "gunner", "uniform": "mid_gray", "accent": "team_red"},
+	{"key": "khalid", "name_ar": "خالد", "gender": "m", "style": "medic", "uniform": "olive", "accent": "team_white"},
+	{"key": "salem", "name_ar": "سالم", "gender": "m", "style": "demolition", "uniform": "olive_dark", "accent": "team_yellow"},
+	{"key": "amal", "name_ar": "أمل", "gender": "f", "style": "sailor", "uniform": "steel_blue", "accent": "accent_teal"},
+	{"key": "rana", "name_ar": "رنا", "gender": "f", "style": "sniper", "uniform": "sand_light", "accent": "team_purple"},
+	{"key": "dina", "name_ar": "دينا", "gender": "f", "style": "engineer", "uniform": "mid_gray", "accent": "team_green"},
+	{"key": "yasmin", "name_ar": "ياسمين", "gender": "f", "style": "recon", "uniform": "olive", "accent": "team_blue"},
+	{"key": "hind", "name_ar": "هند", "gender": "f", "style": "heavy", "uniform": "olive_dark", "accent": "team_orange"},
 ]
 
 const DIFFICULTY: Array = [

@@ -112,7 +112,32 @@
  {
   "atlas": "portraits_new",
   "source": "sheet_operators_new",
-  "frames": 9
+  "frames": 10
+ },
+ {
+  "atlas": "map_thumbs_a",
+  "source": "sheet_map_thumbs_a",
+  "frames": 12
+ },
+ {
+  "atlas": "map_thumbs_b",
+  "source": "sheet_map_thumbs_b",
+  "frames": 8
+ },
+ {
+  "atlas": "medals_2",
+  "source": "sheet_achievements_2",
+  "frames": 24
+ },
+ {
+  "atlas": "portraits_orig",
+  "source": "sheet_operators_1_10",
+  "frames": 10
+ },
+ {
+  "atlas": "props_supply",
+  "source": "sheet_supply_crates",
+  "frames": 12
  },
  {
   "atlas": "props_debris",

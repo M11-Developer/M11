@@ -451,6 +451,9 @@ func die(killer: Actor, info: Dictionary) -> void:
 	died.emit(self, killer, info)
 	if killer and killer != self:
 		killer.kills += 1
+		# نقاط الفريق — أساس شرط نهاية المباراة وعرض النتيجة
+		if _world and _world.has_method("register_kill"):
+			_world.register_kill(int(killer.team))
 		killer.damage_dealt += 0.0
 		if info.has("weapon_id"):
 			var wid := String(info["weapon_id"])
