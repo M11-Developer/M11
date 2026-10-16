@@ -115,33 +115,31 @@ jobs:
           fi
           true
 
-      - name: فحص تحليل كل ملف GDScript على حدة (تشخيص دقيق)
-        continue-on-error: true
-        if: always()
-        run: |
-          set +e
-          : > /tmp/files.log
-          cd project
-          for f in $(find . -name "*.gd" | sort); do
-            out="$(timeout 90 godot --headless --check-only --script "$f" 2>&1)"
-            if echo "$out" | grep -qiE "error|failed"; then
-              {
-                echo "✘ $f"
-                echo "$out" | grep -iE "error|failed" | head -5
-              } >> /tmp/files.log
-            fi
-          done
-          cd "$GITHUB_WORKSPACE"
-          echo "--- عدد الملفات التي بها أخطاء: $(grep -c '^✘' /tmp/files.log) ---"
-          cat /tmp/files.log | head -60
-          bash tools/emit_annotations.sh /tmp/files.log "." error 9 1
-
       - name: استيراد المشروع (بناء ذاكرة الأصول)
         continue-on-error: true
         run: |
           set +e
           timeout 1200 godot --headless --path project --import --quit 2>&1 | tee -a "$BUILD_LOG"
           echo "import_exit=$?"
+
+      - name: فحص تحليل كل ملف GDScript (بعد الاستيراد)
+        continue-on-error: true
+        if: always()
+        run: |
+          set +e
+          : > /tmp/files.log
+          for f in $(cd project && find . -name "*.gd" | sed 's|^\./|res://|' | sort); do
+            out="$(timeout 90 godot --headless --path project --check-only --script "$f" 2>&1)"
+            if echo "$out" | grep -qiE "parse error|error loading|could not parse"; then
+              {
+                echo "✘ $f"
+                echo "$out" | grep -iE "parse error|error loading|could not parse|at:" | head -6
+              } >> /tmp/files.log
+            fi
+          done
+          echo "--- ملفات بها أخطاء: $(grep -c '^✘' /tmp/files.log) ---"
+          cat /tmp/files.log | head -80
+          bash tools/emit_annotations.sh /tmp/files.log "." error 9 0 head
 
       - name: تثبيت قالب بناء أندرويد (Gradle)
         continue-on-error: true
