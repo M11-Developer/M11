@@ -147,10 +147,35 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          # --quit ضرورية: بدونها يبقى Godot يعمل بلا نهاية بعد تثبيت القالب
+          DEST="$HOME/.local/share/godot/export_templates/4.3.stable"
+          # --quit ضرورية: بدونها يبقى Godot يعمل بلا نهاية بعد التثبيت
           timeout 900 godot --headless --path project --install-android-build-template --quit 2>&1 | tee -a "$BUILD_LOG"
-          echo "template_exit=$?"
-          ls project/android/build 2>/dev/null | head | tee -a "$BUILD_LOG"
+          echo "install_exit=$?" | tee -a "$BUILD_LOG"
+          echo "قالب بعد أمر Godot: $(ls project/android/build/build.gradle 2>/dev/null || echo 'مفقود')" | tee -a "$BUILD_LOG"
+          # احتياطي مضمون: نستخرج قالب البناء بأنفسنا من android_source.zip
+          # (هذا بالضبط ما يفعله محرّر Godot عند «Install Android Build Template»)
+          if [ ! -f project/android/build/build.gradle ]; then
+            echo "--- استخراج القالب يدويًا من android_source.zip ---" | tee -a "$BUILD_LOG"
+            ls -1 "$DEST" 2>/dev/null | grep -i android | tee -a "$BUILD_LOG"
+            if [ ! -f "$DEST/android_source.zip" ]; then
+              echo "--- android_source.zip غير موجود — ننزّل القوالب كاملة ---" | tee -a "$BUILD_LOG"
+              curl -sSL -w "http=%{http_code} bytes=%{size_download}" -o /tmp/templates.tpz \
+                "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz" 2>&1 | tee -a "$BUILD_LOG"
+              rm -rf /tmp/tpl && mkdir -p /tmp/tpl && unzip -oq /tmp/templates.tpz -d /tmp/tpl
+              cp -rf /tmp/tpl/templates/. "$DEST/" 2>/dev/null
+            fi
+            mkdir -p project/android/build
+            unzip -oq "$DEST/android_source.zip" -d project/android/build 2>&1 | tail -3 | tee -a "$BUILD_LOG"
+            touch project/android/.gdignore     # حتى لا يستوردها Godot كمشروع فرعي
+          fi
+          echo "قالب البناء النهائي: $(ls project/android/build/build.gradle 2>/dev/null || echo 'مفقود')" | tee -a "$BUILD_LOG"
+          ls -1 project/android/build 2>/dev/null | head -12 | tee -a "$BUILD_LOG"
+          if [ -f project/android/build/build.gradle ]; then
+            echo "::notice title=TEMPLATE-OK::قالب بناء أندرويد جاهز في project/android/build"
+          else
+            echo "::error title=TEMPLATE-MISSING::لم يُثبّت قالب بناء أندرويد"
+          fi
+          true
 
       - name: توليد مفتاح توقيع الإصدار وإدراجه في الإعدادات
         continue-on-error: true
