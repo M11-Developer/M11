@@ -49,6 +49,7 @@ SHEETS: dict[str, str] = {
     "ship": "tileset_ship_interior",
     "deck": "tileset_deck_naval",       # سطح سفينة حربية (خريطة sea_deck)
     "village": "tileset_village_clay",  # القرية الطينية (خريطة village)
+    "wall": "sheet_wall_modular",       # تحصينات معيارية (تُستعمل لبلاطات الصندوق/الرمل/الزجاج)
 }
 
 # ترتيب الأسماء داخل كل مجموعة (البلاطات تُقرأ يسارًا→يمينًا، أعلى→أسفل).

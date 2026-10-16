@@ -1103,5 +1103,175 @@
   "transparent_pct": 61.1,
   "kb_raw": 1685.9,
   "kb_out": 350.4
+ },
+ "sheet_building_floors": {
+  "name": "sheet_building_floors",
+  "desc": "مقاطع مبنى متعدد الطوابق (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 46.7,
+  "kb_raw": 1541.2,
+  "kb_out": 198.9
+ },
+ "sheet_watchtowers": {
+  "name": "sheet_watchtowers",
+  "desc": "أبراج مراقبة (4 أبراج)",
+  "status": "ok",
+  "raw_size": [
+   1024,
+   1024
+  ],
+  "out_size": [
+   1024,
+   1024
+  ],
+  "scale": 1,
+  "transparent_pct": 67.4,
+  "kb_raw": 1455.7,
+  "kb_out": 259.5
+ },
+ "sheet_water_tanks": {
+  "name": "sheet_water_tanks",
+  "desc": "خزانات وصوامع صناعية (6 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 57.6,
+  "kb_raw": 1715.1,
+  "kb_out": 272.6
+ },
+ "sheet_roof_details": {
+  "name": "sheet_roof_details",
+  "desc": "تفاصيل سطوح (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 78.0,
+  "kb_raw": 1365.5,
+  "kb_out": 237.3
+ },
+ "sheet_gates_fences": {
+  "name": "sheet_gates_fences",
+  "desc": "بوابات وأسوار (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 54.2,
+  "kb_raw": 1948.1,
+  "kb_out": 1075.2
+ },
+ "sheet_bridge_broken": {
+  "name": "sheet_bridge_broken",
+  "desc": "مقاطع جسر خشبي مكسور (6 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 68.5,
+  "kb_raw": 1441.2,
+  "kb_out": 305.3
+ },
+ "sheet_elevator": {
+  "name": "sheet_elevator",
+  "desc": "مصاعد ومنصات صناعية (8 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 60.4,
+  "kb_raw": 1583.8,
+  "kb_out": 249.3
+ },
+ "sheet_aa_gun": {
+  "name": "sheet_aa_gun",
+  "desc": "مدافع مضادة للطائرات (4 مدافع)",
+  "status": "ok",
+  "raw_size": [
+   1200,
+   896
+  ],
+  "out_size": [
+   1200,
+   896
+  ],
+  "scale": 1,
+  "transparent_pct": 74.7,
+  "kb_raw": 1288.7,
+  "kb_out": 210.7
+ },
+ "sheet_generator_unit": {
+  "name": "sheet_generator_unit",
+  "desc": "وحدات توليد ومحطات كهرباء (6 وحدات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.4,
+  "kb_raw": 1445.1,
+  "kb_out": 157.7
+ },
+ "sheet_wall_modular": {
+  "name": "sheet_wall_modular",
+  "desc": "تايلات تحصينات معيارية (16 بلاطة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 20.1,
+  "kb_raw": 1969.6,
+  "kb_out": 499.2
  }
 }

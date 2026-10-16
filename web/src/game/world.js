@@ -208,28 +208,53 @@ export class TileMap {
 const THEME_DECOR = {
   city:     [['props_road/lamp', 3], ['props_road/dumpster', 2], ['props_road/hydrant', 1],
              ['props_road/bus_shelter', 1], ['props_road/tires', 2], ['props_debris/concrete_chunk', 3],
-             ['props_debris/rebar', 2], ['props_debris/bricks', 2], ['props_indoor/chair', 1]],
+             ['props_debris/rebar', 2], ['props_debris/bricks', 2], ['props_indoor/chair', 1],
+             ['props_roof/ac_unit', 2], ['props_roof/satellite_dish', 1], ['props_roof/antenna', 2],
+             ['props_roof/chimney', 2], ['props_roof/skylight', 1], ['props_roof/planter', 2],
+             ['props_gates/fence_chain', 2], ['props_gates/roadblock', 2],
+             ['tiles_wall/top_2', 2, 1, 2], ['tiles_wall/top_1', 2, 1, 3], ['tiles_wall/piece', 1, 1, 2]],
   base:     [['props_lab/drum', 2], ['props_lab/crates', 3], ['props_lab/server_rack', 1],
              ['props_lab/generator', 2], ['props_lab/cylinders', 1], ['props_lab/hazmat_box', 2],
-             ['props_road/bollard', 3], ['props_debris/girder', 2], ['props_debris/pipe_rusty', 2]],
+             ['props_road/bollard', 3], ['props_debris/girder', 2], ['props_debris/pipe_rusty', 2],
+             ['props_power/gen_cabinet', 2], ['props_power/gen_engine', 2], ['props_power/power_panel', 2],
+             ['props_power/transformer', 2], ['props_power/battery_bank', 1], ['props_power/light_tower', 2],
+             ['props_aa/aa_twin', 1], ['props_aa/aa_flak', 1], ['props_gates/gate_mesh', 2],
+             ['props_gates/blast_wall', 2], ['tiles_wall/solid_2', 2, 1, 3]],
   desert:   [['props_nature/cactus', 3], ['props_nature/boulder', 3], ['props_nature/rocks', 3],
              ['props_nature/dead_tree', 2], ['props_road/cone', 2], ['props_road/jersey_barrier', 2],
-             ['props_debris/wood_pile', 2], ['props_debris/bricks', 2], ['props_nature/leaf_pile', 2]],
+             ['props_debris/wood_pile', 2], ['props_debris/bricks', 2], ['props_nature/leaf_pile', 2],
+             ['props_tanks/water_tower', 1], ['props_tanks/fuel_tank', 2], ['props_tanks/tank_leaking', 2],
+             ['props_gates/jersey_barrier', 2], ['props_gates/tire_stack', 2],
+             ['tiles_wall/solid', 2, 1, 2], ['tiles_wall/extra_15', 1, 1, 2]],
   village:  [['props_nature/palm', 3], ['props_nature/bush', 3], ['props_nature/leaf_pile', 3],
              ['props_indoor/rug_roll', 1], ['props_indoor/table', 1], ['props_road/tires', 2],
-             ['props_debris/wood_pile', 2], ['props_nature/mushrooms', 2], ['props_indoor/chair', 1]],
+             ['props_debris/wood_pile', 2], ['props_nature/mushrooms', 2], ['props_indoor/chair', 1],
+             ['props_tanks/water_tank_roof', 2], ['props_tanks/tank_leaking', 2], ['props_roof/clothesline', 2],
+             ['props_gates/fence_wood', 2], ['props_gates/gate_wood_open', 1], ['props_gates/tire_stack', 2],
+             ['props_roof/planter', 2], ['props_roof/gas_cylinders', 2]],
   forest:   [['props_trees/oak_big', 3], ['props_nature/log', 3], ['props_nature/bush', 4],
              ['props_nature/cattail', 3], ['props_nature/mushrooms', 3], ['props_nature/rocks', 3],
-             ['props_debris/wood_pile', 2], ['props_nature/thorn_bush', 3], ['props_trees/birch_bare', 2]],
+             ['props_debris/wood_pile', 2], ['props_nature/thorn_bush', 3], ['props_trees/birch_bare', 2],
+             ['props_bridge/bridge_span', 1], ['props_bridge/bridge_collapsed', 1], ['props_bridge/pier_posts', 1],
+             ['props_towers/tower_wood', 1], ['props_gates/fence_wood', 2], ['props_gates/fence_bent', 2],
+             ['tiles_wall/piece_1', 2, 1, 3]],
   port:     [['props_lab/drum', 3], ['props_road/tires', 3], ['props_road/barrier', 2],
              ['props_debris/barrel_red', 2], ['props_debris/pipe_water', 2], ['props_lab/crates', 3],
-             ['props_debris/wire_coil', 2], ['props_road/jersey_barrier', 2], ['props_road/hydrant', 1]],
+             ['props_debris/wire_coil', 2], ['props_road/jersey_barrier', 2], ['props_road/hydrant', 1],
+             ['props_tanks/silo', 2], ['props_tanks/pressure_tank', 1], ['props_roof/gas_cylinders', 2],
+             ['props_gates/gate_sliding', 1], ['props_gates/gate_mesh', 2], ['props_gates/razor_coil', 2],
+             ['props_lift/pallet_crate', 2], ['props_aa/aa_quad', 1], ['props_towers/tower_steel', 1]],
   snow:     [['props_trees/pine_snow', 3], ['props_nature/boulder', 3], ['props_debris/ice_shards', 3],
              ['props_nature/rocks', 3], ['props_trees/birch_bare', 2], ['props_debris/concrete_chunk', 2],
-             ['props_nature/dead_tree', 2], ['props_debris/wood_pile', 2], ['props_road/cone', 2]],
+             ['props_nature/dead_tree', 2], ['props_debris/wood_pile', 2], ['props_road/cone', 2],
+             ['props_towers/tower_ruined', 1], ['props_gates/fence_bent', 2], ['props_bridge/bridge_collapsed', 1],
+             ['props_roof/antenna', 2], ['tiles_wall/top_2', 2, 2]],
   space:    [['props_lab/server_rack', 3], ['props_lab/vat', 2], ['props_lab/decon_arch', 1],
              ['props_lab/pipe_elbow', 3], ['props_lab/breaker', 2], ['props_lab/wall_fan', 2],
-             ['props_debris/girder', 3], ['props_debris/i_beam', 2], ['props_lab/plastic_crates', 2]],
+             ['props_debris/girder', 3], ['props_debris/i_beam', 2], ['props_lab/plastic_crates', 2],
+             ['props_lift/lift_car', 1], ['props_lift/lift_shaft', 1], ['props_lift/lift_scissor', 2],
+             ['props_lift/hazard_stripes', 2], ['props_lift/control_panel', 2],
+             ['props_power/power_panel', 2], ['props_power/generator_unit', 2]],
 };
 // ثيمات اللعبة الفعلية → أقرب مجموعة ديكور (city/base/desert/forest/port/village)
 const DECOR_FOR_THEME = {
@@ -396,13 +421,21 @@ export function generateMap(def, seed = 12345) {
   }
   // 10) ديكور الثيم من أطالس الذكاء الاصطناعي (يجعل الخريطة تبدو "مسكونة" لا فارغة)
   const decor = THEME_DECOR[DECOR_FOR_THEME[def.theme] || 'city'] || THEME_DECOR.city;
-  const decorBudget = def.size === 'small' ? 14 : def.size === 'large' || def.size === 'br' ? 34 : 24;
-  for (let i = 0; i < decorBudget; i++) {
-    const [key, weight] = decor[rng.int(0, decor.length - 1)];
+  const decorBudget = def.size === 'small' ? 20 : def.size === 'large' || def.size === 'br' ? 44 : 32;
+  for (let i = 0; i < decorBudget * 2; i++) {
+    const entry = decor[rng.int(0, decor.length - 1)];
+    const [key, weight] = entry;
     const x = rng.int(2, w - 3);
     if (rng.int(1, 10) > weight + 4) continue;      // وزن العنصر: الأثقل يظهر أكثر
-    const y = clamp(heights[x] - 1, 1, h - 2);
-    props.push({ type: 'p:' + key, x: x * TS, y: heights[x] * TS, decor: true, flip: rng.chance(0.5) });
+    // لا نضع ديكورًا فوق ماء أو فراغ أو فوق عنصر موجود (كان يبدو معلّقًا في الهواء)
+    const groundY = heights[x];
+    if (map.getSafe(x, groundY) === T.EMPTY) continue;
+    let inWater = false;                       // الماء يُوضع تحت الأرض مباشرة
+    for (let dy = 1; dy <= 3; dy++) if (map.getSafe(x, groundY + dy) === T.WATER) inWater = true;
+    if (inWater) continue;
+    if (props.some((p) => p.decor && Math.abs(p.x - x * TS) < 22)) continue;   // لا عنصران متلاصقان
+    props.push({ type: 'p:' + key, x: x * TS, y: groundY * TS, decor: true,
+                 sc: entry[2] || 1, stack: entry[3] || 1, flip: rng.chance(0.5) });
   }
   // حدود العالم
   for (let y = 0; y < h; y++) {

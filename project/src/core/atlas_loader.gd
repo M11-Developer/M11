@@ -33,15 +33,18 @@ class AtlasResource:
 		return anchors.get(key, {})
 
 	# تُرسم الإطارات مباشرة بـ draw_texture_rect_region لتفادي AtlasTexture لكل إطار
-	func draw(canvas: CanvasItem, key: String, pos: Vector2, flip: bool = false) -> void:
+	func draw(canvas: CanvasItem, key: String, pos: Vector2, flip: bool = false,
+			scale_f: float = 1.0) -> void:
 		var f: Dictionary = frames.get(key, {})
 		if f.is_empty():
 			return
 		var region := Rect2(f["x"], f["y"], f["w"], f["h"])
+		var size := Vector2(f["ox"], f["oy"]) * scale_f
 		if flip:
-			canvas.draw_texture_rect_region(texture.atlas, Rect2(pos, Vector2(f["ox"], f["oy"])), region)
+			canvas.draw_texture_rect_region(texture.atlas,
+				Rect2(Vector2(pos.x + size.x, pos.y), Vector2(-size.x, size.y)), region)
 		else:
-			canvas.draw_texture_rect_region(texture.atlas, Rect2(pos, Vector2(f["ox"], f["oy"])), region)
+			canvas.draw_texture_rect_region(texture.atlas, Rect2(pos, size), region)
 
 	# يثبّت إطارًا على نقطة ارتساء (anchor في إحداثيات الإطار الأصلي)
 	func draw_pivot(canvas: CanvasItem, key: String, pivot: Vector2, anchor_pt: Vector2, flip: bool = false) -> void:

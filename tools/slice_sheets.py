@@ -79,6 +79,49 @@ SHEETS: dict[str, dict] = {
                   "button_frame", "stick_base", "dialog_panel", "dropdown", "checkbox", "radio",
                   "panel_dark", "bar_plain"],
     },
+    "sheet_building_floors": {
+        "atlas": "build_floors", "key": "build_floors", "h": 96, "expect": 12,
+        "names": ["wall_ground_door", "wall_upper_windows", "wall_roof_balcony", "roof_slab",
+                  "floor_slab_rebar", "pillar", "stairs", "wall_hole", "wall_brick_pipes",
+                  "awning_strip", "wall_mural", "rubble_chunks"],
+    },
+    "sheet_watchtowers": {
+        "atlas": "props_towers", "key": "props_towers", "h": 150, "expect": 4,
+        "names": ["tower_wood", "tower_steel", "tower_pillbox", "tower_ruined"],
+    },
+    "sheet_water_tanks": {
+        "atlas": "props_tanks", "key": "props_tanks", "h": 104, "expect": 6,
+        "names": ["water_tank_roof", "silo", "fuel_tank", "pressure_tank", "water_tower", "tank_leaking"],
+    },
+    "sheet_roof_details": {
+        "atlas": "props_roof", "key": "props_roof", "h": 56, "expect": 12,
+        "names": ["ac_unit", "satellite_dish", "antenna", "chimney", "skylight", "roof_vent",
+                  "hatch", "solar_panel", "clothesline", "planter", "gas_cylinders", "roof_tiles"],
+    },
+    "sheet_gates_fences": {
+        "atlas": "props_gates", "key": "props_gates", "h": 64, "expect": 12,
+        "names": ["fence_chain", "fence_corner", "fence_wood", "gate_wood_open", "gate_sliding",
+                  "gate_mesh", "blast_wall", "jersey_barrier", "razor_coil", "tire_stack",
+                  "roadblock", "fence_bent"],
+    },
+    "sheet_bridge_broken": {
+        "atlas": "props_bridge", "key": "props_bridge", "h": 64, "expect": 6,
+        "names": ["bridge_span", "bridge_burned", "bridge_gap", "bridge_collapsed",
+                  "bridge_stone", "pier_posts"],
+    },
+    "sheet_elevator": {
+        "atlas": "props_lift", "key": "props_lift", "h": 88, "expect": 8,
+        "names": ["lift_car", "lift_shaft", "lift_scissor", "lift_piston", "counterweight",
+                  "lift_panel", "lift_hazard", "pallet_crate"],
+    },
+    "sheet_aa_gun": {
+        "atlas": "props_aa", "key": "props_aa", "h": 80, "expect": 4,
+        "names": ["aa_twin", "aa_flak", "aa_quad", "aa_broken"],
+    },
+    "sheet_generator_unit": {
+        "atlas": "props_power", "key": "props_power", "h": 72, "expect": 6,
+        "names": ["gen_cabinet", "gen_engine", "power_panel", "transformer", "battery_bank", "light_tower"],
+    },
     "sheet_debris_rubble": {
         "atlas": "props_debris", "key": "props_debris", "h": 40, "expect": 14,
         "names": ["concrete_chunk", "i_beam", "wood_pile", "barrel_broken", "wire_coil",

@@ -35,6 +35,51 @@
   "frames": 14
  },
  {
+  "atlas": "build_floors",
+  "source": "sheet_building_floors",
+  "frames": 12
+ },
+ {
+  "atlas": "props_towers",
+  "source": "sheet_watchtowers",
+  "frames": 4
+ },
+ {
+  "atlas": "props_tanks",
+  "source": "sheet_water_tanks",
+  "frames": 8
+ },
+ {
+  "atlas": "props_roof",
+  "source": "sheet_roof_details",
+  "frames": 12
+ },
+ {
+  "atlas": "props_gates",
+  "source": "sheet_gates_fences",
+  "frames": 13
+ },
+ {
+  "atlas": "props_bridge",
+  "source": "sheet_bridge_broken",
+  "frames": 6
+ },
+ {
+  "atlas": "props_lift",
+  "source": "sheet_elevator",
+  "frames": 8
+ },
+ {
+  "atlas": "props_aa",
+  "source": "sheet_aa_gun",
+  "frames": 4
+ },
+ {
+  "atlas": "props_power",
+  "source": "sheet_generator_unit",
+  "frames": 7
+ },
+ {
   "atlas": "props_debris",
   "source": "sheet_debris_rubble",
   "frames": 15

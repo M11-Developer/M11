@@ -55,28 +55,53 @@ var heights: PackedInt32Array = PackedInt32Array()
 const THEME_DECOR := {
 	"city": [["props_road/lamp", 3], ["props_road/dumpster", 2], ["props_road/hydrant", 1],
 		["props_road/bus_shelter", 1], ["props_road/tires", 2], ["props_debris/concrete_chunk", 3],
-		["props_debris/rebar", 2], ["props_debris/bricks", 2], ["props_indoor/chair", 1]],
+		["props_debris/rebar", 2], ["props_debris/bricks", 2], ["props_indoor/chair", 1],
+		["props_roof/ac_unit", 2], ["props_roof/satellite_dish", 1], ["props_roof/antenna", 2],
+		["props_roof/chimney", 2], ["props_roof/skylight", 1], ["props_roof/planter", 2],
+		["props_gates/fence_chain", 2], ["props_gates/roadblock", 2],
+		["tiles_wall/top_2", 2, 1, 2], ["tiles_wall/top_1", 2, 1, 3], ["tiles_wall/piece", 1, 1, 2]],
 	"base": [["props_lab/drum", 2], ["props_lab/crates", 3], ["props_lab/server_rack", 1],
 		["props_lab/generator", 2], ["props_lab/cylinders", 1], ["props_lab/hazmat_box", 2],
-		["props_road/bollard", 3], ["props_debris/girder", 2], ["props_debris/pipe_rusty", 2]],
+		["props_road/bollard", 3], ["props_debris/girder", 2], ["props_debris/pipe_rusty", 2],
+		["props_power/gen_cabinet", 2], ["props_power/gen_engine", 2], ["props_power/power_panel", 2],
+		["props_power/transformer", 2], ["props_power/battery_bank", 1], ["props_power/light_tower", 2],
+		["props_aa/aa_twin", 1], ["props_aa/aa_flak", 1], ["props_gates/gate_mesh", 2],
+		["props_gates/blast_wall", 2], ["tiles_wall/solid_2", 2, 1, 3]],
 	"desert": [["props_nature/cactus", 3], ["props_nature/boulder", 3], ["props_nature/rocks", 3],
 		["props_nature/dead_tree", 2], ["props_road/cone", 2], ["props_road/jersey_barrier", 2],
-		["props_debris/wood_pile", 2], ["props_debris/bricks", 2], ["props_nature/leaf_pile", 2]],
+		["props_debris/wood_pile", 2], ["props_debris/bricks", 2], ["props_nature/leaf_pile", 2],
+		["props_tanks/water_tower", 1], ["props_tanks/fuel_tank", 2], ["props_tanks/tank_leaking", 2],
+		["props_gates/jersey_barrier", 2], ["props_gates/tire_stack", 2],
+		["tiles_wall/solid", 2, 1, 2], ["tiles_wall/extra_15", 1, 1, 2]],
 	"village": [["props_nature/palm", 3], ["props_nature/bush", 3], ["props_nature/leaf_pile", 3],
 		["props_indoor/rug_roll", 1], ["props_indoor/table", 1], ["props_road/tires", 2],
-		["props_debris/wood_pile", 2], ["props_nature/mushrooms", 2], ["props_indoor/chair", 1]],
+		["props_debris/wood_pile", 2], ["props_nature/mushrooms", 2], ["props_indoor/chair", 1],
+		["props_tanks/water_tank_roof", 2], ["props_tanks/tank_leaking", 2], ["props_roof/clothesline", 2],
+		["props_gates/fence_wood", 2], ["props_gates/gate_wood_open", 1], ["props_gates/tire_stack", 2],
+		["props_roof/planter", 2], ["props_roof/gas_cylinders", 2]],
 	"forest": [["props_trees/oak_big", 3], ["props_nature/log", 3], ["props_nature/bush", 4],
 		["props_nature/cattail", 3], ["props_nature/mushrooms", 3], ["props_nature/rocks", 3],
-		["props_debris/wood_pile", 2], ["props_nature/thorn_bush", 3], ["props_trees/birch_bare", 2]],
+		["props_debris/wood_pile", 2], ["props_nature/thorn_bush", 3], ["props_trees/birch_bare", 2],
+		["props_bridge/bridge_span", 1], ["props_bridge/bridge_collapsed", 1], ["props_bridge/pier_posts", 1],
+		["props_towers/tower_wood", 1], ["props_gates/fence_wood", 2], ["props_gates/fence_bent", 2],
+		["tiles_wall/piece_1", 2, 1, 3]],
 	"port": [["props_lab/drum", 3], ["props_road/tires", 3], ["props_road/barrier", 2],
 		["props_debris/barrel_red", 2], ["props_debris/pipe_water", 2], ["props_lab/crates", 3],
-		["props_debris/wire_coil", 2], ["props_road/jersey_barrier", 2], ["props_road/hydrant", 1]],
+		["props_debris/wire_coil", 2], ["props_road/jersey_barrier", 2], ["props_road/hydrant", 1],
+		["props_tanks/silo", 2], ["props_tanks/pressure_tank", 1], ["props_roof/gas_cylinders", 2],
+		["props_gates/gate_sliding", 1], ["props_gates/gate_mesh", 2], ["props_gates/razor_coil", 2],
+		["props_lift/pallet_crate", 2], ["props_aa/aa_quad", 1], ["props_towers/tower_steel", 1]],
 	"snow": [["props_trees/pine_snow", 3], ["props_nature/boulder", 3], ["props_debris/ice_shards", 3],
 		["props_nature/rocks", 3], ["props_trees/birch_bare", 2], ["props_debris/concrete_chunk", 2],
-		["props_nature/dead_tree", 2], ["props_debris/wood_pile", 2], ["props_road/cone", 2]],
+		["props_nature/dead_tree", 2], ["props_debris/wood_pile", 2], ["props_road/cone", 2],
+		["props_towers/tower_ruined", 1], ["props_gates/fence_bent", 2], ["props_bridge/bridge_collapsed", 1],
+		["props_roof/antenna", 2], ["tiles_wall/top_2", 2, 2]],
 	"space": [["props_lab/server_rack", 3], ["props_lab/vat", 2], ["props_lab/decon_arch", 1],
 		["props_lab/pipe_elbow", 3], ["props_lab/breaker", 2], ["props_lab/wall_fan", 2],
-		["props_debris/girder", 3], ["props_debris/i_beam", 2], ["props_lab/plastic_crates", 2]],
+		["props_debris/girder", 3], ["props_debris/i_beam", 2], ["props_lab/plastic_crates", 2],
+		["props_lift/lift_car", 1], ["props_lift/lift_shaft", 1], ["props_lift/lift_scissor", 2],
+		["props_lift/hazard_stripes", 2], ["props_lift/control_panel", 2],
+		["props_power/power_panel", 2], ["props_power/generator_unit", 2]],
 }
 
 # ثيمات اللعبة → مجموعة الديكور المناسبة
@@ -184,19 +209,38 @@ func _generate(map_id: String) -> void:
 		props.append({"type": "tree", "pos": Vector2(x * Config.TILE, heights[x] * Config.TILE - 30), "v": randi() % 3})
 	# ديكور الثيم من أطالس الذكاء الاصطناعي (يبني إحساس "المكان مسكون" لا فارغ)
 	var decor_set: Array = THEME_DECOR.get(DECOR_FOR_THEME.get(String(def["theme"]), "city"), THEME_DECOR["city"])
-	var decor_budget := 24
+	var decor_budget := 32
 	var size_key := String(def.get("size", "medium"))
 	if size_key == "small":
-		decor_budget = 14
+		decor_budget = 20
 	elif size_key == "large" or size_key == "br":
-		decor_budget = 34
-	for i in decor_budget:
+		decor_budget = 44
+	for i in decor_budget * 2:
 		var pick: Array = decor_set[randi() % decor_set.size()]
 		if randi_range(1, 10) > int(pick[1]) + 4:
 			continue
 		var dx := randi_range(2, map_w - 3)
+		# لا ديكور فوق ماء أو فراغ (كان يبدو معلّقًا في الهواء)
+		var ground_y: int = heights[dx]
+		if get_tile(dx, ground_y) == TILE_EMPTY:
+			continue
+		var in_water := false
+		for wy in range(1, 4):
+			if get_tile(dx, ground_y + wy) == TILE_WATER:
+				in_water = true
+		if in_water:
+			continue
+		var too_close := false
+		for other in props:
+			if String(other["type"]).begins_with("p:") and absi(int(other["pos"].x) - dx * Config.TILE) < 22:
+				too_close = true
+				break
+		if too_close:
+			continue
 		props.append({"type": "p:" + String(pick[0]),
-			"pos": Vector2(dx * Config.TILE, heights[dx] * Config.TILE)})
+			"pos": Vector2(dx * Config.TILE, heights[dx] * Config.TILE),
+			"sc": (int(pick[2]) if pick.size() > 2 else 1),
+			"stack": (int(pick[3]) if pick.size() > 3 else 1)})
 	# ماء
 	for i in int(def["water"]):
 		var x := randi_range(4, map_w - 12)
@@ -367,11 +411,17 @@ func _draw_terrain() -> void:
 			if parts.size() == 2:
 				var res: AtlasLoader.AtlasResource = AtlasLoader.instance.get_atlas(parts[0])
 				if res:
-					var fr: Dictionary = res.frames.get(parts[0] + "/" + parts[1], {})
+					var fkey := parts[0] + "/" + parts[1]
+					if not res.frames.has(fkey) and parts[0].begins_with("tiles_"):
+						fkey = "tile/" + parts[0].substr(6) + "/" + parts[1]
+					var fr: Dictionary = res.frames.get(fkey, {})
 					if not fr.is_empty():
 						var pos: Vector2 = p["pos"]
-						res.draw(terrain, parts[0] + "/" + parts[1],
-							Vector2(pos.x, pos.y - float(fr["h"])))
+						var sc := float(p.get("sc", 1))
+						var stack: int = mini(int(p.get("stack", 1)), 4)
+						for i in stack:
+							res.draw(terrain, fkey,
+								Vector2(pos.x, pos.y - float(fr["h"]) * sc - i * float(fr["h"]) * sc), false, sc)
 			continue
 		atlas.draw(terrain, "prop/%s" % p["type"], p["pos"])
 

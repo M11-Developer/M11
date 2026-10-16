@@ -571,14 +571,21 @@ export class Renderer {
         const [atlasName, frame] = p.type.slice(2).split('/');
         const a = this.assets.get(atlasName);
         if (a) {
-          const key = `${atlasName}/${frame}`;
-          if (a.has(key)) {
+          // أطلس العناصر: المفتاح "<atlas>/<name>" — وأطالس البلاطات: "tile/<theme>/<name>"
+          const keys = [`${atlasName}/${frame}`];
+          if (atlasName.startsWith('tiles_')) keys.push(`tile/${atlasName.slice(6)}/${frame}`);
+          const key = keys.find((k) => a.has(k));
+          if (key) {
             // العناصر المولّدة تُثبَّت من قاعدتها على الأرض (ارتفاعها يختلف عن عناصر الكود)
-            const fh = (a.frame(key) || {}).h || 0;
-            const fw = (a.frame(key) || {}).w || 0;
+            const sc = p.sc || 1;
+            const fh = ((a.frame(key) || {}).h || 0) * sc;
+            const fw = ((a.frame(key) || {}).w || 0) * sc;
             const dy = fh ? Math.round(p.y) - fh : Math.round(p.y);
             const dx = fw && p.flip ? Math.round(p.x) - fw / 2 : Math.round(p.x);
-            a.draw(ctx, key, dx, dy, 1, !!p.flip);
+            const stack = p.stack > 1 ? Math.min(p.stack, 4) : 1;
+            for (let i = 0; i < stack; i++) {
+              a.draw(ctx, key, dx, dy - i * fh, sc, !!p.flip);
+            }
             continue;
           }
         }
