@@ -68,16 +68,30 @@ jobs:
       - name: توليد مفتاح توقيع الإصدار
         run: |
           set -e
-          keytool -genkeypair -v \
-            -keystore "$GITHUB_WORKSPACE/release.keystore" \
-            -alias m11 -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass m11localwar -keypass m11localwar \
-            -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG"
-          # نضع بيانات المفتاح داخل ملف الإعدادات (Godot لا يقرأ المفتاح من متغيّرات البيئة في هذا الإصدار)
-          sed -i "s|keystore/release=\"\"|keystore/release=\"$GITHUB_WORKSPACE/release.keystore\"|" project/export_presets.cfg
-          sed -i "s|keystore/release_user=\"\"|keystore/release_user=\"m11\"|" project/export_presets.cfg
-          sed -i "s|keystore/release_password=\"\"|keystore/release_password=\"m11localwar\"|" project/export_presets.cfg
-          grep -n "keystore/release" project/export_presets.cfg
+          # 1) نضمن وجود أداة keytool (صورة godot-ci فيها JDK 17 لكن المسار مختلف أحيانًا)
+          KEYTOOL="$(command -v keytool || true)"
+          if [ -z "$KEYTOOL" ]; then
+            KEYTOOL="$(ls -1 /usr/lib/jvm/*/bin/keytool 2>/dev/null | head -1 || true)"
+          fi
+          if [ -z "$KEYTOOL" ]; then
+            echo "::warning::لا توجد أداة keytool — نستخدم مفتاح التصحيح المدمج في الصورة"
+            KEYTOOL=""
+          fi
+          # 2) نولّد مفتاح الإصدار إن كانت الأداة متاحة
+          if [ -n "$KEYTOOL" ]; then
+            "$KEYTOOL" -genkeypair -v \
+              -keystore "$GITHUB_WORKSPACE/release.keystore" \
+              -alias m11 -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass m11localwar -keypass m11localwar \
+              -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG"
+          fi
+          # 3) ندرج بيانات المفتاح داخل قسم كل إعداد تصدير (Godot يحتاجها موجودة مسبقًا)
+          if [ -f "$GITHUB_WORKSPACE/release.keystore" ]; then
+            python3 tools/patch_presets.py "$GITHUB_WORKSPACE/release.keystore" m11 m11localwar || true
+          elif [ -f /root/debug.keystore ]; then
+            python3 tools/patch_presets.py /root/debug.keystore androiddebugkey android || true
+          fi
+          grep -c "keystore/" project/export_presets.cfg || echo "::warning::لم تُدرج أسطر المفتاح"
 
       - name: تصدير نسخة التصحيح (APK يُثبّت مباشرة)
         run: |
