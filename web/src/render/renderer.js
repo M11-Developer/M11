@@ -372,7 +372,9 @@ export class Renderer {
     //     بشفافية، فتبقى ألوان اللوحة داخل مزاج الخريطة نفسه.
     //     الأولوية: لوحة ثيم الخريطة (5 بيئات) ← لوحة القائمة ← لا شيء. ---
     const themeKey = (world && world.level && world.level.def && world.level.def.theme) || '';
-    const themeArt = themeBackdropName(themeKey, tod);
+    const weather = (world && world.level && world.level.def && world.level.def.weather) || 'clear';
+    const def0 = (world && world.level && world.level.def) || {};
+    const themeArt = themeBackdropName(themeKey, tod, weather, def0.backdrop);
     const isEnvArtName = !!themeArt;
     const artName = themeArt || ((tod < 0.2 || tod > 0.62) ? 'poster_loading' : 'key_art_menu');
     const art = backdropImages.get(artName)
@@ -1170,6 +1172,16 @@ export const BACKDROP_FILES = {
   bg_parallax_oasis_night: 'backdrops/bg_parallax_oasis_night.png',
   bg_parallax_sea_storm: 'backdrops/bg_parallax_sea_storm.png',
   bg_parallax_naval_base: 'backdrops/bg_parallax_naval_base.png',
+  bg_sky_storm: 'backdrops/bg_sky_storm.png',
+  bg_sky_dust: 'backdrops/bg_sky_dust.png',
+  bg_sky_snowfall: 'backdrops/bg_sky_snowfall.png',
+  bg_sky_dawn: 'backdrops/bg_sky_dawn.png',
+  bg_sky_galaxy: 'backdrops/bg_sky_galaxy.png',
+  bg_sky_war_red: 'backdrops/bg_sky_war_red.png',
+  bg_sky_station: 'backdrops/bg_sky_station.png',
+  bg_sky_cave_glow: 'backdrops/bg_sky_cave_glow.png',
+  bg_sky_swamp: 'backdrops/bg_sky_swamp.png',
+  bg_sky_port_fog: 'backdrops/bg_sky_port_fog.png',
 };
 
 /**
@@ -1196,7 +1208,21 @@ export const THEME_BACKDROP = {
 };
 
 /** يختار اسم لوحة الثيم حسب وقت اليوم (نهار/ليل) */
-export function themeBackdropName(theme, tod) {
+// الطقس يتقدّم على الثيم: خريطة بالثيم نفسه قد تكون عاصفة أو ثلجية أو ضبابية،
+// فتظهر لها سماء مختلفة تمامًا (وهذا ما يجعل الخرائط تبدو متعددة المزاج).
+const WEATHER_BACKDROP = {
+  storm: 'bg_sky_storm', snow: 'bg_sky_snowfall', fog: 'bg_sky_port_fog',
+  dust: 'bg_sky_dust', rain: 'bg_sky_storm', clear: null,
+};
+
+export function themeBackdropName(theme, tod, weather, explicit) {
+  // 0) لوحة صريحة كتبها مصمّم الخريطة (def.backdrop) — تسبق كل شيء
+  if (explicit) {
+    if (typeof explicit === 'string') return explicit;
+    const night = tod < 0.2 || tod > 0.62;
+    return night ? (explicit.night || explicit.day) : (explicit.day || explicit.night);
+  }
+  if (weather && WEATHER_BACKDROP[weather]) return WEATHER_BACKDROP[weather];
   const v = THEME_BACKDROP[theme];
   if (!v) return null;
   const night = tod < 0.2 || tod > 0.62;

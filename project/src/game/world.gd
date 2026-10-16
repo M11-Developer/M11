@@ -17,7 +17,14 @@ const THEME_BACKDROP := {
 	"base": "bg_parallax_factory", "factory": "bg_parallax_factory",
 	"city": "bg_parallax_city_dusk|bg_parallax_factory",
 	"snow": "bg_parallax_snow", "mountain": "bg_parallax_snow",
-	"space": "bg_parallax_space", "station": "bg_parallax_space", "scifi": "bg_parallax_space",
+	"space": "bg_sky_station", "station": "bg_sky_station", "scifi": "bg_sky_station",
+	"cave": "bg_sky_cave_glow", "underground": "bg_sky_cave_glow",
+	"swamp": "bg_sky_swamp", "warzone": "bg_sky_war_red",
+}
+# الطقس يتقدّم على الثيم (عاصفة/ثلج/ضباب) — نفس منطق نسخة الويب
+const WEATHER_BACKDROP := {
+	"storm": "bg_sky_storm", "snow": "bg_sky_snowfall", "fog": "bg_sky_port_fog",
+	"dust": "bg_sky_dust", "rain": "bg_sky_storm",
 }
 const BACKDROP_DIR := "res://assets/atlases/backdrops/"
 
@@ -137,6 +144,12 @@ const MAPS := {
 	"factory": {"name_ar": "المصنع المهجور", "theme": "base", "w": 3200, "h": 900, "buildings": 5, "crates": 34, "trees": 2, "water": 0},
 	"bridge": {"name_ar": "الجسر المكسور", "theme": "city", "w": 4200, "h": 1100, "buildings": 4, "crates": 28, "trees": 6, "water": 3},
 	"harbor": {"name_ar": "الميناء البحري", "theme": "port", "w": 3400, "h": 1000, "buildings": 2, "crates": 30, "trees": 1, "water": 3, "time_of_day": 0.7},
+	"snowpeak": {"name_ar": "قمة الثلوج", "theme": "snow", "w": 3200, "h": 1100, "buildings": 4, "crates": 24, "trees": 8, "water": 2, "time_of_day": 0.75, "backdrop": "bg_sky_snowfall"},
+	"orbital": {"name_ar": "المحطة المدارية", "theme": "space", "w": 3000, "h": 1050, "buildings": 7, "crates": 30, "trees": 0, "water": 0, "time_of_day": 0.5, "backdrop": "bg_sky_station"},
+	"swamp": {"name_ar": "المستنقع المسموم", "theme": "forest", "w": 3300, "h": 1050, "buildings": 3, "crates": 22, "trees": 22, "water": 8, "time_of_day": 0.85, "backdrop": "bg_sky_swamp"},
+	"warzone": {"name_ar": "منطقة الحرب", "theme": "city", "w": 3800, "h": 1150, "buildings": 12, "crates": 34, "trees": 5, "water": 2, "time_of_day": 0.2, "backdrop": "bg_sky_war_red"},
+	"cavern": {"name_ar": "الكهوف المتوهجة", "theme": "cave", "w": 3100, "h": 1050, "buildings": 2, "crates": 24, "trees": 0, "water": 4, "time_of_day": 0.9, "backdrop": "bg_sky_cave_glow"},
+	"starfield": {"name_ar": "حقل النجوم", "theme": "base", "w": 2600, "h": 950, "buildings": 6, "crates": 20, "trees": 4, "water": 0, "time_of_day": 0.95, "backdrop": "bg_sky_galaxy"},
 	"sea_deck": {"name_ar": "سطح السفينة", "theme": "port", "w": 2600, "h": 900, "buildings": 1, "crates": 18, "trees": 0, "water": 2, "time_of_day": 0.9},
 }
 
@@ -347,7 +360,12 @@ func _load_backdrop() -> void:
 	# لوحة منظر بيئية من رصيد الصور المولّدة (القسم 15.2) — غيابها لا يُفشل شيء
 	var def: Dictionary = MAPS.get(Config.map_id, MAPS["oasis"])
 	var theme: String = def["theme"]
-	var spec: String = THEME_BACKDROP.get(theme, "")
+	# الأولوية: لوحة صريحة في تعريف الخريطة ← الطقس ← الثيم (نفس الترتيب في نسخة الويب)
+	var spec := String(def.get("backdrop", ""))
+	if spec == "":
+		spec = String(WEATHER_BACKDROP.get(String(def.get("weather", "")), ""))
+	if spec == "":
+		spec = String(THEME_BACKDROP.get(theme, ""))
 	var name := spec
 	if spec.contains("|"):
 		# نهار/ليل: نعتمد على تعريف الخريطة، ولو غاب فالليل هو الافتراضي للخرائط الداكنة

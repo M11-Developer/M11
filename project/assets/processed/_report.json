@@ -1273,5 +1273,175 @@
   "transparent_pct": 20.1,
   "kb_raw": 1969.6,
   "kb_out": 499.2
+ },
+ "bg_sky_storm": {
+  "name": "bg_sky_storm",
+  "desc": "طبقة سماء — عاصفة رعدية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1768.0,
+  "kb_out": 261.2
+ },
+ "bg_sky_dust": {
+  "name": "bg_sky_dust",
+  "desc": "طبقة سماء — عاصفة غبار صحراوية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1412.2,
+  "kb_out": 167.4
+ },
+ "bg_sky_snowfall": {
+  "name": "bg_sky_snowfall",
+  "desc": "طبقة سماء — تساقط ثلج (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1887.8,
+  "kb_out": 342.0
+ },
+ "bg_sky_dawn": {
+  "name": "bg_sky_dawn",
+  "desc": "طبقة سماء — فجر بتدرّج دافئ (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1372.5,
+  "kb_out": 122.9
+ },
+ "bg_sky_galaxy": {
+  "name": "bg_sky_galaxy",
+  "desc": "طبقة سماء — ليل بمجرة ونجوم (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1922.9,
+  "kb_out": 308.8
+ },
+ "bg_sky_war_red": {
+  "name": "bg_sky_war_red",
+  "desc": "طبقة سماء — حرب حمراء ودخان (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1388.5,
+  "kb_out": 113.1
+ },
+ "bg_sky_station": {
+  "name": "bg_sky_station",
+  "desc": "طبقة سماء — داخل محطة فضائية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1772.9,
+  "kb_out": 218.2
+ },
+ "bg_sky_cave_glow": {
+  "name": "bg_sky_cave_glow",
+  "desc": "طبقة سماء — كهف مضيء بالبلورات (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1643.0,
+  "kb_out": 241.6
+ },
+ "bg_sky_swamp": {
+  "name": "bg_sky_swamp",
+  "desc": "طبقة سماء — مستنقع ضبابي (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1458.5,
+  "kb_out": 151.5
+ },
+ "bg_sky_port_fog": {
+  "name": "bg_sky_port_fog",
+  "desc": "طبقة سماء — ميناء ضبابي ليلًا (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1640.1,
+  "kb_out": 246.4
  }
 }
