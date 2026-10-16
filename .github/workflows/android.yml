@@ -217,6 +217,18 @@ jobs:
             build/M11-release.apk
             build/M11-release.aab
 
+      # ---------- بثّ أخطاء السجل كتعليقات يقرأها المطوّر عبر واجهة GitHub ----------
+      - name: بثّ أخطاء البناء (تعليقات)
+        if: always()
+        run: bash tools/emit_annotations.sh "$BUILD_LOG" "ERROR|error:|Failed|failed|Unable|not found|Missing|missing|Could not|invalid|Exception|فشل|خطأ" error 9
+
+      - name: بثّ تحذيرات البناء (تعليقات)
+        if: always()
+        run: bash tools/emit_annotations.sh "$BUILD_LOG" "WARNING|warning:|WARN|تعذّر|تحذير" warning 9
+
+      - name: بثّ نهاية السجل (تعليقات)
+        if: always()
+        run: bash tools/emit_annotations.sh "$BUILD_LOG" "." notice 9
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
         if: always()
