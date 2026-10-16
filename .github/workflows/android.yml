@@ -212,13 +212,17 @@ jobs:
         run: |
           set +e
           mkdir -p build
+          echo "===== EXPORT-DEBUG1 START =====" >> "$BUILD_LOG"
           timeout 2400 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG"
           echo "debug_export_exit=$?" | tee -a "$BUILD_LOG"
+          echo "===== EXPORT-DEBUG1 END =====" >> "$BUILD_LOG"
           if [ ! -s build/M11-debug.apk ]; then
             echo "::warning::فشل مسار Gradle — نعيد بقالب التصدير المباشر (بلا Gradle)" | tee -a "$BUILD_LOG"
             sed -i 's|gradle_build/use_gradle_build=true|gradle_build/use_gradle_build=false|g' project/export_presets.cfg
+            echo "===== EXPORT-DEBUG2 START =====" >> "$BUILD_LOG"
             timeout 2400 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG"
             echo "debug_export_exit2=$?" | tee -a "$BUILD_LOG"
+            echo "===== EXPORT-DEBUG2 END =====" >> "$BUILD_LOG"
           fi
           ls -la build | tee -a "$BUILD_LOG"
 
@@ -228,8 +232,10 @@ jobs:
           set +e
           # نعيد تمكين Gradle (خطوة التصحيح قد تكون عطّلته في مسار الاحتياط)
           sed -i 's|gradle_build/use_gradle_build=false|gradle_build/use_gradle_build=true|g' project/export_presets.cfg
+          echo "===== EXPORT-RELEASE START =====" >> "$BUILD_LOG"
           timeout 2400 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" 2>&1 | tee -a "$BUILD_LOG"
           echo "release_apk_exit=$?" | tee -a "$BUILD_LOG"
+          echo "===== EXPORT-RELEASE END =====" >> "$BUILD_LOG"
           timeout 2400 godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab" 2>&1 | tee -a "$BUILD_LOG"
           echo "release_aab_exit=$?" | tee -a "$BUILD_LOG"
           ls -la build | tee -a "$BUILD_LOG"
@@ -329,6 +335,23 @@ jobs:
           } > /tmp/tpl.txt
           cat /tmp/tpl.txt
           bash tools/emit_annotations.sh /tmp/tpl.txt "." notice 9
+
+      - name: تشخيص التصدير (نافذة كل أمر + ملفات APK الناتجة)
+        if: always()
+        run: |
+          set +e
+          {
+            echo "ملفات APK/AAB في المشروع كله:"
+            find "$GITHUB_WORKSPACE" -name "*.apk" -o -name "*.aab" 2>/dev/null | grep -v export_templates | head -10
+          } > /tmp/exp.txt
+          for M in EXPORT-DEBUG1 EXPORT-DEBUG2 EXPORT-RELEASE; do
+            {
+              echo "===== $M ====="
+              grep -n -A 30 "$M START" "$BUILD_LOG" 2>/dev/null | head -34
+            } >> /tmp/exp.txt
+          done
+          head -c 9000 /tmp/exp.txt
+          bash tools/emit_annotations.sh /tmp/exp.txt "." error 9 0 head
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
