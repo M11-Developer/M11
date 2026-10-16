@@ -9,7 +9,8 @@ LOG="${1:-/tmp/m11-build.log}"
 PAT="${2:-ERROR|error:|Failed|failed|Unable|not found|Missing|missing|Could not|invalid|Exception}"
 LEVEL="${3:-error}"
 COUNT="${4:-8}"
-CTX="${5:-0}"   # عدد أسطر السياق بعد كل سطر مطابق
+CTX="${5:-0}"    # عدد أسطر السياق بعد كل سطر مطابق
+WHERE="${6:-tail}"   # tail = آخر الأسطر، head = أول الأسطر
 
 [ -f "$LOG" ] || { echo "::warning::لا يوجد سجل في $LOG"; exit 0; }
 
@@ -18,7 +19,8 @@ grep -nE -A "$CTX" "$PAT" "$LOG" | tail -400 > /tmp/m11-errs.txt
 if [ ! -s /tmp/m11-errs.txt ]; then
   tail -120 "$LOG" > /tmp/m11-errs.txt
 fi
-tail -c 12000 /tmp/m11-errs.txt | fold -w 850 | tail -"$COUNT" > /tmp/m11-chunks.txt
+tail -c 12000 /tmp/m11-errs.txt | fold -w 850 > /tmp/m11-all.txt
+if [ "$WHERE" = "head" ]; then head -"$COUNT" /tmp/m11-all.txt > /tmp/m11-chunks.txt; else tail -"$COUNT" /tmp/m11-all.txt > /tmp/m11-chunks.txt; fi
 
 i=0
 while IFS= read -r chunk; do
