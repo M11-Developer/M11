@@ -15,6 +15,7 @@ import { WEAPONS, resolveStats } from './game/weapons.js';
 import { Actor, Bot, DIFFICULTY, BOT_NAMES } from './game/entities.js';
 import { HUD, PING_TYPES } from './game/hud.js';
 import { MenuSystem } from './game/ui.js';
+import { getBackdrop } from './render/renderer.js';
 import { Renderer, loadBackdrops } from './render/renderer.js';
 import { Camera, KillCam } from './render/camera.js';
 import { NetSession, NetTransportLocal } from './core/net.js';

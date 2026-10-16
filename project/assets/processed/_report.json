@@ -1766,5 +1766,141 @@
   "transparent_pct": 55.1,
   "kb_raw": 1585.3,
   "kb_out": 282.6
+ },
+ "promo_hero_squad": {
+  "name": "promo_hero_squad",
+  "desc": "فن ترويجي — الفرقة في بلدة محترقة (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2359.7,
+  "kb_out": 435.5
+ },
+ "poster_br_drop": {
+  "name": "poster_br_drop",
+  "desc": "ملصق رأسي — إنزال مظلي فوق الوادي",
+  "status": "ok",
+  "raw_size": [
+   768,
+   1376
+  ],
+  "out_size": [
+   768,
+   1376
+  ],
+  "scale": 1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2149.2,
+  "kb_out": 536.0
+ },
+ "promo_naval_assault": {
+  "name": "promo_naval_assault",
+  "desc": "فن ترويجي — إنزال بحري على الأرصفة (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 2351.6,
+  "kb_out": 478.4
+ },
+ "poster_cqb_duel": {
+  "name": "poster_cqb_duel",
+  "desc": "ملصق رأسي — اشتباك داخل مخزن",
+  "status": "ok",
+  "raw_size": [
+   848,
+   1264
+  ],
+  "out_size": [
+   848,
+   1264
+  ],
+  "scale": 1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2351.2,
+  "kb_out": 425.6
+ },
+ "splash_boot_helmet": {
+  "name": "splash_boot_helmet",
+  "desc": "شاشة إقلاع — خوذة على أكياس رمل عند الفجر (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1814.5,
+  "kb_out": 320.7
+ },
+ "promo_night_ops": {
+  "name": "promo_night_ops",
+  "desc": "فن ترويجي — غارة ليلية بمناظير رؤية ليلية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2272.0,
+  "kb_out": 403.2
+ },
+ "promo_lan_squad": {
+  "name": "promo_lan_squad",
+  "desc": "فن ترويجي — الفرقة على السطح عند الغروب (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 2278.8,
+  "kb_out": 435.5
+ },
+ "store_feature_banner": {
+  "name": "store_feature_banner",
+  "desc": "بانر المتجر العريض — بانوراما ساحة القتال",
+  "status": "ok",
+  "raw_size": [
+   2064,
+   512
+  ],
+  "out_size": [
+   2064,
+   512
+  ],
+  "scale": 1,
+  "transparent_pct": 0.0,
+  "kb_raw": 1899.4,
+  "kb_out": 390.6
  }
 }

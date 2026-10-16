@@ -1189,6 +1189,15 @@ export const BACKDROPS = {
   key_art_naval: 'backdrops/key_art_naval.png',
   poster_victory: 'backdrops/poster_victory.png',
   poster_defeat: 'backdrops/poster_defeat.png',
+  // جولة ١٢: فن ترويجي وملصقات وشاشة إقلاع (تُستعمل في الواجهة وصفحة الإصدار)
+  promo_hero_squad: 'backdrops/promo_hero_squad.png',
+  promo_naval_assault: 'backdrops/promo_naval_assault.png',
+  promo_night_ops: 'backdrops/promo_night_ops.png',
+  promo_lan_squad: 'backdrops/promo_lan_squad.png',
+  splash_boot_helmet: 'backdrops/splash_boot_helmet.png',
+  poster_br_drop: 'backdrops/poster_br_drop.png',
+  poster_cqb_duel: 'backdrops/poster_cqb_duel.png',
+  store_feature_banner: 'backdrops/store_feature_banner.png',
 };
 export const backdropImages = new Map();
 
@@ -1209,6 +1218,15 @@ export const BACKDROP_FILES = {
   key_art_naval: 'backdrops/key_art_naval.png',
   poster_victory: 'backdrops/poster_victory.png',
   poster_defeat: 'backdrops/poster_defeat.png',
+  // جولة ١٢: فن ترويجي وملصقات وشاشة إقلاع (تُستعمل في الواجهة وصفحة الإصدار)
+  promo_hero_squad: 'backdrops/promo_hero_squad.png',
+  promo_naval_assault: 'backdrops/promo_naval_assault.png',
+  promo_night_ops: 'backdrops/promo_night_ops.png',
+  promo_lan_squad: 'backdrops/promo_lan_squad.png',
+  splash_boot_helmet: 'backdrops/splash_boot_helmet.png',
+  poster_br_drop: 'backdrops/poster_br_drop.png',
+  poster_cqb_duel: 'backdrops/poster_cqb_duel.png',
+  store_feature_banner: 'backdrops/store_feature_banner.png',
   bg_parallax_desert: 'backdrops/bg_parallax_desert.png',
   bg_parallax_forest_night: 'backdrops/bg_parallax_forest_night.png',
   bg_parallax_factory: 'backdrops/bg_parallax_factory.png',

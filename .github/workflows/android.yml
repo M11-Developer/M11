@@ -1,0 +1,127 @@
+# ============================================================================
+# بناء APK و AAB في السحابة — بلا أي حاجة لتشغيل Godot على جهازك.
+#   • صورة barichello/godot-ci:4.3 فيها Godot 4.3 + قوالب التصدير + Android SDK + JDK17.
+#   • نولّد مفتاح توقيع داخل الـCI (لا أسرار مخزّنة)، ونصدّر:
+#       M11-debug.apk   (موقّع بمفتاح التصحيح — يُثبّت مباشرة)
+#       M11-release.apk (موقّع بالمفتاح المولَّد — للإصدار)
+#       M11-release.aab (لمتجر جوجل)
+#   • لا نستخدم android-actions/setup-android@v3 لأنه معطوب حاليًا على عدّاءات GitHub
+#     (يحاول تثبيت حزمة tools المحذوفة) — الـSDK يجي جاهزًا في صورة godot-ci.
+#
+# التشغيل: Actions ← «بناء APK» ← Run workflow.  أو بإصدار موسوم: v*.
+# ============================================================================
+name: بناء APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      makerelease:
+        description: 'إنشاء Release على GitHub مع الملفات؟ (yes/no)'
+        required: false
+        default: 'yes'
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  export-android:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+      options: --user root
+    timeout-minutes: 60
+
+    steps:
+      - name: جلب الشيفرة
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: تحضير مجلد إعدادات Godot
+        run: |
+          set -e
+          mkdir -p "$HOME/.config"
+          # في بعض الإصدارات الإعدادات في /root/.config/godot ولا تُقرأ من المستخدم الحالي
+          if [ -d /root/.config/godot ] && [ ! -d "$HOME/.config/godot" ]; then
+            cp -r /root/.config/godot "$HOME/.config/godot"
+          fi
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          if [ -d /root/.local/share/godot/export_templates ] && [ -z "$(ls -A "$HOME/.local/share/godot/export_templates" 2>/dev/null)" ]; then
+            cp -r /root/.local/share/godot/export_templates/. "$HOME/.local/share/godot/export_templates/" || true
+          fi
+          godot --version
+
+      - name: استيراد المشروع (بناء ذاكرة الأصول)
+        run: |
+          godot --headless --path project --import --quit || true
+          ls -la project | head
+
+      - name: تثبيت قالب بناء أندرويد (Gradle)
+        run: |
+          godot --headless --path project --install-android-build-template
+          ls project/android/build 2>/dev/null | head || echo "لا مجلد android/build (قد لا تحتاجه النسخة)"
+
+      - name: توليد مفتاح توقيع الإصدار
+        run: |
+          set -e
+          keytool -genkeypair -v \
+            -keystore "$GITHUB_WORKSPACE/release.keystore" \
+            -alias m11 -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass m11localwar -keypass m11localwar \
+            -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG"
+          # نضع بيانات المفتاح داخل ملف الإعدادات (Godot لا يقرأ المفتاح من متغيّرات البيئة في هذا الإصدار)
+          sed -i "s|keystore/release=\"\"|keystore/release=\"$GITHUB_WORKSPACE/release.keystore\"|" project/export_presets.cfg
+          sed -i "s|keystore/release_user=\"\"|keystore/release_user=\"m11\"|" project/export_presets.cfg
+          sed -i "s|keystore/release_password=\"\"|keystore/release_password=\"m11localwar\"|" project/export_presets.cfg
+          grep -n "keystore/release" project/export_presets.cfg
+
+      - name: تصدير نسخة التصحيح (APK يُثبّت مباشرة)
+        run: |
+          mkdir -p build
+          godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
+          ls -la build
+
+      - name: تصدير نسخة الإصدار (APK + AAB)
+        run: |
+          godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" || echo "::warning::فشل تصدير APK الإصدار"
+          godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab" || echo "::warning::فشل تصدير AAB"
+          ls -la build
+
+      - name: التحقق من الملفات الناتجة
+        run: |
+          set -e
+          for f in build/M11-debug.apk build/M11-release.apk build/M11-release.aab; do
+            if [ -f "$f" ]; then echo "✔ $f — $(du -h "$f" | cut -f1)"; else echo "✘ مفقود: $f"; fi
+          done
+          # يجب أن يحتوي الـAPK على مكتبة Godot وأصول اللعبة، ولا يجب أن يحتوي المجلدات الخام
+          if [ -f build/M11-debug.apk ]; then
+            unzip -l build/M11-debug.apk | grep -E "libgodot|lib/arm64-v8a|assets/" | head -8
+            if unzip -l build/M11-debug.apk | grep -q "assets/raw/"; then echo "::error::الأصول الخام دخلت الحزمة!"; exit 1; fi
+          fi
+
+      - name: رفع الملفات كأرتيفاكت
+        uses: actions/upload-artifact@v4
+        with:
+          name: M11-android
+          path: |
+            build/*.apk
+            build/*.aab
+            docs/RELEASE_NOTES_AR.md
+          if-no-files-found: error
+
+      - name: إنشاء Release (إن طُلب)
+        if: ${{ github.event_name == 'push' || github.event.inputs.makerelease == 'yes' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.0' }}
+          name: ميكا ١١ — ساحة النار المحلية v1.0
+          body_path: docs/RELEASE_NOTES_AR.md
+          draft: false
+          prerelease: false
+          files: |
+            build/M11-debug.apk
+            build/M11-release.apk
+            build/M11-release.aab

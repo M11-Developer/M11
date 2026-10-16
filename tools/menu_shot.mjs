@@ -50,6 +50,7 @@ const { MenuSystem } = await import(path.join(WEB, 'src/game/ui.js'));
 const { loadBackdrops, backdropImages } = await import(path.join(WEB, 'src/render/renderer.js'));
 const { MODES } = await import(path.join(WEB, 'src/game/modes.js'));
 const { MAPS } = await import(path.join(WEB, 'src/game/world.js'));
+const { DEFAULT_CONTROLS: requireControls } = await import(path.join(WEB, 'src/core/input.js'));
 
 Assets.base = path.join(ROOT, 'project/assets/atlases') + '/';
 await Assets.load(atlasNames());
@@ -68,7 +69,18 @@ const game = {
   secondaryOptions: () => ['n9', 'jabha'],
   profile: { name: 'لاعب', level: 7, xp: 3200, rank: 3, achievements: ['first_blood', 'kills_50', 'wins_5'] },
   progression: { challenges: [{ text: 'اقتل 20 عدوًا', progress: 12, goal: 20, done: false }], profile: { achievements: ['first_blood', 'kills_50', 'wins_5'] } },
+  audioSettings: { master: 0.8, music: 0.6, sfx: 0.9, voice: 0.8 },
+  controls: (() => {
+    // نأخذ قيم التحكم الحقيقية من اللعبة نفسها حتى تعكس الصور الواقع
+    const defaults = {};
+    try {
+      const dc = requireControls;
+      Object.assign(defaults, dc);
+    } catch (e) { /* نكمل بالافتراضي */ }
+    return { joystickMode: 'floating', ...defaults };
+  })(),
   saveSettings() {}, startMatch() {}, openEditor() {},
+  applyQuality() {}, applyAudio() {}, applyColorblind() {}, pause() {},
 };
 
 const canvas = createCanvas(CONFIG.internalWidth, CONFIG.internalHeight);

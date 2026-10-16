@@ -162,10 +162,26 @@ export class Actor extends Entity {
   /** استقبال ضرر؛ يعيد true إذا أدّى للطرح أو الموت */
   takeDamage(amount, opts = {}) {
     if (!this.alive || this.spawnProtect > 0 && !opts.ignoreProtect) return false;
-    this.hp -= amount;
+    if (!(amount > 0)) return false;
+    let dmg = amount;
+    // الخوذة تمتصّ جزءًا من ضرر الرأس، والدرع يمتصّ جزءًا من كل ضرر (نفس أرقام نسخة Godot)
+    if (opts.headshot && this.helmetLevel > 0) dmg *= 1 - [0, 0.15, 0.25, 0.35][clamp(this.helmetLevel, 0, 3)];
+    if (this.armor > 0 && this.armorLevel > 0) {
+      this.armorHit = 0.2;
+      const absorb = dmg * [0, 0.3, 0.42, 0.55][clamp(this.armorLevel, 0, 3)];
+      const taken = Math.min(this.armor, absorb);
+      this.armor -= taken;
+      dmg -= taken;
+      if (this.armor <= 0.01) { this.armor = 0; this.armorLevel = 0; }
+    }
+    this.hp -= dmg;
     this.hitFlash = 0.18;
     this.lastDamageTime = opts.time || 0;
-    if (opts.attacker) this.lastHitBy = opts.attacker;
+    if (opts.attacker) {
+      this.lastHitBy = opts.attacker;
+      this.damageLog = this.damageLog || [];
+      if (opts.attacker !== this && !this.damageLog.includes(opts.attacker)) this.damageLog.push(opts.attacker);
+    }
     if (this.hp <= 0) {
       this.hp = 0;
       if (opts.instantKill || this.team < 0) return this.die(opts);

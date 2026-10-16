@@ -135,6 +135,15 @@ JOBS: dict[str, dict] = {
     "sheet_operators_new": {"desc": "بورتريهات 10 مشغّلين جدد", "target": (0, 0), "alpha": True},
     "bg_parallax_oil_rig": {"desc": "طبقة منظر — منصة نفط عند الغروب (16:9)", "target": (1280, 720), "alpha": False},
     "bg_sky_harbor_dawn": {"desc": "طبقة سماء — ميناء عند الفجر (16:9)", "target": (1280, 720), "alpha": False},
+    # --- الدفعة الثانية عشرة: فن ترويجي وملصقات وأيقونة الإصدار ---
+    "promo_hero_squad": {"desc": "فن ترويجي — الفرقة في بلدة محترقة (16:9)", "target": (1280, 720), "alpha": False},
+    "poster_br_drop": {"desc": "ملصق رأسي — إنزال مظلي فوق الوادي", "target": (0, 0), "alpha": False},
+    "promo_naval_assault": {"desc": "فن ترويجي — إنزال بحري على الأرصفة (16:9)", "target": (1280, 720), "alpha": False},
+    "poster_cqb_duel": {"desc": "ملصق رأسي — اشتباك داخل مخزن", "target": (0, 0), "alpha": False},
+    "splash_boot_helmet": {"desc": "شاشة إقلاع — خوذة على أكياس رمل عند الفجر (16:9)", "target": (1280, 720), "alpha": False},
+    "promo_night_ops": {"desc": "فن ترويجي — غارة ليلية بمناظير رؤية ليلية (16:9)", "target": (1280, 720), "alpha": False},
+    "promo_lan_squad": {"desc": "فن ترويجي — الفرقة على السطح عند الغروب (16:9)", "target": (1280, 720), "alpha": False},
+    "store_feature_banner": {"desc": "بانر المتجر العريض — بانوراما ساحة القتال", "target": (0, 0), "alpha": False},
     # --- الدفعة الحادية عشرة: مصغّرات الخرائط + فن رئيسي + ملصقات النصر/الهزيمة + أوسمة + بورتريهات + صناديق
     "sheet_map_thumbs_a": {"desc": "مصغّرات خرائط — الجزء الأول (12 خريطة)", "target": (0, 0), "alpha": True},
     "sheet_map_thumbs_b": {"desc": "مصغّرات خرائط — الجزء الثاني (8 خرائط)", "target": (0, 0), "alpha": True},
