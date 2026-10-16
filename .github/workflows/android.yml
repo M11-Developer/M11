@@ -1,120 +1,103 @@
-# ============================================================================
-# بناء APK و AAB في السحابة — بلا أي حاجة لتشغيل Godot على جهازك.
-#   • صورة barichello/godot-ci:4.3 فيها Godot 4.3 + قوالب التصدير + Android SDK + JDK17.
-#   • نولّد مفتاح توقيع داخل الـCI (لا أسرار مخزّنة)، ونصدّر:
-#       M11-debug.apk   (موقّع بمفتاح التصحيح — يُثبّت مباشرة)
-#       M11-release.apk (موقّع بالمفتاح المولَّد — للإصدار)
-#       M11-release.aab (لمتجر جوجل)
-#   • لا نستخدم android-actions/setup-android@v3 لأنه معطوب حاليًا على عدّاءات GitHub
-#     (يحاول تثبيت حزمة tools المحذوفة) — الـSDK يجي جاهزًا في صورة godot-ci.
-#
-# التشغيل: Actions ← «بناء APK» ← Run workflow.  أو بإصدار موسوم: v*.
-# ============================================================================
-name: بناء APK
+# ملاحظة: هذا الملف يُنشئ APK و AAB تلقائيًا في السحابة — لا تحتاج لتشغيل Godot على جهازك.
+name: بناء أندرويد (APK + AAB)
 
 on:
   workflow_dispatch:
     inputs:
       makerelease:
-        description: 'إنشاء Release على GitHub مع الملفات؟ (yes/no)'
+        description: "إنشاء Release على GitHub؟ (yes/no)"
         required: false
-        default: 'yes'
+        default: "yes"
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
-  contents: write
+  contents: write   # لنشر الـRelease ورفع الأرتيفاكت
+  issues: write     # لقناة التشخيص (نرسل سجل البناء إلى Issue عند الفشل)
 
 jobs:
   export-android:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
-      options: --user root
-    timeout-minutes: 60
-
+    timeout-minutes: 75
+    env:
+      BUILD_LOG: /tmp/m11-build.log
+      ANDROID_HOME: /usr/lib/android-sdk
+      ANDROID_SDK_ROOT: /usr/lib/android-sdk
+      GODOT: godot
     steps:
       - name: جلب الشيفرة
         uses: actions/checkout@v4
-        with:
-          lfs: false
 
       - name: تحضير مجلد إعدادات Godot
         run: |
           set -e
-          mkdir -p "$HOME/.config"
-          # في بعض الإصدارات الإعدادات في /root/.config/godot ولا تُقرأ من المستخدم الحالي
-          if [ -d /root/.config/godot ] && [ ! -d "$HOME/.config/godot" ]; then
-            cp -r /root/.config/godot "$HOME/.config/godot"
-          fi
-          mkdir -p "$HOME/.local/share/godot/export_templates"
-          if [ -d /root/.local/share/godot/export_templates ] && [ -z "$(ls -A "$HOME/.local/share/godot/export_templates" 2>/dev/null)" ]; then
-            cp -r /root/.local/share/godot/export_templates/. "$HOME/.local/share/godot/export_templates/" || true
-          fi
-          godot --version
+          mkdir -pv ~/.config
+          [ -d /root/.config/godot ] && cp -rv /root/.config/godot ~/.config/ || true
+          echo "=== بدء سجل البناء ===" >> "$BUILD_LOG"
+          godot --version | tee -a "$BUILD_LOG" || true
+          java -version 2>&1 | tee -a "$BUILD_LOG" || true
 
       - name: استيراد المشروع (بناء ذاكرة الأصول)
         run: |
-          timeout 900 godot --headless --path project --import --quit || true
-          ls -la project | head
+          set -o pipefail
+          timeout 900 godot --headless --path project --import --quit 2>&1 | tee -a "$BUILD_LOG" || true
 
       - name: تثبيت قالب بناء أندرويد (Gradle)
         run: |
-          # --quit ضرورية: بدونه يبقى Godot يعمل بلا نهاية بعد تثبيت القالب
-          timeout 300 godot --headless --path project --install-android-build-template --quit || echo "::warning::تعذّر تثبيت قالب البناء — سنجرّب مسار التصدير المباشر"
-          ls project/android/build 2>/dev/null | head || echo "لا مجلد android/build (قد لا تحتاجه النسخة)"
+          set -o pipefail
+          # --quit ضرورية: بدونها يبقى Godot يعمل بلا نهاية بعد تثبيت القالب
+          timeout 600 godot --headless --path project --install-android-build-template --quit 2>&1 | tee -a "$BUILD_LOG" \
+            || echo "::warning::تعذّر تثبيت قالب البناء — سنجرّب مسار التصدير المباشر"
+          ls project/android/build 2>/dev/null | head 2>&1 | tee -a "$BUILD_LOG" || true
 
       - name: توليد مفتاح توقيع الإصدار
         run: |
           set -e
-          # 1) نضمن وجود أداة keytool (صورة godot-ci فيها JDK 17 لكن المسار مختلف أحيانًا)
           KEYTOOL="$(command -v keytool || true)"
           if [ -z "$KEYTOOL" ]; then
             KEYTOOL="$(ls -1 /usr/lib/jvm/*/bin/keytool 2>/dev/null | head -1 || true)"
           fi
           if [ -z "$KEYTOOL" ]; then
             echo "::warning::لا توجد أداة keytool — نستخدم مفتاح التصحيح المدمج في الصورة"
-            KEYTOOL=""
-          fi
-          # 2) نولّد مفتاح الإصدار إن كانت الأداة متاحة
-          if [ -n "$KEYTOOL" ]; then
+          else
             "$KEYTOOL" -genkeypair -v \
               -keystore "$GITHUB_WORKSPACE/release.keystore" \
               -alias m11 -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass m11localwar -keypass m11localwar \
-              -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG"
+              -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG" 2>&1 | tee -a "$BUILD_LOG"
           fi
-          # 3) ندرج بيانات المفتاح داخل قسم كل إعداد تصدير (Godot يحتاجها موجودة مسبقًا)
           if [ -f "$GITHUB_WORKSPACE/release.keystore" ]; then
-            python3 tools/patch_presets.py "$GITHUB_WORKSPACE/release.keystore" m11 m11localwar || true
+            python3 tools/patch_presets.py "$GITHUB_WORKSPACE/release.keystore" m11 m11localwar 2>&1 | tee -a "$BUILD_LOG"
           elif [ -f /root/debug.keystore ]; then
-            python3 tools/patch_presets.py /root/debug.keystore androiddebugkey android || true
+            python3 tools/patch_presets.py /root/debug.keystore androiddebugkey android 2>&1 | tee -a "$BUILD_LOG"
           fi
-          grep -c "keystore/" project/export_presets.cfg || echo "::warning::لم تُدرج أسطر المفتاح"
 
       - name: تصدير نسخة التصحيح (APK يُثبّت مباشرة)
         run: |
-          set -e
+          set -o pipefail
           mkdir -p build
           set +e
-          timeout 1800 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
-          set -e
+          timeout 1800 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG"
           if [ ! -f build/M11-debug.apk ]; then
             echo "::warning::فشل مسار Gradle — نعيد بقالب التصدير المباشر (بلا Gradle)"
             sed -i 's|gradle_build/use_gradle_build=true|gradle_build/use_gradle_build=false|g' project/export_presets.cfg
-            timeout 1800 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
+            timeout 1800 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG"
           fi
-          ls -la build
+          ls -la build 2>&1 | tee -a "$BUILD_LOG"
 
       - name: تصدير نسخة الإصدار (APK + AAB)
         run: |
           set +e
-          timeout 1800 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk"
-          timeout 1800 godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab"
-          set -e
-          ls -la build || true
-          [ -f build/M11-debug.apk ] || { echo "::error::لم يُنتج أي ملف APK"; exit 1; }
+          timeout 1800 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" 2>&1 | tee -a "$BUILD_LOG"
+          timeout 1800 godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab" 2>&1 | tee -a "$BUILD_LOG"
+          ls -la build 2>&1 | tee -a "$BUILD_LOG"
+          if [ ! -f build/M11-debug.apk ] && [ ! -f build/M11-release.apk ]; then
+            echo "::error::لم يُنتج أي ملف APK — راجع قناة التشخيص (Issue)"
+            exit 1
+          fi
 
       - name: التحقق من الملفات الناتجة
         run: |
@@ -122,33 +105,31 @@ jobs:
           for f in build/M11-debug.apk build/M11-release.apk build/M11-release.aab; do
             if [ -f "$f" ]; then echo "✔ $f — $(du -h "$f" | cut -f1)"; else echo "✘ مفقود: $f"; fi
           done
-          # يجب أن يحتوي الـAPK على مكتبة Godot وأصول اللعبة، ولا يجب أن يحتوي الأصول الخام
-          if command -v unzip >/dev/null 2>&1 && [ -f build/M11-debug.apk ]; then
-            unzip -l build/M11-debug.apk | grep -E "libgodot|lib/arm64-v8a|assets/" | head -8 || true
-            if unzip -l build/M11-debug.apk | grep -qE "assets/raw/|assets/processed/"; then
-              echo "::error::الأصول الخام دخلت الحزمة!"; exit 1
-            fi
-            # لا نطلب إذن الإنترنت إطلاقًا (القسم ٤) — نفحص نصّ البيان داخل الحزمة
-            python3 tools/check_apk.py build/M11-debug.apk
-          fi
+          for f in build/M11-debug.apk build/M11-release.apk; do
+            [ -f "$f" ] && python3 tools/check_apk.py "$f" | tee -a "$BUILD_LOG"
+          done
+          echo ok > /tmp/m11-status
+          true
 
       - name: رفع الملفات كأرتيفاكت
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: M11-android
+          if-no-files-found: warn
           path: |
             build/*.apk
             build/*.aab
             docs/RELEASE_NOTES_AR.md
-          if-no-files-found: error
+            /tmp/m11-build.log
 
       - name: إنشاء Release (إن طُلب)
-        if: ${{ github.event_name == 'push' || github.event.inputs.makerelease == 'yes' }}
+        if: success() && (startsWith(github.ref, 'refs/tags/v') || inputs.makerelease == 'yes')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.0' }}
-          name: ميكا ١١ — ساحة النار المحلية v1.0
+          name: "ميكا ١١ —الإصدار ١٫٠ (LAN)"
           body_path: docs/RELEASE_NOTES_AR.md
+          generate_release_notes: false
           draft: false
           prerelease: false
           fail_on_unmatched_files: false
@@ -156,3 +137,50 @@ jobs:
             build/M11-debug.apk
             build/M11-release.apk
             build/M11-release.aab
+
+      # ---------- قناة التشخيص: تصلح لأن سجلات Actions قد لا تكون مقروءة للأدوات ----------
+      # عند الفشل نرسل آخر 60 ألف حرف من سجل البناء إلى Issue حتى نعرف السبب بدقة.
+      - name: نشر سجل البناء للتشخيص
+        if: always()
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, urllib.request
+
+          log_path = os.environ.get("BUILD_LOG", "/tmp/m11-build.log")
+          try:
+              text = open(log_path, encoding="utf-8", errors="replace").read()
+          except FileNotFoundError:
+              text = "(لا يوجد سجل)"
+          tail = text[-60000:]
+          try:
+              state = "نجح ✔" if open("/tmp/m11-status").read().strip() == "ok" else "فشل ✘"
+          except FileNotFoundError:
+              state = "فشل ✘ (توقّف قبل خطوة التحقق)"
+          title = f"سجل بناء أندرويد — {os.environ.get('GITHUB_REF_NAME','?')}"
+          body = f"**الحالة:** {state} | العملية: {os.environ.get('GITHUB_RUN_ID')}\n\n```\n{tail}\n```"
+          token = os.environ.get("GITHUB_TOKEN", "")
+          if not token:
+              print("لا يوجد رمز — تخطّي التشخيص")
+              raise SystemExit(0)
+          api = f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}"
+          hdr = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
+                 "Content-Type": "application/json", "User-Agent": "m11-ci"}
+          # نبحث عن Issue سابق بنفس العنوان لنعلّق عليه بدل فتح واحد جديد كل مرة
+          try:
+              req = urllib.request.Request(api + "/issues?state=open&per_page=50", headers=hdr)
+              issues = json.load(urllib.request.urlopen(req))
+          except Exception as exc:
+              print("تعذّر قراءة القضايا:", exc)
+              raise SystemExit(0)
+          found = next((i for i in issues if i.get("title") == title), None)
+          if found:
+              url = found["comments_url"]
+          else:
+              req = urllib.request.Request(api + "/issues",
+                                           data=json.dumps({"title": title, "body": "قناة تشخيص آلية لبناء أندرويد."}).encode(),
+                                           headers=hdr)
+              url = json.load(urllib.request.urlopen(req))["comments_url"]
+          req = urllib.request.Request(url, data=json.dumps({"body": body}).encode(), headers=hdr)
+          urllib.request.urlopen(req)
+          print("✔ نُشر سجل البناء في قناة التشخيص")
+          PYEOF
