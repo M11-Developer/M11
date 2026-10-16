@@ -70,20 +70,27 @@ jobs:
         run: |
           set +e
           DEST="$HOME/.local/share/godot/export_templates/4.3.stable"
-          if [ ! -f "$DEST/android_debug.apk" ]; then
-            echo "قوالب التصدير غير موجودة — ننزّلها من GitHub"
-            mkdir -p "$HOME/.local/share/godot/export_templates"
-            curl -sSL -o /tmp/templates.tpz \
-              "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz" \
-              2>&1 | tail -2
-            mkdir -p /tmp/tpl && unzip -oq /tmp/templates.tpz -d /tmp/tpl
-            mv /tmp/tpl/templates "$DEST" 2>/dev/null || true
+          mkdir -p "$HOME/.local/share/godot"
+          # صورة godot-ci تضع القوالب في /root لأن بناءها كان بـ HOME=/root،
+          # لكن تشغيل Actions يجعل HOME=/github/home — لذلك نربط المجلد.
+          if [ -d /root/.local/share/godot/export_templates ]; then
+            ln -sfn /root/.local/share/godot/export_templates "$HOME/.local/share/godot/export_templates"
+            cp -rn /root/.local/share/godot/export_templates/. "$HOME/.local/share/godot/export_templates/" 2>/dev/null
           fi
-          ls -1 "$DEST" 2>/dev/null | head -20
-          {
-            echo "== محتوى مجلد القوالب =="
-            ls -1 "$DEST" 2>/dev/null | tr '\n' ' '
-          } >> "$BUILD_LOG"
+          mkdir -p "$DEST"
+          if [ ! -f "$DEST/android_debug.apk" ]; then
+            echo "--- القوالب غير موجودة — ننزّلها ---" | tee -a "$BUILD_LOG"
+            curl -sSL -w "http=%{http_code} bytes=%{size_download}" -o /tmp/templates.tpz \
+              "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz" 2>&1 | tee -a "$BUILD_LOG"
+            rm -rf /tmp/tpl && mkdir -p /tmp/tpl && unzip -oq /tmp/templates.tpz -d /tmp/tpl
+            cp -rf /tmp/tpl/templates/. "$DEST/" 2>/dev/null
+          fi
+          FOUND="$(find / -maxdepth 7 -name 'android_debug.apk' -not -path '*/proc/*' 2>/dev/null | head -3 | tr '\n' ' ')"
+          if [ -f "$DEST/android_debug.apk" ]; then
+            echo "::notice title=TEMPLATES-OK::قوالب أندرويد جاهزة في $DEST"
+          else
+            echo "::error title=TEMPLATES-MISSING::الملف المطلوب: $DEST/android_debug.apk | موجود في: $FOUND | محتوى المجلد: $(ls -1 "$DEST" 2>/dev/null | tr '\n' ' ') | جذر القوالب: $(ls -1 /root/.local/share/godot/export_templates 2>/dev/null | tr '\n' ' ')"
+          fi
           true
 
       - name: تجهيز أدوات أندرويد (منصّة ٣٥ وأدوات البناء)
@@ -97,8 +104,15 @@ jobs:
             yes | "$SDKM" --sdk_root=/usr/lib/android-sdk --licenses >/dev/null 2>&1
             yes | "$SDKM" --sdk_root=/usr/lib/android-sdk "platforms;android-35" "build-tools;35.0.0" "platform-tools" 2>&1 | tail -6 | tee -a "$BUILD_LOG"
           fi
-          echo "platforms=$(ls -1 /usr/lib/android-sdk/platforms 2>/dev/null | tr '\n' ' ')" | tee -a "$BUILD_LOG"
-          echo "build-tools=$(ls -1 /usr/lib/android-sdk/build-tools 2>/dev/null | tr '\n' ' ')" | tee -a "$BUILD_LOG"
+          PL="$(ls -1 /usr/lib/android-sdk/platforms 2>/dev/null | tr '\n' ' ')"
+          BT="$(ls -1 /usr/lib/android-sdk/build-tools 2>/dev/null | tr '\n' ' ')"
+          echo "platforms=$PL" | tee -a "$BUILD_LOG"
+          echo "build-tools=$BT" | tee -a "$BUILD_LOG"
+          if [ -d /usr/lib/android-sdk/platforms/android-35 ]; then
+            echo "::notice title=SDK-OK::منصّة ٣٥ جاهزة | أدوات البناء: $BT"
+          else
+            echo "::warning title=SDK-35-MISSING::المنصّات المتاحة: $PL | أدوات البناء: $BT"
+          fi
           true
 
       - name: استيراد المشروع (بناء ذاكرة الأصول)
