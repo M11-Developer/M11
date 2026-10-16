@@ -119,8 +119,21 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          timeout 1200 godot --headless --path project --import --quit 2>&1 | tee -a "$BUILD_LOG"
-          echo "import_exit=$?"
+          # --editor يستورد كل الملفات (الخطوط والأطالس والقوالب) — هو نفس ما تفعله
+          # صورة godot-ci في مثالها الرسمي، وبعده --import للتأكيد
+          timeout 1500 godot --headless --path project --editor --quit 2>&1 | tee -a "$BUILD_LOG"
+          echo "editor_exit=$?" | tee -a "$BUILD_LOG"
+          timeout 900 godot --headless --path project --import --quit 2>&1 | tee -a "$BUILD_LOG"
+          echo "import_exit=$?" | tee -a "$BUILD_LOG"
+          # فحص مهم: هل سُجّلت الأصناف العامة (class_name)؟ غيابها يعني فشل الاستيراد
+          CACHE="project/.godot/global_script_class_cache.cfg"
+          if [ -f "$CACHE" ]; then
+            echo "::notice title=CLASS-CACHE::الملف موجود | GameWorld: $(grep -c GameWorld "$CACHE") | M11Data: $(grep -c M11Data "$CACHE") | أطالس مستوردة: $(ls project/.godot/imported 2>/dev/null | wc -l)"
+          else
+            echo "::error title=NO-CLASS-CACHE::لم يُبنَ ملف cache الأصناف — الاستيراد لم يكتمل"
+          fi
+          ls project/.godot 2>/dev/null | head -8 | tee -a "$BUILD_LOG"
+          true
 
       - name: فحص تحليل كل ملف GDScript (بعد الاستيراد)
         continue-on-error: true
