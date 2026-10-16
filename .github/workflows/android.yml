@@ -56,12 +56,13 @@ jobs:
 
       - name: استيراد المشروع (بناء ذاكرة الأصول)
         run: |
-          godot --headless --path project --import --quit || true
+          timeout 900 godot --headless --path project --import --quit || true
           ls -la project | head
 
       - name: تثبيت قالب بناء أندرويد (Gradle)
         run: |
-          godot --headless --path project --install-android-build-template
+          # --quit ضرورية: بدونه يبقى Godot يعمل بلا نهاية بعد تثبيت القالب
+          timeout 300 godot --headless --path project --install-android-build-template --quit || echo "::warning::تعذّر تثبيت قالب البناء — سنجرّب مسار التصدير المباشر"
           ls project/android/build 2>/dev/null | head || echo "لا مجلد android/build (قد لا تحتاجه النسخة)"
 
       - name: توليد مفتاح توقيع الإصدار
@@ -83,20 +84,20 @@ jobs:
           set -e
           mkdir -p build
           set +e
-          godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
+          timeout 1800 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
           set -e
           if [ ! -f build/M11-debug.apk ]; then
             echo "::warning::فشل مسار Gradle — نعيد بقالب التصدير المباشر (بلا Gradle)"
             sed -i 's|gradle_build/use_gradle_build=true|gradle_build/use_gradle_build=false|g' project/export_presets.cfg
-            godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
+            timeout 1800 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
           fi
           ls -la build
 
       - name: تصدير نسخة الإصدار (APK + AAB)
         run: |
           set +e
-          godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk"
-          godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab"
+          timeout 1800 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk"
+          timeout 1800 godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab"
           set -e
           ls -la build || true
           [ -f build/M11-debug.apk ] || { echo "::error::لم يُنتج أي ملف APK"; exit 1; }
