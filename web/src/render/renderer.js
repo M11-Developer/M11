@@ -977,9 +977,29 @@ export class Renderer {
 
   drawVehicles(ctx, cam, world) {
     const v = cam.viewRect(64);
+    // مركبات من أطالس الصور (vehicles_land): مدرعة للمدفع الثابت، جيب للدراجة،
+    // وقاطرة/شاحنة كمركبات ساكنة في الخريطة. وإن غاب الأطلس نرجع للرسم البرمجي.
+    const vehAtlas = this.assets.get('vehicles_land');
+    const VEH_SPRITE = { mg: 'apc', bike: 'jeep', drone: 'truck' };
     for (const veh of world.vehicles) {
       if (!veh.active) continue;
       if (veh.x < v.x - 64 || veh.x > v.x + v.w + 64) continue;
+      if (vehAtlas && VEH_SPRITE[veh.type]) {
+        const key = `vehicles_land/${VEH_SPRITE[veh.type]}`;
+        if (vehAtlas.has(key)) {
+          const f = vehAtlas.frame(key);
+          vehAtlas.draw(ctx, key, Math.round(veh.x) - (f.w - veh.w) / 2,
+                        Math.round(veh.y) + veh.h - f.h, 1, false);
+          if (veh.hp < veh.maxHp) {
+            ctx.fillStyle = '#0B0D10';
+            ctx.fillRect(Math.round(veh.x) - 1, Math.round(veh.y) - 12, veh.w + 2, 4);
+            ctx.fillStyle = '#7FD2F5';
+            ctx.fillRect(Math.round(veh.x), Math.round(veh.y) - 11,
+                         Math.round(veh.w * clamp(veh.hp / veh.maxHp, 0, 1)), 2);
+          }
+          continue;
+        }
+      }
       ctx.save();
       const body = veh.type === 'bike' ? '#5A4A38' : veh.type === 'drone' ? '#3E4A56' : '#4A5240';
       const dark = '#22262B';
