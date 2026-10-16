@@ -1,43 +1,43 @@
 [
  {
   "theme": "urban",
-  "tiles": 20,
+  "tiles": 24,
   "size": [
    34,
    4096,
    4
   ],
-  "mb": 0.02
+  "mb": 0.024
  },
  {
   "theme": "cave",
-  "tiles": 22,
+  "tiles": 24,
   "size": [
    34,
    4096,
    4
   ],
-  "mb": 0.037
+  "mb": 0.039
  },
  {
   "theme": "port",
-  "tiles": 9,
+  "tiles": 26,
   "size": [
    34,
    4096,
    4
   ],
-  "mb": 0.017
+  "mb": 0.047
  },
  {
   "theme": "swamp",
-  "tiles": 43,
+  "tiles": 63,
   "size": [
    34,
    4096,
    4
   ],
-  "mb": 0.068
+  "mb": 0.094
  },
  {
   "theme": "snow",
@@ -50,33 +50,63 @@
   "mb": 0.022
  },
  {
-  "theme": "industrial",
-  "tiles": 41,
+  "theme": "space",
+  "tiles": 15,
   "size": [
    34,
    4096,
    4
   ],
-  "mb": 0.046
+  "mb": 0.014
+ },
+ {
+  "theme": "industrial",
+  "tiles": 44,
+  "size": [
+   34,
+   4096,
+   4
+  ],
+  "mb": 0.052
  },
  {
   "theme": "sand",
-  "tiles": 2,
+  "tiles": 28,
   "size": [
    34,
    4096,
    4
   ],
-  "mb": 0.005
+  "mb": 0.04
  },
  {
   "theme": "ship",
-  "tiles": 59,
+  "tiles": 60,
   "size": [
    34,
    4096,
    4
   ],
   "mb": 0.054
+ },
+ {
+  "theme": "deck",
+  "tiles": 18,
+  "size": [
+   34,
+   4096,
+   4
+  ],
+  "mb": 0.014
+ },
+ {
+  "theme": "village",
+  "tiles": 16,
+  "size": [
+   34,
+   4096,
+   4
+  ],
+  "mb": 0.02
  }
 ]

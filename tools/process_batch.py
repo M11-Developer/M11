@@ -28,7 +28,8 @@ sys.path.insert(0, HERE)
 
 from m11lib import draw as D          # noqa: E402
 from m11lib import palette as pal     # noqa: E402
-from process_asset import strip_chroma_key, strip_background, _clean_stray  # noqa: E402
+from process_asset import (strip_chroma_key, strip_background, defringe,
+                           neutralize_shadow, _clean_stray)  # noqa: E402
 
 RAW_DIR = os.path.join(ROOT, "project", "assets", "raw")
 OUT_DIR = os.path.join(ROOT, "project", "assets", "processed")
@@ -78,6 +79,7 @@ JOBS: dict[str, dict] = {
     "sheet_cars_wrecked": {"desc": "سيارات مدنية محطمة (8 مركبات)", "target": (0, 0), "alpha": True},
     "sheet_platforms_industrial": {"desc": "منصات وجسور صناعية (12 قطعة)", "target": (0, 0), "alpha": True},
     "sheet_flags": {"desc": "رايات وأعلام بلا شعارات (10 قطع)", "target": (0, 0), "alpha": True},
+
     # --- الدفعة السادسة: بحرية/سفن + لافتات + مؤثرات كبيرة + أيقونات أوضاع + مبانٍ
     "sheet_signs": {"desc": "لافتات ولوحات فارغة بلا نص (12 قطعة)", "target": (0, 0), "alpha": True},
     "bg_parallax_sea_storm": {"desc": "طبقة منظر — بحر عاصف (16:9)", "target": (1280, 720), "alpha": False},
@@ -89,6 +91,17 @@ JOBS: dict[str, dict] = {
     "sheet_gas_smoke_fx": {"desc": "غازات ودخان (10 عناصر مؤثرات)", "target": (0, 0), "alpha": True},
     "sheet_mode_icons": {"desc": "أيقونات أوضاع اللعب (16 أيقونة)", "target": (0, 0), "alpha": True},
     "sheet_buildings_large": {"desc": "مبانٍ كبيرة معيارية (8 مبانٍ)", "target": (0, 0), "alpha": True},
+    # --- الدفعة السابعة: تايلات مكمّلة + مركبات أرضية + ديكور + واجهة لمس + شعارات + مختبر
+    "tileset_space": {"desc": "مجموعة تايلات — محطة فضائية بسقف وأرضية", "target": (0, 0), "alpha": True},
+    "tileset_deck_naval": {"desc": "مجموعة تايلات — سطح سفينة حربية", "target": (0, 0), "alpha": True},
+    "tileset_village_clay": {"desc": "مجموعة تايلات — قرية طينية صحراوية", "target": (0, 0), "alpha": True},
+    "sheet_vehicles_land": {"desc": "مركبات أرضية (8 مركبات)", "target": (0, 0), "alpha": True},
+    "sheet_road_props": {"desc": "ديكور شوارع ومرور (12 قطعة)", "target": (0, 0), "alpha": True},
+    "sheet_props_nature": {"desc": "عناصر طبيعية إضافية (12 عنصرًا)", "target": (0, 0), "alpha": True},
+    "sheet_props_indoor": {"desc": "أثاث داخلي (12 قطعة)", "target": (0, 0), "alpha": True},
+    "sheet_ui_touch": {"desc": "عناصر واجهة لمس كبيرة (16 عنصرًا)", "target": (0, 0), "alpha": True},
+    "sheet_team_badges": {"desc": "شعارات فرق وأوسمة (12 شعارًا)", "target": (0, 0), "alpha": True},
+    "sheet_corp_lab": {"desc": "عتاد مختبر وشركة (12 قطعة)", "target": (0, 0), "alpha": True},
     "sheet_props_indoor": {"desc": "عناصر داخلية/صناعية (12 عنصرًا)", "target": (0, 0), "alpha": True},
     "sheet_weather_effects": {"desc": "طبقات طقس (مطر/ثلج/ضباب/رمال/شرر)", "target": (0, 0), "alpha": True},
     "sheet_impact_decals": {"desc": "آثار الطلقات والانفجارات (16 أثرًا)", "target": (0, 0), "alpha": True},
@@ -139,6 +152,8 @@ def process_one(name: str, cfg: dict, scratch: list[str]) -> dict:
         transparent_ratio = float((keyed[..., 3] < 32).mean())
     out = keyed
     # 2) تنظيف البكسلات الشاردة
+    out = defringe(out)
+    out = neutralize_shadow(out)
     out = _clean_stray(out)
     # 3) تكميم الألوان على اللوحة الرئيسية
     out = D.quantize(out, pal.table())
@@ -203,7 +218,7 @@ def guess_job(path: str) -> dict:
         w, h = im.size
         a = np.array(im.convert("RGBA"))[..., 3]
     has_alpha = bool((a < 32).mean() > 0.01)
-    keyed = strip_chroma_key(np.array(_I.open(path).convert("RGBA")))
+    keyed = defringe(strip_chroma_key(np.array(_I.open(path).convert("RGBA"))))
     has_key = bool((keyed[..., 3] < 32).mean() > 0.02)
     alpha = has_alpha or has_key
     ratio = w / max(1, h)

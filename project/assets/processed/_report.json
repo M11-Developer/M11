@@ -460,7 +460,7 @@
  },
  "sheet_props_nature": {
   "name": "sheet_props_nature",
-  "desc": "عناصر طبيعية للخرائط (12 عنصرًا)",
+  "desc": "عناصر طبيعية إضافية (12 عنصرًا)",
   "status": "ok",
   "raw_size": [
    1408,
@@ -471,9 +471,9 @@
    768
   ],
   "scale": 1,
-  "transparent_pct": 69.1,
-  "kb_raw": 1489.9,
-  "kb_out": 838.0
+  "transparent_pct": 70.8,
+  "kb_raw": 1680.7,
+  "kb_out": 1102.4
  },
  "sheet_props_indoor": {
   "name": "sheet_props_indoor",
@@ -488,9 +488,9 @@
    768
   ],
   "scale": 1,
-  "transparent_pct": 68.7,
-  "kb_raw": 1300.4,
-  "kb_out": 689.6
+  "transparent_pct": 73.3,
+  "kb_raw": 1342.7,
+  "kb_out": 173.0
  },
  "sheet_weather_effects": {
   "name": "sheet_weather_effects",
@@ -967,5 +967,141 @@
   "transparent_pct": 58.0,
   "kb_raw": 1487.6,
   "kb_out": 678.3
+ },
+ "tileset_space": {
+  "name": "tileset_space",
+  "desc": "مجموعة تايلات — محطة فضائية بسقف وأرضية",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 15.9,
+  "kb_raw": 1724.2,
+  "kb_out": 277.4
+ },
+ "tileset_deck_naval": {
+  "name": "tileset_deck_naval",
+  "desc": "مجموعة تايلات — سطح سفينة حربية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 17.2,
+  "kb_raw": 1763.3,
+  "kb_out": 422.0
+ },
+ "tileset_village_clay": {
+  "name": "tileset_village_clay",
+  "desc": "مجموعة تايلات — قرية طينية صحراوية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 37.2,
+  "kb_raw": 1870.9,
+  "kb_out": 321.1
+ },
+ "sheet_vehicles_land": {
+  "name": "sheet_vehicles_land",
+  "desc": "مركبات أرضية (8 مركبات)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 70.2,
+  "kb_raw": 1335.8,
+  "kb_out": 801.6
+ },
+ "sheet_road_props": {
+  "name": "sheet_road_props",
+  "desc": "ديكور شوارع ومرور (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.6,
+  "kb_raw": 1576.0,
+  "kb_out": 869.3
+ },
+ "sheet_ui_touch": {
+  "name": "sheet_ui_touch",
+  "desc": "عناصر واجهة لمس كبيرة (16 عنصرًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 69.6,
+  "kb_raw": 1285.6,
+  "kb_out": 102.4
+ },
+ "sheet_team_badges": {
+  "name": "sheet_team_badges",
+  "desc": "شعارات فرق وأوسمة (12 شعارًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 55.0,
+  "kb_raw": 1607.5,
+  "kb_out": 206.8
+ },
+ "sheet_corp_lab": {
+  "name": "sheet_corp_lab",
+  "desc": "عتاد مختبر وشركة (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.1,
+  "kb_raw": 1685.9,
+  "kb_out": 350.4
  }
 }

@@ -49,6 +49,44 @@ var map_w := 0
 var map_h := 0
 var tiles: PackedByteArray = PackedByteArray()
 var heights: PackedInt32Array = PackedInt32Array()
+
+# الديكور حسب الثيم — نفس الجدول في نسخة الويب (web/src/game/world.js).
+# الصيغة "p:<atlas>/<name>" تعني: ارسم العنصر من أطلس الذكاء الاصطناعي هذا.
+const THEME_DECOR := {
+	"city": [["props_road/lamp", 3], ["props_road/dumpster", 2], ["props_road/hydrant", 1],
+		["props_road/bus_shelter", 1], ["props_road/tires", 2], ["props_debris/concrete_chunk", 3],
+		["props_debris/rebar", 2], ["props_debris/bricks", 2], ["props_indoor/chair", 1]],
+	"base": [["props_lab/drum", 2], ["props_lab/crates", 3], ["props_lab/server_rack", 1],
+		["props_lab/generator", 2], ["props_lab/cylinders", 1], ["props_lab/hazmat_box", 2],
+		["props_road/bollard", 3], ["props_debris/girder", 2], ["props_debris/pipe_rusty", 2]],
+	"desert": [["props_nature/cactus", 3], ["props_nature/boulder", 3], ["props_nature/rocks", 3],
+		["props_nature/dead_tree", 2], ["props_road/cone", 2], ["props_road/jersey_barrier", 2],
+		["props_debris/wood_pile", 2], ["props_debris/bricks", 2], ["props_nature/leaf_pile", 2]],
+	"village": [["props_nature/palm", 3], ["props_nature/bush", 3], ["props_nature/leaf_pile", 3],
+		["props_indoor/rug_roll", 1], ["props_indoor/table", 1], ["props_road/tires", 2],
+		["props_debris/wood_pile", 2], ["props_nature/mushrooms", 2], ["props_indoor/chair", 1]],
+	"forest": [["props_trees/oak_big", 3], ["props_nature/log", 3], ["props_nature/bush", 4],
+		["props_nature/cattail", 3], ["props_nature/mushrooms", 3], ["props_nature/rocks", 3],
+		["props_debris/wood_pile", 2], ["props_nature/thorn_bush", 3], ["props_trees/birch_bare", 2]],
+	"port": [["props_lab/drum", 3], ["props_road/tires", 3], ["props_road/barrier", 2],
+		["props_debris/barrel_red", 2], ["props_debris/pipe_water", 2], ["props_lab/crates", 3],
+		["props_debris/wire_coil", 2], ["props_road/jersey_barrier", 2], ["props_road/hydrant", 1]],
+	"snow": [["props_trees/pine_snow", 3], ["props_nature/boulder", 3], ["props_debris/ice_shards", 3],
+		["props_nature/rocks", 3], ["props_trees/birch_bare", 2], ["props_debris/concrete_chunk", 2],
+		["props_nature/dead_tree", 2], ["props_debris/wood_pile", 2], ["props_road/cone", 2]],
+	"space": [["props_lab/server_rack", 3], ["props_lab/vat", 2], ["props_lab/decon_arch", 1],
+		["props_lab/pipe_elbow", 3], ["props_lab/breaker", 2], ["props_lab/wall_fan", 2],
+		["props_debris/girder", 3], ["props_debris/i_beam", 2], ["props_lab/plastic_crates", 2]],
+}
+
+# ثيمات اللعبة → مجموعة الديكور المناسبة
+const DECOR_FOR_THEME := {
+	"city": "city", "base": "base", "desert": "desert", "forest": "forest", "port": "port",
+	"village": "village", "snow": "snow", "space": "space", "industrial": "base", "cave": "base",
+	"ruins": "desert", "oasis": "desert", "station": "space", "scifi": "space", "nightbase": "city",
+	"mountain": "snow",
+}
+
 var props: Array = []
 var loot_nodes: Array = []
 var spawns: Array = []
@@ -144,6 +182,21 @@ func _generate(map_id: String) -> void:
 	for i in int(def["trees"]):
 		var x := randi_range(2, map_w - 3)
 		props.append({"type": "tree", "pos": Vector2(x * Config.TILE, heights[x] * Config.TILE - 30), "v": randi() % 3})
+	# ديكور الثيم من أطالس الذكاء الاصطناعي (يبني إحساس "المكان مسكون" لا فارغ)
+	var decor_set: Array = THEME_DECOR.get(DECOR_FOR_THEME.get(String(def["theme"]), "city"), THEME_DECOR["city"])
+	var decor_budget := 24
+	var size_key := String(def.get("size", "medium"))
+	if size_key == "small":
+		decor_budget = 14
+	elif size_key == "large" or size_key == "br":
+		decor_budget = 34
+	for i in decor_budget:
+		var pick: Array = decor_set[randi() % decor_set.size()]
+		if randi_range(1, 10) > int(pick[1]) + 4:
+			continue
+		var dx := randi_range(2, map_w - 3)
+		props.append({"type": "p:" + String(pick[0]),
+			"pos": Vector2(dx * Config.TILE, heights[dx] * Config.TILE)})
 	# ماء
 	for i in int(def["water"]):
 		var x := randi_range(4, map_w - 12)
@@ -305,8 +358,22 @@ func _draw_terrain() -> void:
 				atlas.draw(terrain, key, Vector2(tx * Config.TILE, ty * Config.TILE))
 	# الكائنات
 	for p in props:
-		if atlas:
-			atlas.draw(terrain, "prop/%s" % p["type"], p["pos"])
+		if not atlas:
+			continue
+		var ptype := String(p["type"])
+		if ptype.begins_with("p:"):
+			# عنصر من أطالس الذكاء الاصطناعي: يُثبَّت من قاعدته على الأرض
+			var parts := ptype.substr(2).split("/")
+			if parts.size() == 2:
+				var res: AtlasLoader.AtlasResource = AtlasLoader.instance.get_atlas(parts[0])
+				if res:
+					var fr: Dictionary = res.frames.get(parts[0] + "/" + parts[1], {})
+					if not fr.is_empty():
+						var pos: Vector2 = p["pos"]
+						res.draw(terrain, parts[0] + "/" + parts[1],
+							Vector2(pos.x, pos.y - float(fr["h"])))
+			continue
+		atlas.draw(terrain, "prop/%s" % p["type"], p["pos"])
 
 
 func set_quality(q: int) -> void:

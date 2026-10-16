@@ -85,6 +85,11 @@ class Game {
       tileThemes = (man || []).map((t) => 'tiles_' + t.theme);
       for (const t of tileThemes) names.push(t);
     } catch (e) { /* لا يوجد ملف — نكمل بالأطالس البرمجية */ }
+    // أطالس العناصر المولّدة بالذكاء الاصطناعي (ديكور شوارع، طبيعة، أثاث، مركبات…)
+    try {
+      const pm = await Assets.loadJson('props_manifest.json');
+      for (const e of (pm || [])) names.push(e.atlas);
+    } catch (e) { /* لا يوجد ملف — نكمل بالأطالس البرمجية */ }
     Assets.onProgress = (n, total, name) => setProgress(0.05 + (n / total) * 0.7, `تحميل الرسوم (${n}/${total})…`);
     await Assets.load(names);
 

@@ -31,6 +31,7 @@ from m11lib import palette as pal             # noqa: E402
 from process_asset import strip_chroma_key    # noqa: E402
 
 RAW = os.path.join(ROOT, "project", "assets", "raw")
+PROCESSED = os.path.join(ROOT, "project", "assets", "processed")
 ATLAS_DIR = os.path.join(ROOT, "project", "assets", "atlases")
 WEB_DIR = os.path.join(ROOT, "web", "assets")
 TILE = 32
@@ -46,6 +47,8 @@ SHEETS: dict[str, str] = {
     "industrial": "tileset_military",
     "sand": "tileset_desert",
     "ship": "tileset_ship_interior",
+    "deck": "tileset_deck_naval",       # سطح سفينة حربية (خريطة sea_deck)
+    "village": "tileset_village_clay",  # القرية الطينية (خريطة village)
 }
 
 # ترتيب الأسماء داخل كل مجموعة (البلاطات تُقرأ يسارًا→يمينًا، أعلى→أسفل).
@@ -81,37 +84,72 @@ def _runs(proj: np.ndarray, min_len: int, gap: int = 2) -> list[tuple[int, int]]
     return runs
 
 
-def _grid(img: np.ndarray) -> list[tuple[int, int, int, int]]:
-    """يستخرج مستطيلات البلاطات من أي ورقة (نماذج الصور لا تحترم 32×32).
+def _bands(proj: np.ndarray, thresh: float) -> list[tuple[int, int]]:
+    """يجد مقاطع «الفصل» (أعمدة/صفوف خلفية شبه كاملة) من إسقاط الخلفية."""
+    out, i, n = [], 0, len(proj)
+    while i < n:
+        if proj[i] >= thresh:
+            j = i
+            while j < n and proj[j] >= thresh:
+                j += 1
+            out.append((i, j))
+            i = j
+        else:
+            i += 1
+    return out
 
-    الطريقة: نجد صفوف المحتوى بالإسقاط الرأسي، ثم نقسم كل صف إلى أعمدة بعدد
-    يساوي عرض المحتوى ÷ ارتفاع الصف (لأن البلاطات المولّدة مربّعة عمليًا).
-    هذا يعمل حتى لو تلاصقت البلاطات بلا فواصل فارغة بينها.
+
+def _split_x(mask: np.ndarray, min_cell: int = 40) -> list[tuple[int, int]]:
+    """يقسّم العرض إلى خلايا (أعمدة) عبر مقاطع الخلفية العمودية."""
+    bg = (~mask).mean(axis=0)          # ملف تعريفي بطول العرض (محور x)
+    return _cells(_bands(bg, 0.7), mask.shape[1], min_cell)
+
+
+def _split_y(mask: np.ndarray, min_cell: int = 40) -> list[tuple[int, int]]:
+    """يقسّم الارتفاع إلى خلايا (صفوف) عبر مقاطع الخلفية الأفقية."""
+    bg = (~mask).mean(axis=1)          # ملف تعريفي بطول الارتفاع (محور y)
+    return _cells(_bands(bg, 0.7), mask.shape[0], min_cell)
+
+
+def _cells(seps: list[tuple[int, int]], size: int, min_cell: int) -> list[tuple[int, int]]:
+    """يحوّل مقاطع الفصل إلى حدود خلايا، ثم يدمج الخلايا الأنحف من الحد الأدنى."""
+    edges = [0]
+    for a, b in seps:
+        if a > 0 and b < size:
+            edges.append((a + b) // 2)
+    edges.append(size)
+    raw = [(edges[i], edges[i + 1]) for i in range(len(edges) - 1) if edges[i + 1] - edges[i] >= 6]
+    merged: list[list[int]] = []
+    for a, b in raw:
+        if merged and (b - a) < min_cell:
+            merged[-1][1] = b
+        else:
+            merged.append([a, b])
+    return [(a, b) for a, b in merged if b - a >= min_cell // 2]
+
+
+def _grid(img: np.ndarray) -> list[tuple[int, int, int, int]]:
+    """يستخرج مستطيلات البلاطات من أي ورقة بلاطات (لا نفترض مقاس 32×32 أبدًا).
+
+    الطريقة: نجد مقاطع الخلفية الفاصلة على المحورين (لأن كل الأوراق المولّدة تحتوي
+    فجوات)، فتصير الخلايا هي التقاطع بين مقاطع الأعمدة ومقاطع الصفوف. ثم نقصّ محتوى
+    كل خلية وحده. أي ورقة بلا فجوات تعود لشبكة واحدة (بلاطة واحدة) بلا خطأ.
     """
     a = img[..., 3] > 40
-    rows = _runs(a.any(axis=1), min_len=10, gap=3)
+    rows = _split_y(a)          # نطاقات y (صفوف)
+    cols = _split_x(a)          # نطاقات x (أعمدة)
     boxes: list[tuple[int, int, int, int]] = []
     for (y0, y1) in rows:
-        band = a[y0:y1]
-        if band.mean() < 0.12:
-            continue
-        cols = _runs(band.any(axis=0), min_len=10, gap=3)
-        row_h = y1 - y0
-        # نقطع كل مقطع أفقي إلى بلاطات مربّعة (العرض ÷ الارتفاع)
-        pieces: list[tuple[int, int]] = []
         for (x0, x1) in cols:
-            w = x1 - x0
-            k = max(1, int(round(w / max(8, row_h * 0.92))))
-            step = w / k
-            for i in range(k):
-                px0 = int(round(x0 + i * step))
-                px1 = int(round(x0 + (i + 1) * step))
-                if px1 - px0 >= 10:
-                    pieces.append((px0, px1))
-        for (x0, x1) in pieces:
             sub = a[y0:y1, x0:x1]
-            if sub.mean() > 0.22:
-                boxes.append((x0, y0, x1 - x0, row_h))
+            if sub.mean() < 0.10:
+                continue
+            ys = np.where(sub.any(axis=1))[0]
+            xs = np.where(sub.any(axis=0))[0]
+            if len(ys) < 8 or len(xs) < 8:
+                continue
+            boxes.append((x0 + int(xs[0]), y0 + int(ys[0]),
+                          int(xs[-1] - xs[0] + 1), int(ys[-1] - ys[0] + 1)))
     return boxes
 
 
@@ -120,15 +158,43 @@ def _to_tile(patch: np.ndarray, size: int = TILE) -> np.ndarray:
     return np.array(Image.fromarray(patch, "RGBA").resize((size, size), Image.NEAREST))
 
 
+def _dominant_key(img: np.ndarray, tol: int = 46) -> np.ndarray:
+    """يزيل خلفية لون سائد من إطار الصورة (حتى لو لم تكن ماجنتا صافية).
+
+    نماذج الصور ترسم أحيانًا ماجنتا «مغبّرة» مثل (211,34,122) أو (182,63,133)،
+    فلا يلتقطها مفتاح الماجنتا الصافي. الحل: نأخذ وسيط ألوان إطار الصورة (بكسلين
+    من كل حافة) كخلفية، ونُزيل كل ما يقاربه. وإن لم يكن الإطار موحّدًا نُرجع الصورة كما هي.
+    """
+    out = img.copy()
+    b = 2
+    edge = np.concatenate([out[:b].reshape(-1, 4), out[-b:].reshape(-1, 4),
+                           out[:, :b].reshape(-1, 4), out[:, -b:].reshape(-1, 4)])
+    key = np.median(edge[:, :3], axis=0)
+    far = np.abs(edge[:, :3].astype(np.int16) - key.astype(np.int16)).max(axis=1)
+    if (far <= tol).mean() < 0.55:      # الإطار غير موحّد ⇒ لا نخاطر
+        return out
+    rgb = out[..., :3].astype(np.int16)
+    d = np.abs(rgb - key.astype(np.int16)).max(axis=2)
+    out[d <= tol, 3] = 0
+    out[(d > tol) & (d <= tol * 2), 3] = np.minimum(out[(d > tol) & (d <= tol * 2), 3], 128)
+    return out
+
+
 def slice_one(theme: str, sheet: str) -> dict | None:
-    src = os.path.join(RAW, sheet + ".png")
+    # نفضّل الملف المعالَج (شفافية حقيقية + ألوان مكمَّمة)، وإلا نعالج الخام هنا
+    src = os.path.join(PROCESSED, sheet + ".png")
     if not os.path.exists(src):
-        return None
-    img = np.array(Image.open(src).convert("RGBA"))
-    img = strip_chroma_key(img, tol=70)
-    img = D.quantize(img, pal.table())
+        src = os.path.join(RAW, sheet + ".png")
+        if not os.path.exists(src):
+            return None
+        img = np.array(Image.open(src).convert("RGBA"))
+        img = _dominant_key(strip_chroma_key(img, tol=70))
+        img = D.quantize(img, pal.table())
+    else:
+        img = np.array(Image.open(src).convert("RGBA"))
     boxes = _grid(img)
     if not boxes:
+        print(f"   ⚠ {sheet}: لم أجد بلاطات — تحقّق من الخلفية")
         return None
     frames: dict[str, np.ndarray] = {}
     for i, (x, y, w, h) in enumerate(boxes):

@@ -28,6 +28,26 @@ func _ready() -> void:
 		f.close()
 		for op_key in meta.get("operators", {}).keys():
 			names.append("char_" + String(op_key))
+	# أطالس العناصر والديكور المولّدة بالذكاء الاصطناعي (تُقرأ قائمتها من ملف المانيفست)
+	var props_manifest := "res://assets/atlases/props_manifest.json"
+	if FileAccess.file_exists(props_manifest):
+		var pf := FileAccess.open(props_manifest, FileAccess.READ)
+		var plist: Variant = JSON.parse_string(pf.get_as_text())
+		pf.close()
+		if plist is Array:
+			for e in plist:
+				if e is Dictionary and e.has("atlas"):
+					names.append(String(e["atlas"]))
+	# أطالس التايلات لكل ثيم (tiles_urban، tiles_port …)
+	var tiles_manifest := "res://assets/atlases/tiles_manifest.json"
+	if FileAccess.file_exists(tiles_manifest):
+		var tf := FileAccess.open(tiles_manifest, FileAccess.READ)
+		var tlist: Variant = JSON.parse_string(tf.get_as_text())
+		tf.close()
+		if tlist is Array:
+			for e in tlist:
+				if e is Dictionary and e.has("theme"):
+					names.append("tiles_" + String(e["theme"]))
 	atlas.load_all(names)
 	# البوتات تستخدم نفس مشهد المقاتل
 	_prewarm()

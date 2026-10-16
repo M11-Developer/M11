@@ -60,6 +60,60 @@ def strip_chroma_key(img: np.ndarray, tol: int = 60) -> np.ndarray:
     return out
 
 
+def defringe(img: np.ndarray, tol: int = 60) -> np.ndarray:
+    """يفكّ اختلاط لون المفتاح من حواف الكائن (يزيل الهالة الماجنتا/الخضراء).
+
+    المشكلة: بكسل الحافة = مزيج من لون الكائن ولون الخلفية، فيبقى عليه مسحة ماجنتا
+    واضحة على أي خلفية داكنة (وهذا ما يفسد شكل المركبات).
+    الحل الرياضي: درجة الاختلاط = مسافة البكسل عن لون المفتاح ÷ العتبة، فنستعيد
+    اللون الأصلي للكائن بـ: اللون = (المزيج − المفتاح×(1−الشفافية)) ÷ الشفافية.
+    """
+    out = img.copy()
+    rgb = out[..., :3].astype(np.int16)
+    keys = [np.array(k, dtype=np.int16) for k in MAGENTA_KEYS + GREEN_KEYS]
+    for key in keys:
+        d = np.abs(rgb - key).max(axis=2).astype(np.float32)
+        inner = d <= tol                       # داخل الكائن (لا مسحة)
+        halo = (d > tol) & (d <= tol * 2.2)    # الحافة المختلطة
+        if halo.sum() == 0:
+            continue
+        # نسبة شفافية الخلفية في بكسل الحافة
+        t = np.clip((d - tol) / (tol * 1.2), 0.0, 1.0)
+        keep = np.clip(t, 0.12, 1.0)[..., None]      # لا نقسم على صفر
+        mixed = out[..., :3].astype(np.float32)
+        fixed = (mixed - key[None, None, :].astype(np.float32) * (1.0 - keep)) / keep
+        fixed = np.clip(fixed, 0, 255)
+        m = halo[..., None]
+        out[..., :3] = np.where(m & ~inner[..., None], fixed.astype(np.uint8), out[..., :3])
+        # الشفافية: ما بقي قريبًا جدًا من المفتاح يصبح شفافًا تمامًا
+        out[..., 3] = np.where(d <= tol, 0, out[..., 3])
+    return out
+
+
+def neutralize_shadow(img: np.ndarray, band: float = 0.35, a_max: int = 96) -> np.ndarray:
+    """يحوّل ظلّ الأرض البنفسجي (الذي يرسمه النموذج بلون قريب من المفتاح) إلى ظل داكن محايد.
+
+    نماذج الصور ترسم أحيانًا ظلًّا بنفسجيًّا تحت المركبة. بعد إزالة المفتاح يبقى شريط
+    بنفسجي واضح على الأرضية، وهو مظهر رخيص. هنا نكشف البكسلات البنفسجية في الشريط
+    السفلي من الصورة (حيث تكون الظلال) ونحوّلها إلى رمادي داكن بشفافية جزئية معقولة.
+    """
+    out = img.copy()
+    h = out.shape[0]
+    y0 = int(h * (1.0 - band))
+    region = out[y0:]
+    rgb = region[..., :3].astype(np.int16)
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    purple = (region[..., 3] > 40) & (b > g + 22) & (r > g + 18) & (b > 100)
+    if purple.sum() == 0:
+        return out
+    lum = (0.30 * r + 0.55 * g + 0.15 * b).astype(np.uint8)
+    dark = np.stack([(lum * 0.42).astype(np.uint8), (lum * 0.45).astype(np.uint8),
+                     (lum * 0.52).astype(np.uint8)], axis=-1)
+    region[..., :3] = np.where(purple[..., None], dark, region[..., :3])
+    region[..., 3] = np.where(purple, np.minimum(region[..., 3], a_max), region[..., 3])
+    return out
+
+
 def strip_background(img: np.ndarray, tol: int = 26, halo: int = 40) -> np.ndarray:
     """يزيل خلفية صلبة أو شبه صلبة (من الزوايا) + يقلّم الهالة الضبابية المحيطة."""
     out = img.copy()

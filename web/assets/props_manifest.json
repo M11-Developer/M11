@@ -1,0 +1,47 @@
+[
+ {
+  "atlas": "props_road",
+  "source": "sheet_road_props",
+  "frames": 11
+ },
+ {
+  "atlas": "props_nature",
+  "source": "sheet_props_nature",
+  "frames": 12
+ },
+ {
+  "atlas": "props_indoor",
+  "source": "sheet_props_indoor",
+  "frames": 14
+ },
+ {
+  "atlas": "badges_team",
+  "source": "sheet_team_badges",
+  "frames": 12
+ },
+ {
+  "atlas": "props_lab",
+  "source": "sheet_corp_lab",
+  "frames": 18
+ },
+ {
+  "atlas": "vehicles_land",
+  "source": "sheet_vehicles_land",
+  "frames": 8
+ },
+ {
+  "atlas": "ui_touch",
+  "source": "sheet_ui_touch",
+  "frames": 14
+ },
+ {
+  "atlas": "props_debris",
+  "source": "sheet_debris_rubble",
+  "frames": 15
+ },
+ {
+  "atlas": "props_trees",
+  "source": "sheet_trees_big",
+  "frames": 6
+ }
+]

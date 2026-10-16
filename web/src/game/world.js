@@ -200,6 +200,45 @@ export class TileMap {
 
 // ---------------------------------------------------------------- التوليد
 /** يولّد خريطة كاملة من تعريفها (نفس البذرة = نفس الخريطة لكل اللاعبين) */
+// ---------------------------------------------------------------------------
+// الديكور حسب الثيم: عناصر من أطالس الذكاء الاصطناعي (props_road، props_nature،
+// props_lab، props_debris، props_trees). الصيغة "p:<atlas>/<name>" يفهمها الراسم
+// مباشرة (renderer.drawProps) فيرسمها من أطلسها بدل أطلس العالم البرمجي.
+// ---------------------------------------------------------------------------
+const THEME_DECOR = {
+  city:     [['props_road/lamp', 3], ['props_road/dumpster', 2], ['props_road/hydrant', 1],
+             ['props_road/bus_shelter', 1], ['props_road/tires', 2], ['props_debris/concrete_chunk', 3],
+             ['props_debris/rebar', 2], ['props_debris/bricks', 2], ['props_indoor/chair', 1]],
+  base:     [['props_lab/drum', 2], ['props_lab/crates', 3], ['props_lab/server_rack', 1],
+             ['props_lab/generator', 2], ['props_lab/cylinders', 1], ['props_lab/hazmat_box', 2],
+             ['props_road/bollard', 3], ['props_debris/girder', 2], ['props_debris/pipe_rusty', 2]],
+  desert:   [['props_nature/cactus', 3], ['props_nature/boulder', 3], ['props_nature/rocks', 3],
+             ['props_nature/dead_tree', 2], ['props_road/cone', 2], ['props_road/jersey_barrier', 2],
+             ['props_debris/wood_pile', 2], ['props_debris/bricks', 2], ['props_nature/leaf_pile', 2]],
+  village:  [['props_nature/palm', 3], ['props_nature/bush', 3], ['props_nature/leaf_pile', 3],
+             ['props_indoor/rug_roll', 1], ['props_indoor/table', 1], ['props_road/tires', 2],
+             ['props_debris/wood_pile', 2], ['props_nature/mushrooms', 2], ['props_indoor/chair', 1]],
+  forest:   [['props_trees/oak_big', 3], ['props_nature/log', 3], ['props_nature/bush', 4],
+             ['props_nature/cattail', 3], ['props_nature/mushrooms', 3], ['props_nature/rocks', 3],
+             ['props_debris/wood_pile', 2], ['props_nature/thorn_bush', 3], ['props_trees/birch_bare', 2]],
+  port:     [['props_lab/drum', 3], ['props_road/tires', 3], ['props_road/barrier', 2],
+             ['props_debris/barrel_red', 2], ['props_debris/pipe_water', 2], ['props_lab/crates', 3],
+             ['props_debris/wire_coil', 2], ['props_road/jersey_barrier', 2], ['props_road/hydrant', 1]],
+  snow:     [['props_trees/pine_snow', 3], ['props_nature/boulder', 3], ['props_debris/ice_shards', 3],
+             ['props_nature/rocks', 3], ['props_trees/birch_bare', 2], ['props_debris/concrete_chunk', 2],
+             ['props_nature/dead_tree', 2], ['props_debris/wood_pile', 2], ['props_road/cone', 2]],
+  space:    [['props_lab/server_rack', 3], ['props_lab/vat', 2], ['props_lab/decon_arch', 1],
+             ['props_lab/pipe_elbow', 3], ['props_lab/breaker', 2], ['props_lab/wall_fan', 2],
+             ['props_debris/girder', 3], ['props_debris/i_beam', 2], ['props_lab/plastic_crates', 2]],
+};
+// ثيمات اللعبة الفعلية → أقرب مجموعة ديكور (city/base/desert/forest/port/village)
+const DECOR_FOR_THEME = {
+  city: 'city', base: 'base', desert: 'desert', forest: 'forest', port: 'port',
+  village: 'village', snow: 'snow', space: 'space', industrial: 'base', cave: 'base',
+  ruins: 'desert', oasis: 'desert', station: 'space', scifi: 'space', nightbase: 'city',
+  mountain: 'snow',
+};
+
 export function generateMap(def, seed = 12345) {
   const rng = new RNG(seed + def.id.length * 977);
   const w = Math.ceil(def.w / TS), h = Math.ceil(def.h / TS);
@@ -354,6 +393,16 @@ export function generateMap(def, seed = 12345) {
   for (let i = 0; i < Math.max(1, Math.round(w / 900)); i++) {
     const x = rng.int(6, w - 6);
     vehicles.push({ type: rng.pick(['mg', 'bike', 'drone']), x: x * TS, y: (heights[x] - 1) * TS });
+  }
+  // 10) ديكور الثيم من أطالس الذكاء الاصطناعي (يجعل الخريطة تبدو "مسكونة" لا فارغة)
+  const decor = THEME_DECOR[DECOR_FOR_THEME[def.theme] || 'city'] || THEME_DECOR.city;
+  const decorBudget = def.size === 'small' ? 14 : def.size === 'large' || def.size === 'br' ? 34 : 24;
+  for (let i = 0; i < decorBudget; i++) {
+    const [key, weight] = decor[rng.int(0, decor.length - 1)];
+    const x = rng.int(2, w - 3);
+    if (rng.int(1, 10) > weight + 4) continue;      // وزن العنصر: الأثقل يظهر أكثر
+    const y = clamp(heights[x] - 1, 1, h - 2);
+    props.push({ type: 'p:' + key, x: x * TS, y: heights[x] * TS, decor: true, flip: rng.chance(0.5) });
   }
   // حدود العالم
   for (let y = 0; y < h; y++) {

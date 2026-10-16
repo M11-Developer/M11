@@ -566,6 +566,23 @@ export class Renderer {
     const visible = world.level.props.filter((p) => p.x > v.x - 64 && p.x < v.x + v.w + 64 && p.y > v.y - 96 && p.y < v.y + v.h + 96);
     visible.sort((a, b) => a.y - b.y);
     for (const p of visible) {
+      // عناصر مولّدة بالذكاء الاصطناعي بصيغة "p:<atlas>/<name>" — تُرسم من أطلسها
+      if (typeof p.type === 'string' && p.type.startsWith('p:')) {
+        const [atlasName, frame] = p.type.slice(2).split('/');
+        const a = this.assets.get(atlasName);
+        if (a) {
+          const key = `${atlasName}/${frame}`;
+          if (a.has(key)) {
+            // العناصر المولّدة تُثبَّت من قاعدتها على الأرض (ارتفاعها يختلف عن عناصر الكود)
+            const fh = (a.frame(key) || {}).h || 0;
+            const fw = (a.frame(key) || {}).w || 0;
+            const dy = fh ? Math.round(p.y) - fh : Math.round(p.y);
+            const dx = fw && p.flip ? Math.round(p.x) - fw / 2 : Math.round(p.x);
+            a.draw(ctx, key, dx, dy, 1, !!p.flip);
+            continue;
+          }
+        }
+      }
       const key = `prop/${p.type}${p.v ? '_' + p.v : ''}`;
       const k = worldAtlas.has(key) ? key : `prop/${p.type}`;
       worldAtlas.draw(ctx, k, Math.round(p.x), Math.round(p.y), 1, false);

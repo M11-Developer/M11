@@ -7,6 +7,7 @@ import napiCanvas from '@napi-rs/canvas';
 const { createCanvas, loadImage } = napiCanvas;
 import fs from 'node:fs';
 import path from 'node:path';
+import { atlasNames } from './atlas_names.mjs';
 
 const ROOT = '/home/user/M11';
 const WEB = path.join(ROOT, 'web');
@@ -49,7 +50,7 @@ const { MODES } = await import(path.join(WEB, 'src/game/modes.js'));
 
 // تحميل الأطالس من project/assets/atlases
 Assets.base = path.join(ROOT, 'project/assets/atlases') + '/';
-const names = ['world', 'vfx', 'ui', 'weapons', 'arms', ...Object.keys(JSON.parse(fs.readFileSync(Assets.base + 'characters_meta.json', 'utf8')).operators).map((o) => 'char_' + o)];
+const names = atlasNames();
 await Assets.load(names);
 const charMeta = await Assets.loadJson('characters_meta.json');
 
