@@ -1,0 +1,14 @@
+// ============================================================================
+// مشروع أندرويد بديل (بلا Godot): يغلّف نسخة الويب من اللعبة داخل WebView
+// السبب: بناء APK من مشروع Godot يحتاج قالب تصدير وحزمة أدوات؛ هذا المسار
+// مستقل تمامًا فينتج ملفًا قابلًا للتثبيت على أي جهاز أندرويد 8+.
+// التفاصيل في docs/DECISIONS.md (القرار 24).
+// ============================================================================
+pluginManagement {
+    repositories { google(); mavenCentral() }
+}
+dependencyResolutionManagement {
+    repositories { google(); mavenCentral() }
+}
+rootProject.name = "M11LocalWar"
+include ":app"

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ثيم أسود بلا شرائط نظام — اللعبة ترسم الشاشة كاملة -->
+    <style name="GameTheme" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>
