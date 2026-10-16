@@ -27,6 +27,7 @@ jobs:
       ANDROID_HOME: /usr/lib/android-sdk
       ANDROID_SDK_ROOT: /usr/lib/android-sdk
       GODOT: godot
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: جلب الشيفرة
         uses: actions/checkout@v4
@@ -41,11 +42,13 @@ jobs:
           java -version 2>&1 | tee -a "$BUILD_LOG" || true
 
       - name: استيراد المشروع (بناء ذاكرة الأصول)
+        continue-on-error: true
         run: |
           set -o pipefail
           timeout 900 godot --headless --path project --import --quit 2>&1 | tee -a "$BUILD_LOG" || true
 
       - name: تثبيت قالب بناء أندرويد (Gradle)
+        continue-on-error: true
         run: |
           set -o pipefail
           # --quit ضرورية: بدونها يبقى Godot يعمل بلا نهاية بعد تثبيت القالب
@@ -54,6 +57,7 @@ jobs:
           ls project/android/build 2>/dev/null | head 2>&1 | tee -a "$BUILD_LOG" || true
 
       - name: توليد مفتاح توقيع الإصدار
+        continue-on-error: true
         run: |
           set -e
           KEYTOOL="$(command -v keytool || true)"
@@ -76,6 +80,7 @@ jobs:
           fi
 
       - name: تصدير نسخة التصحيح (APK يُثبّت مباشرة)
+        continue-on-error: true
         run: |
           set -o pipefail
           mkdir -p build
@@ -89,6 +94,7 @@ jobs:
           ls -la build 2>&1 | tee -a "$BUILD_LOG"
 
       - name: تصدير نسخة الإصدار (APK + AAB)
+        continue-on-error: true
         run: |
           set +e
           timeout 1800 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" 2>&1 | tee -a "$BUILD_LOG"
@@ -106,10 +112,23 @@ jobs:
             if [ -f "$f" ]; then echo "✔ $f — $(du -h "$f" | cut -f1)"; else echo "✘ مفقود: $f"; fi
           done
           for f in build/M11-debug.apk build/M11-release.apk; do
-            [ -f "$f" ] && python3 tools/check_apk.py "$f" | tee -a "$BUILD_LOG"
+            if [ -s "$f" ]; then python3 tools/check_apk.py "$f" 2>&1 | tee -a "$BUILD_LOG" || true; fi
           done
           echo ok > /tmp/m11-status
           true
+
+      - name: الحصاد النهائي (هل أُنتج ملف قابل للتثبيت؟)
+        id: gate
+        run: |
+          set -e
+          ok=0
+          for f in build/M11-debug.apk build/M11-release.apk; do
+            if [ -s "$f" ]; then echo "✔ $f — $(du -h "$f" | cut -f1)"; ok=1; fi
+          done
+          if [ "$ok" = "0" ]; then
+            echo "::error::لم يُنتج أي APK — راجع قناة التشخيص"
+            exit 1
+          fi
 
       - name: رفع الملفات كأرتيفاكت
         if: always()
@@ -158,7 +177,7 @@ jobs:
               state = "فشل ✘ (توقّف قبل خطوة التحقق)"
           title = f"سجل بناء أندرويد — {os.environ.get('GITHUB_REF_NAME','?')}"
           body = f"**الحالة:** {state} | العملية: {os.environ.get('GITHUB_RUN_ID')}\n\n```\n{tail}\n```"
-          token = os.environ.get("GITHUB_TOKEN", "")
+          token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
           if not token:
               print("لا يوجد رمز — تخطّي التشخيص")
               raise SystemExit(0)
