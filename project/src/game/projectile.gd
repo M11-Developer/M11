@@ -5,7 +5,8 @@
 extends Node2D
 class_name Projectile
 
-var world: GameWorld
+# ملاحظة: النوع غير مُصرَّح به لتجنّب دورة تحليل مع GameWorld
+var world: Node2D
 var owner_actor: Node2D
 var team := 0
 var weapon_id := ""
@@ -25,7 +26,7 @@ var active := true
 const STEP := 6.0
 
 
-func setup(w: GameWorld, data: Dictionary) -> void:
+func setup(w: Node2D, data: Dictionary) -> void:
 	world = w
 	owner_actor = data.get("owner", null)
 	team = int(data.get("team", 0))

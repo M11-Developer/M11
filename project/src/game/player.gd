@@ -81,11 +81,12 @@ var spread_state := 0.0
 var spawn_protect := 1.6
 var last_damage_time := -99.0
 
-var _world: GameWorld
+# ملاحظة: النوع غير مُصرَّح به لتجنّب دورة تحليل مع GameWorld
+var _world: Node2D
 @onready var _shape := $CollisionShape2D
 
 
-func setup(world: GameWorld, data: Dictionary) -> void:
+func setup(world: Node2D, data: Dictionary) -> void:
 	_world = world
 	display_name = data.get("name", display_name)
 	team = int(data.get("team", 0))
@@ -218,12 +219,12 @@ func update_with_command(dt: float, cmd: Dictionary) -> void:
 		if absf(move_x) > 0.05:
 			facing_x = signf(move_x)
 	# ماء
-	in_water = _world.get_tile(int(global_position.x / Config.TILE), int((global_position.y + 20.0) / Config.TILE)) == GameWorld.TILE_WATER
+	in_water = _world.get_tile(int(global_position.x / Config.TILE), int((global_position.y + 20.0) / Config.TILE)) == M11Tiles.WATER
 	if in_water:
 		velocity.x *= 0.82
 		velocity.y = minf(velocity.y, 90.0)
 	# سلّم
-	on_ladder = _world.get_tile(int(global_position.x / Config.TILE), int(global_position.y / Config.TILE)) == GameWorld.TILE_LADDER
+	on_ladder = _world.get_tile(int(global_position.x / Config.TILE), int(global_position.y / Config.TILE)) == M11Tiles.LADDER
 	if on_ladder:
 		velocity.y = float(cmd.get("move_y", 0.0)) * Config.CLIMB_SPEED
 		_set_state(State.CLIMB)

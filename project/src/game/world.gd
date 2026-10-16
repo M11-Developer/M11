@@ -31,18 +31,19 @@ const BACKDROP_DIR := "res://assets/atlases/backdrops/"
 var backdrop_tex: Texture2D = null
 var backdrop_offset := 0.0
 
-const TILE_EMPTY := 0
-const TILE_SOLID := 1
-const TILE_TOP := 2
-const TILE_PLATFORM := 3
-const TILE_CRATE := 4
-const TILE_GLASS := 5
-const TILE_SANDBAG := 6
-const TILE_LADDER := 7
-const TILE_WATER := 8
-const TILE_HAZARD := 9
-const TILE_BACK := 10
-const TILE_GIRDER := 13
+# أنواع البلاط: أسماء بديلة للملف المشترك src/core/tiles.gd (مصدر واحد للحقيقة)
+const TILE_EMPTY := M11Tiles.EMPTY
+const TILE_SOLID := M11Tiles.SOLID
+const TILE_TOP := M11Tiles.TOP
+const TILE_PLATFORM := M11Tiles.PLATFORM
+const TILE_CRATE := M11Tiles.CRATE
+const TILE_GLASS := M11Tiles.GLASS
+const TILE_SANDBAG := M11Tiles.SANDBAG
+const TILE_LADDER := M11Tiles.LADDER
+const TILE_WATER := M11Tiles.WATER
+const TILE_HAZARD := M11Tiles.HAZARD
+const TILE_BACK := M11Tiles.BACK
+const TILE_GIRDER := M11Tiles.GIRDER
 
 const SOLID_TILES := [TILE_SOLID, TILE_TOP, TILE_CRATE, TILE_GLASS, TILE_SANDBAG, TILE_GIRDER]
 const DESTRUCTIBLE := {TILE_CRATE: 60.0, TILE_GLASS: 15.0, TILE_SANDBAG: 90.0, TILE_GIRDER: 140.0}
