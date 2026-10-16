@@ -52,10 +52,11 @@ func _ready() -> void:
 	# البوتات تستخدم نفس مشهد المقاتل
 	_prewarm()
 	# واجهة القوائم
-	var boot := $BootUI
+	var boot := $BootUI/BootPanel
 	boot.queue_free()
 	menu = preload("res://src/ui/menu.gd").new()
-	add_child(menu)
+	menu.name = "Menu"
+	hud_layer.add_child(menu)   # داخل طبقة الواجهة حتى لا تتأثر بحركة الكاميرا
 	state = "menu"
 	loading = false
 	AudioBus.play_music("menu_theme")

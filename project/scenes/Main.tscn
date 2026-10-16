@@ -8,6 +8,8 @@
 script = ExtResource("1_main")
 
 [node name="BootUI" type="CanvasLayer" parent="."]
+
+[node name="BootPanel" type="Control" parent="BootUI"]
 script = ExtResource("2_boot")
 
 [node name="InputManager" type="Node" parent="."]

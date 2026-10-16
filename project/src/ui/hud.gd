@@ -2,7 +2,7 @@
 # واجهة اللعب — عربية RTL: صحة/درع/وقود، سلاح وذخيرة، خريطة مصغّرة، سجل قتل،
 # مؤشر ضرر اتجاهي، عدّاد، أخبار، وشاشة نتائج. كل النص متجه (لا نص في الصور).
 # ============================================================================
-extends CanvasLayer
+extends Control
 
 var world: GameWorld
 var player: Actor
@@ -21,6 +21,12 @@ const COLOR_ARMOR := Color(0.5, 0.82, 0.96)
 const COLOR_FUEL := Color(0.95, 0.63, 0.24)
 const COLOR_WARN := Color(0.91, 0.32, 0.25)
 const COLOR_GOLD := Color(0.95, 0.76, 0.31)
+
+
+func _ready() -> void:
+	# نملأ الشاشة بالكامل (Control داخل طبقة CanvasLayer)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)   # ملء الشاشة
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func setup(w: GameWorld, p: Actor) -> void:

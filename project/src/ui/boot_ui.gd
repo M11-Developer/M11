@@ -1,11 +1,14 @@
 # شاشة التحميل — شعار ونسبة تقدم عربية بالكامل
-extends CanvasLayer
+extends Control
 
 var _t := 0.0
 var art: Texture2D = null          # لوحة الإقلاع (خوذة على أكياس رمل عند الفجر)
 
 
 func _ready() -> void:
+	# نملأ الشاشة بالكامل (Control داخل طبقة CanvasLayer)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)   # ملء الشاشة
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# لوحة الإقلاع من رصيد الصور — غيابها لا يُفشل شيء (نبقى على الخلفية الداكنة)
 	for path in ["res://assets/atlases/backdrops/splash_boot_helmet.png",
 			"res://assets/atlases/backdrops/poster_loading.png"]:

@@ -1,7 +1,7 @@
 # ============================================================================
 # القوائم — عربية كاملة RTL، تعمل باللمس والكيبورد. تنسخ نفس بنية قوائم الويب.
 # ============================================================================
-extends CanvasLayer
+extends Control
 
 const S_MAIN := 0
 const S_MODES := 1
@@ -33,6 +33,9 @@ var result: Dictionary = {}             # نتيجة المباراة لشاشة
 
 
 func _ready() -> void:
+	# نملأ الشاشة بالكامل (Control داخل طبقة CanvasLayer)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)   # ملء الشاشة
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	# القائمة تبقى حيّة أثناء إيقاف الشجرة المؤقت (شاشة النتائج تُوقف اللعب)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	font = ThemeDB.fallback_font
