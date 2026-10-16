@@ -110,7 +110,7 @@ func save_settings() -> void:
 func apply_runtime() -> void:
 	Engine.max_fps = fps_limit
 	if quality == 0:
-		RenderingServer.viewport_set_msaa_2d(get_viewport().get_viewport_rid(), RenderingDevice.SAMPLES_DISABLED)
+		RenderingServer.viewport_set_msaa_2d(get_viewport().get_viewport_rid(), RenderingServer.VIEWPORT_MSAA_DISABLED)
 	# في المستوى المنخفض نُعطّل الإضاءة الديناميكية لتوفير البطارية
 	var world := get_tree().get_first_node_in_group("world")
 	if world and world.has_method("set_quality"):

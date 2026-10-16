@@ -86,6 +86,21 @@ jobs:
           } >> "$BUILD_LOG"
           true
 
+      - name: تجهيز أدوات أندرويد (منصّة ٣٥ وأدوات البناء)
+        continue-on-error: true
+        run: |
+          set +e
+          SDKM="$(command -v sdkmanager)"
+          [ -z "$SDKM" ] && SDKM="$(ls -1 /usr/lib/android-sdk/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)"
+          echo "sdkmanager=$SDKM" | tee -a "$BUILD_LOG"
+          if [ -n "$SDKM" ]; then
+            yes | "$SDKM" --sdk_root=/usr/lib/android-sdk --licenses >/dev/null 2>&1
+            yes | "$SDKM" --sdk_root=/usr/lib/android-sdk "platforms;android-35" "build-tools;35.0.0" "platform-tools" 2>&1 | tail -6 | tee -a "$BUILD_LOG"
+          fi
+          echo "platforms=$(ls -1 /usr/lib/android-sdk/platforms 2>/dev/null | tr '\n' ' ')" | tee -a "$BUILD_LOG"
+          echo "build-tools=$(ls -1 /usr/lib/android-sdk/build-tools 2>/dev/null | tr '\n' ' ')" | tee -a "$BUILD_LOG"
+          true
+
       - name: استيراد المشروع (بناء ذاكرة الأصول)
         continue-on-error: true
         run: |
@@ -229,6 +244,10 @@ jobs:
       - name: بثّ نهاية السجل (تعليقات)
         if: always()
         run: bash tools/emit_annotations.sh "$BUILD_LOG" "." notice 9
+      - name: بثّ سطور التصدير (تعليقات)
+        if: always()
+        run: bash tools/emit_annotations.sh "$BUILD_LOG" "Android APK|Android AAB|preset|Export|export|template|Template|keystore|Keystore|apk|AAB" warning 9
+
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
         if: always()

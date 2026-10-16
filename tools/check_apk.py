@@ -7,9 +7,14 @@
 # ============================================================================
 import sys, zipfile, re
 
-BANNED = ["android.permission.INTERNET", "android.permission.ACCESS_FINE_LOCATION",
-          "android.permission.ACCESS_COARSE_LOCATION", "android.permission.READ_PHONE_STATE"]
-ALLOWED = ["android.permission.ACCESS_WIFI_STATE", "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+# ملاحظة (القرار 23): إذن الشبكة INTERNET ضروري لأي اتصال محلي (حتى UDP على نفس
+# الراوتر) لأن أندرويد يمنع فتح أي مقبس شبكة بدونه. اللعبة لا تتصل بأي خادم خارجي،
+# لكن الإذن يبقى مطلوبًا من نظام أندرويد نفسه. الممنوع هو أذونات التتبّع والموقع.
+BANNED = ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION",
+          "android.permission.READ_PHONE_STATE", "com.google.android.gms.permission.AD_ID",
+          "android.permission.RECORD_AUDIO_BACKGROUND"]
+ALLOWED = ["android.permission.INTERNET", "android.permission.ACCESS_WIFI_STATE",
+           "android.permission.CHANGE_WIFI_MULTICAST_STATE",
            "android.permission.NEARBY_WIFI_DEVICES", "android.permission.RECORD_AUDIO"]
 
 
@@ -43,7 +48,7 @@ def main(path: str) -> int:
     if found_banned:
         print("✘ أذونات ممنوعة: " + ", ".join(found_banned))
         return 1
-    print("✔ لا يوجد أي إذن إنترنت/موقع في الحزمة")
+    print("✔ لا توجد أذونات تتبّع أو موقع (الشبكة مسموحة للّعب المحلي فقط — القرار 23)")
 
     raw = [n for n in assets if n.startswith(("assets/raw/", "assets/processed/"))]
     if raw:

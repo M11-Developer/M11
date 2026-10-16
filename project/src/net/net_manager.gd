@@ -170,7 +170,7 @@ func _host_send_snapshot() -> void:
 		rpc("_recv_snapshot", snap)
 
 
-@rpc("authority", "unreliable", 0)
+@rpc("authority", "call_remote", "unreliable", 0)
 func _recv_snapshot(data: PackedByteArray) -> void:
 	net_stats["down"] = data.size()
 	snapshot_received.emit({"data": data, "time": Time.get_ticks_msec() / 1000.0})
