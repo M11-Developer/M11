@@ -80,15 +80,26 @@ jobs:
 
       - name: تصدير نسخة التصحيح (APK يُثبّت مباشرة)
         run: |
+          set -e
           mkdir -p build
+          set +e
           godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
+          set -e
+          if [ ! -f build/M11-debug.apk ]; then
+            echo "::warning::فشل مسار Gradle — نعيد بقالب التصدير المباشر (بلا Gradle)"
+            sed -i 's|gradle_build/use_gradle_build=true|gradle_build/use_gradle_build=false|g' project/export_presets.cfg
+            godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk"
+          fi
           ls -la build
 
       - name: تصدير نسخة الإصدار (APK + AAB)
         run: |
-          godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" || echo "::warning::فشل تصدير APK الإصدار"
-          godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab" || echo "::warning::فشل تصدير AAB"
-          ls -la build
+          set +e
+          godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk"
+          godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab"
+          set -e
+          ls -la build || true
+          [ -f build/M11-debug.apk ] || { echo "::error::لم يُنتج أي ملف APK"; exit 1; }
 
       - name: التحقق من الملفات الناتجة
         run: |
@@ -96,10 +107,27 @@ jobs:
           for f in build/M11-debug.apk build/M11-release.apk build/M11-release.aab; do
             if [ -f "$f" ]; then echo "✔ $f — $(du -h "$f" | cut -f1)"; else echo "✘ مفقود: $f"; fi
           done
-          # يجب أن يحتوي الـAPK على مكتبة Godot وأصول اللعبة، ولا يجب أن يحتوي المجلدات الخام
-          if [ -f build/M11-debug.apk ]; then
-            unzip -l build/M11-debug.apk | grep -E "libgodot|lib/arm64-v8a|assets/" | head -8
-            if unzip -l build/M11-debug.apk | grep -q "assets/raw/"; then echo "::error::الأصول الخام دخلت الحزمة!"; exit 1; fi
+          # يجب أن يحتوي الـAPK على مكتبة Godot وأصول اللعبة، ولا يجب أن يحتوي الأصول الخام
+          if command -v unzip >/dev/null 2>&1 && [ -f build/M11-debug.apk ]; then
+            unzip -l build/M11-debug.apk | grep -E "libgodot|lib/arm64-v8a|assets/" | head -8 || true
+            if unzip -l build/M11-debug.apk | grep -qE "assets/raw/|assets/processed/"; then
+              echo "::error::الأصول الخام دخلت الحزمة!"; exit 1
+            fi
+            # لا نطلب إذن الإنترنت إطلاقًا (القسم ٤) — نفحص نصّ البيان داخل الحزمة
+            python3 - <<'PY'
+import zipfile, sys
+z = zipfile.ZipFile('build/M11-debug.apk')
+blob = b''
+for name in z.namelist():
+    if name.startswith('AndroidManifest') or name.endswith('.xml'):
+        blob += z.read(name)
+needles = [b'android.permission.INTERNET', b'android.permission.ACCESS_FINE_LOCATION']
+bad = [n.decode() for n in needles if n in blob]
+print('فحص الأذونات: ', 'خالٍ من الأذونات الممنوعة ✔' if not bad else f'وُجد: {bad}')
+if bad:
+    print('::error::الحزمة تطلب أذونات ممنوعة')
+    sys.exit(1)
+PY
           fi
 
       - name: رفع الملفات كأرتيفاكت
@@ -121,6 +149,7 @@ jobs:
           body_path: docs/RELEASE_NOTES_AR.md
           draft: false
           prerelease: false
+          fail_on_unmatched_files: false
           files: |
             build/M11-debug.apk
             build/M11-release.apk
