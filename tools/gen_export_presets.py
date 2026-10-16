@@ -97,7 +97,7 @@ script_export_mode=2
 def preset_options(idx: int, is_aab: bool) -> str:
     # APK: مسار القالب الجاهز (بلا Gradle) — أسرع وأبسط ولا يحتاج قالب بناء أندرويد.
     # AAB: يحتاج Gradle إلزاميًا (قيد في Godot: «Export AAB is only valid when Use Gradle Build is enabled»).
-    use_gradle = "true" if is_aab else "false"
+    use_gradle = "false"   # مسار القالب الجاهز: لا يحتاج Gradle ولا قالب بناء — أبسط وأضمن
     perms = "\n".join(f"permissions/{p}={'true' if p in PERMISSIONS_TRUE else 'false'}"
                       for p in ALL_PERMISSIONS)
     custom = ", ".join(f'"{p}"' for p in CUSTOM_PERMISSIONS)

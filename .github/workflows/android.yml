@@ -306,7 +306,14 @@ jobs:
         if: always()
         run: |
           set +e
-          awk '/configuration errors/{print "▼ " $0; for (i = 0; i < 8; i++) { if (getline > 0) print "  " $0 } print "▲"}' "$BUILD_LOG" > /tmp/why.txt
+          awk 'BEGIN{n=0} {buf[n % 16] = $0; n++}
+               /configuration errors|Project export for preset|Execution failed|FAILURE:|apksigner|zipalign|keystore|Cannot execute/ {
+                 print "▼▼▼ " $0;
+                 start = (n > 14) ? n - 14 : 0;
+                 for (i = start; i < n - 1; i++) print "   قبل: " buf[i % 16];
+                 for (i = 0; i < 4; i++) { if (getline > 0) print "   بعد: " $0 }
+                 print "▲▲▲";
+               }' "$BUILD_LOG" > /tmp/why.txt
           echo "--- سبب الفشل ---"; cat /tmp/why.txt
           bash tools/emit_annotations.sh /tmp/why.txt "." error 9
 
