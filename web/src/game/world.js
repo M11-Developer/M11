@@ -137,6 +137,20 @@ export const MAPS = [
     layout: { platforms: 8, buildings: 6, trees: 4, lamps: 10, rubble: 8, water: 0, containers: 8, lootNodes: 18 },
   },
   {
+    id: 'oil_rig', nameAr: 'المنصة النفطية', theme: 'oil', size: 'medium',
+    w: 3000, h: 1000, mode: ['dm', 'tdm', 'gun', 'kotc', 'snd'], weather: 'clear',
+    time: 0.8, backdrop: 'bg_parallax_oil_rig',
+    desc: 'منصة حفر في عرض البحر — ممرات ضيقة وشتلات مفتوحة.',
+    layout: { platforms: 16, buildings: 5, trees: 0, lamps: 8, rubble: 8, water: 10, containers: 12, lootNodes: 24 },
+  },
+  {
+    id: 'docks', nameAr: 'الأرصفة الفجرية', theme: 'port', size: 'large',
+    w: 3600, h: 1050, mode: ['dm', 'tdm', 'ctf', 'br', 'vip'], weather: 'clear',
+    time: 0.25, backdrop: 'bg_sky_harbor_dawn',
+    desc: 'أرصفة الميناء عند الفجر: أوناش وحاويات وسفن راسية.',
+    layout: { platforms: 12, buildings: 8, trees: 2, lamps: 9, rubble: 12, water: 6, containers: 18, lootNodes: 30 },
+  },
+  {
     id: 'valleys', nameAr: 'الوديان الكبرى', theme: 'desert', size: 'br',
     w: 6000, h: 1400, mode: ['br', 'survival', 'tournament'], weather: 'day_night',
     time: 'day', desc: 'خريطة Battle Royale كاملة: أودية، مصنع مهجور، وقرية.',
@@ -280,12 +294,25 @@ const THEME_DECOR = {
              ['props_bridge/bridge_span', 1], ['props_bridge/bridge_collapsed', 1], ['props_bridge/pier_posts', 1],
              ['props_towers/tower_wood', 1], ['props_gates/fence_wood', 2], ['props_gates/fence_bent', 2],
              ['tiles_wall/piece_1', 2, 1, 3]],
+  oil:      [['props_naval/torpedo_tubes', 1], ['props_naval/depth_charges', 2], ['props_naval/anchor_chain', 2],
+             ['props_naval/bollard', 3], ['props_naval/radar_dish', 2], ['props_naval/ammo_hoist', 2],
+             ['props_naval/catwalk', 3], ['props_naval/dock_bumper', 2], ['props_naval/life_ring', 2],
+             ['props_naval/sonar_buoy', 2], ['props_lab/drum', 3], ['props_power/gen_cabinet', 2],
+             ['props_lab/hazmat_box', 2], ['props_water/sunken_barrel', 2, 1, 1],
+             ['tiles_oil/top_1', 2, 1, 2], ['tiles_oil/piece', 2, 1, 2]],
   port:     [['props_lab/drum', 3], ['props_road/tires', 3], ['props_road/barrier', 2],
              ['props_debris/barrel_red', 2], ['props_debris/pipe_water', 2], ['props_lab/crates', 3],
              ['props_debris/wire_coil', 2], ['props_road/jersey_barrier', 2], ['props_road/hydrant', 1],
              ['props_tanks/silo', 2], ['props_tanks/pressure_tank', 1], ['props_roof/gas_cylinders', 2],
              ['props_gates/gate_sliding', 1], ['props_gates/gate_mesh', 2], ['props_gates/razor_coil', 2],
-             ['props_lift/pallet_crate', 2], ['props_aa/aa_quad', 1], ['props_towers/tower_steel', 1]],
+             ['props_lift/pallet_crate', 2], ['props_aa/aa_quad', 1], ['props_towers/tower_steel', 1],
+             ['props_naval/torpedo_tubes', 1], ['props_naval/anchor_chain', 2], ['props_naval/life_ring', 3],
+             ['props_naval/radar_dish', 2], ['props_naval/catwalk', 3], ['props_naval/sonar_buoy', 2],
+             ['props_naval/naval_mine', 1], ['props_cranes/gantry_crane', 1], ['props_cranes/boom_crane', 1],
+             ['props_cranes/dock_crane', 1], ['props_cranes/crane_broken', 1],
+             ['props_hulls/hull_side', 1], ['props_hulls/hull_bow', 1], ['props_hulls/hull_barnacles', 1],
+             ['props_water/coral', 2], ['props_water/seaweed', 2], ['props_water/jellyfish', 2],
+             ['props_water/bubbles', 2], ['props_water/anchor_sunken', 1]],
   snow:     [['props_trees/pine_snow', 3], ['props_nature/boulder', 3], ['props_debris/ice_shards', 3],
              ['props_nature/rocks', 3], ['props_trees/birch_bare', 2], ['props_debris/concrete_chunk', 2],
              ['props_nature/dead_tree', 2], ['props_debris/wood_pile', 2], ['props_road/cone', 2],
@@ -464,7 +491,7 @@ export function generateMap(def, seed = 12345) {
   // 10) ديكور الثيم من أطالس الذكاء الاصطناعي (يجعل الخريطة تبدو "مسكونة" لا فارغة)
   const decor = THEME_DECOR[DECOR_FOR_THEME[def.theme] || 'city'] || THEME_DECOR.city;
   const decorBudget = def.size === 'small' ? 20 : def.size === 'large' || def.size === 'br' ? 44 : 32;
-  for (let i = 0; i < decorBudget * 2; i++) {
+  for (let i = 0; i < decorBudget * 3; i++) {
     const entry = decor[rng.int(0, decor.length - 1)];
     const [key, weight] = entry;
     const x = rng.int(2, w - 3);

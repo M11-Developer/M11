@@ -122,6 +122,41 @@ SHEETS: dict[str, dict] = {
         "atlas": "props_power", "key": "props_power", "h": 72, "expect": 6,
         "names": ["gen_cabinet", "gen_engine", "power_panel", "transformer", "battery_bank", "light_tower"],
     },
+    "sheet_naval_gear": {
+        "atlas": "props_naval", "key": "props_naval", "h": 64, "expect": 12,
+        "names": ["torpedo_tubes", "depth_charges", "anchor_chain", "bollard", "life_ring",
+                  "naval_mine", "sonar_buoy", "radar_dish", "signal_lamp", "ammo_hoist",
+                  "catwalk", "dock_bumper"],
+    },
+    "sheet_dock_cranes": {
+        "atlas": "props_cranes", "key": "props_cranes", "h": 150, "expect": 6,
+        "names": ["gantry_crane", "boom_crane", "dock_crane", "floating_crane",
+                  "truck_crane", "crane_broken"],
+    },
+    "sheet_ship_hull": {
+        "atlas": "props_hulls", "key": "props_hulls", "h": 110, "expect": 8,
+        "names": ["hull_bow", "hull_stern", "hull_side", "hull_waterline",
+                  "hull_breach", "hull_shaft", "hull_deck_edge", "hull_barnacles"],
+    },
+    "sheet_underwater": {
+        "atlas": "props_water", "key": "props_water", "h": 56, "expect": 12,
+        "names": ["coral", "seaweed", "underwater_rock", "sunken_crate", "sunken_barrel",
+                  "bubbles", "fish_school", "jellyfish", "wreck_ribs", "sand_mound",
+                  "chest", "anchor_sunken"],
+    },
+    "sheet_naval_vehicles": {
+        "atlas": "vehicles_naval", "key": "vehicles_naval", "h": 88, "expect": 6,
+        "names": ["rib_boat", "landing_craft", "jet_ski", "torpedo_boat", "amphibious", "tugboat"],
+    },
+    "sheet_water_surface": {
+        "atlas": "water_surface", "key": "water", "h": 0, "expect": 8,
+        "names": ["calm", "ripple", "choppy", "storm", "shallow", "oily", "waterfall", "shore"],
+    },
+    "sheet_operators_new": {
+        "atlas": "portraits_new", "key": "portrait", "h": 96, "expect": 10,
+        "names": ["portrait_11", "portrait_12", "portrait_13", "portrait_14", "portrait_15",
+                  "portrait_16", "portrait_17", "portrait_18", "portrait_19", "portrait_20"],
+    },
     "sheet_debris_rubble": {
         "atlas": "props_debris", "key": "props_debris", "h": 40, "expect": 14,
         "names": ["concrete_chunk", "i_beam", "wood_pile", "barrel_broken", "wire_coil",
@@ -263,7 +298,7 @@ def slice_sheet(sheet: str, cfg: dict) -> dict | None:
     frames: dict[str, np.ndarray] = {}
     for i, (x, y, w, h) in enumerate(boxes):
         name = names[i] if i < len(names) else f"extra_{i}"
-        patch = _fit(img[y:y + h, x:x + w], cfg["h"])
+        patch = img[y:y + h, x:x + w] if not cfg["h"] else _fit(img[y:y + h, x:x + w], cfg["h"])
         frames[f"{cfg['key']}/{name}"] = patch
     info = atlaslib.pack_frames(cfg["atlas"], frames, ATLAS_DIR, scale=1, pad=2)
     with open(os.path.join(ATLAS_DIR, f"{cfg['atlas']}_meta.json"), "w", encoding="utf-8") as f:

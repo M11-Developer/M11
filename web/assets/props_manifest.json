@@ -80,6 +80,41 @@
   "frames": 7
  },
  {
+  "atlas": "props_naval",
+  "source": "sheet_naval_gear",
+  "frames": 11
+ },
+ {
+  "atlas": "props_cranes",
+  "source": "sheet_dock_cranes",
+  "frames": 6
+ },
+ {
+  "atlas": "props_hulls",
+  "source": "sheet_ship_hull",
+  "frames": 8
+ },
+ {
+  "atlas": "props_water",
+  "source": "sheet_underwater",
+  "frames": 14
+ },
+ {
+  "atlas": "vehicles_naval",
+  "source": "sheet_naval_vehicles",
+  "frames": 9
+ },
+ {
+  "atlas": "water_surface",
+  "source": "sheet_water_surface",
+  "frames": 8
+ },
+ {
+  "atlas": "portraits_new",
+  "source": "sheet_operators_new",
+  "frames": 9
+ },
+ {
   "atlas": "props_debris",
   "source": "sheet_debris_rubble",
   "frames": 15

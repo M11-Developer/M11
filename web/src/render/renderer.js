@@ -516,6 +516,16 @@ export class Renderer {
   drawWater(ctx, cam, world) {
     const lvl = world.level;
     const t = this.weatherT;
+    if (this._waterLevel !== lvl) {          // يُحسب مرة لكل خريطة
+      this._waterLevel = lvl;
+      const weather = (lvl.def && lvl.def.weather) || 'clear';
+      const theme = (lvl.def && lvl.def.theme) || 'city';
+      this.waterStripKey = 'water/' + (
+        (weather === 'storm' || weather === 'rain') ? 'storm'
+        : theme === 'oil' ? 'oily'
+        : (weather === 'fog' || theme === 'swamp') ? 'calm'
+        : theme === 'desert' ? 'shallow' : 'ripple');
+    }
     const m = lvl.map;
     const v = cam.viewRect(TS);
     const x0 = Math.max(0, Math.floor(v.x / TS)), x1 = Math.min(m.w - 1, Math.floor((v.x + v.w) / TS));
@@ -537,6 +547,21 @@ export class Renderer {
         ctx.fillStyle = col;
         ctx.fillRect(px, py, TS, TS);
         if (surface) {
+          // شريط سطح الماء من أطلس water_surface (مولّد بالذكاء الاصطناعي):
+          // نختار الشريط حسب الطقس ونزحف أفقيًا، فيبدو السطح ماءً حقيقيًا لا مربّعات.
+          const wa = this.assets.get('water_surface');
+          if (wa && wa.has(this.waterStripKey)) {
+            const f = wa.frame(this.waterStripKey);
+            const img = wa.image;
+            const scroll = Math.floor(this.weatherT * 14) % 4096;
+            const sx = f.x + ((x * TS + scroll) % Math.max(1, f.w - TS));
+            const sh = Math.min(22, f.h);
+            ctx.globalAlpha = 0.95;
+            ctx.drawImage(img, sx, f.y, TS, sh, px, py, TS, sh);
+            ctx.globalAlpha = 1;
+          }
+        }
+        if (surface && !(this.assets.get('water_surface') && this.assets.get('water_surface').has(this.waterStripKey))) {
           const wave = Math.sin(t * 2.2 + x * 0.7);
           ctx.globalAlpha = 0.75;
           ctx.fillStyle = '#9AD6F0';
@@ -988,13 +1013,20 @@ export class Renderer {
     const v = cam.viewRect(64);
     // مركبات من أطالس الصور (vehicles_land): مدرعة للمدفع الثابت، جيب للدراجة،
     // وقاطرة/شاحنة كمركبات ساكنة في الخريطة. وإن غاب الأطلس نرجع للرسم البرمجي.
-    const vehAtlas = this.assets.get('vehicles_land');
-    const VEH_SPRITE = { mg: 'apc', bike: 'jeep', drone: 'truck' };
+    // في خرائط الميناء/المنصة النفطية نرسم قوارب: زورق مطاطي للمدفع، جت سكي للدراجة،
+    // بارجة إنزال للمركبة الثالثة — فتشعر أنك في بيئة بحرية لا بيئة برية بلوحة بحرية.
+    const theme = (world.level.def && world.level.def.theme) || 'city';
+    const naval = theme === 'port' || theme === 'oil';
+    const vehAtlas = this.assets.get(naval ? 'vehicles_naval' : 'vehicles_land');
+    const VEH_SPRITE = naval
+      ? { mg: 'rib_boat', bike: 'jet_ski', drone: 'landing_craft' }
+      : { mg: 'apc', bike: 'jeep', drone: 'truck' };
+    const VEH_ATLAS_NAME = naval ? 'vehicles_naval' : 'vehicles_land';
     for (const veh of world.vehicles) {
       if (!veh.active) continue;
       if (veh.x < v.x - 64 || veh.x > v.x + v.w + 64) continue;
       if (vehAtlas && VEH_SPRITE[veh.type]) {
-        const key = `vehicles_land/${VEH_SPRITE[veh.type]}`;
+        const key = `${VEH_ATLAS_NAME}/${VEH_SPRITE[veh.type]}`;
         if (vehAtlas.has(key)) {
           const f = vehAtlas.frame(key);
           vehAtlas.draw(ctx, key, Math.round(veh.x) - (f.w - veh.w) / 2,
@@ -1172,6 +1204,8 @@ export const BACKDROP_FILES = {
   bg_parallax_oasis_night: 'backdrops/bg_parallax_oasis_night.png',
   bg_parallax_sea_storm: 'backdrops/bg_parallax_sea_storm.png',
   bg_parallax_naval_base: 'backdrops/bg_parallax_naval_base.png',
+  bg_parallax_oil_rig: 'backdrops/bg_parallax_oil_rig.png',
+  bg_sky_harbor_dawn: 'backdrops/bg_sky_harbor_dawn.png',
   bg_sky_storm: 'backdrops/bg_sky_storm.png',
   bg_sky_dust: 'backdrops/bg_sky_dust.png',
   bg_sky_snowfall: 'backdrops/bg_sky_snowfall.png',
