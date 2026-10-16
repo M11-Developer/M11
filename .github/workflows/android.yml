@@ -173,6 +173,8 @@ jobs:
         continue-on-error: true
         run: |
           set +e
+          # نعيد تمكين Gradle (خطوة التصحيح قد تكون عطّلته في مسار الاحتياط)
+          sed -i 's|gradle_build/use_gradle_build=false|gradle_build/use_gradle_build=true|g' project/export_presets.cfg
           timeout 2400 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" 2>&1 | tee -a "$BUILD_LOG"
           echo "release_apk_exit=$?" | tee -a "$BUILD_LOG"
           timeout 2400 godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab" 2>&1 | tee -a "$BUILD_LOG"
@@ -261,6 +263,16 @@ jobs:
       - name: بثّ سطور التصدير (تعليقات)
         if: always()
         run: bash tools/emit_annotations.sh "$BUILD_LOG" "Android APK|Android AAB|preset|Export|export|template|Template|keystore|Keystore|apk|AAB" warning 9
+
+      - name: بثّ أسباب أخطاء الإعداد (تعليقات)
+        if: always()
+        run: bash tools/emit_annotations.sh "$BUILD_LOG" "configuration errors|valid when|template is missing|Android build template|SDK|keystore|sign" error 9 10
+
+      - name: بثّ بداية السجل (تعليقات)
+        if: always()
+        run: |
+          head -40 "$BUILD_LOG" > /tmp/m11-head.txt
+          bash tools/emit_annotations.sh /tmp/m11-head.txt "." notice 9
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص

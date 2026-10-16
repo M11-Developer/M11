@@ -9,11 +9,12 @@ LOG="${1:-/tmp/m11-build.log}"
 PAT="${2:-ERROR|error:|Failed|failed|Unable|not found|Missing|missing|Could not|invalid|Exception}"
 LEVEL="${3:-error}"
 COUNT="${4:-8}"
+CTX="${5:-0}"   # عدد أسطر السياق بعد كل سطر مطابق
 
 [ -f "$LOG" ] || { echo "::warning::لا يوجد سجل في $LOG"; exit 0; }
 
 # نجمع السطور المهمة ثم نقسّمها إلى قطع بحجم آمن (تجاوز حد التعليق الواحد)
-grep -nE "$PAT" "$LOG" | tail -400 > /tmp/m11-errs.txt
+grep -nE -A "$CTX" "$PAT" "$LOG" | tail -400 > /tmp/m11-errs.txt
 if [ ! -s /tmp/m11-errs.txt ]; then
   tail -120 "$LOG" > /tmp/m11-errs.txt
 fi
