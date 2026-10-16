@@ -280,7 +280,7 @@ jobs:
 
       - name: بثّ أول أخطاء التحليل (تعليقات)
         if: always()
-        run: bash tools/emit_annotations.sh "$BUILD_LOG" "SCRIPT ERROR|Parse Error|ERROR: Failed|Failed to load|Cannot" error 9 2 head
+        run: bash tools/emit_annotations.sh "$BUILD_LOG" 'SCRIPT ERROR|Parse Error|ERROR: Failed|Failed to load|Cannot' error 9 2 head
 
       - name: بثّ أنواع الأخطاء الفريدة (تعليقات)
         if: always()
