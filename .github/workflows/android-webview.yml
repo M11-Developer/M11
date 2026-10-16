@@ -76,7 +76,14 @@ jobs:
           mkdir -p build
           find webview-apk/app/build/outputs/apk -name "*.apk" -exec cp -v {} build/ \;
           ls -la build
-          for f in build/*.apk; do python3 tools/check_apk.py "$f" || true; done
+          : > /tmp/check.log
+          for f in build/*.apk; do
+            echo "--- $f ---" >> /tmp/check.log
+            python3 tools/check_apk.py "$f" >> /tmp/check.log 2>&1 || true
+            unzip -l "$f" | grep -cE "assets/" >> /tmp/check.log || true
+          done
+          cat /tmp/check.log
+          bash tools/emit_annotations.sh /tmp/check.log "." notice 9
 
       - name: رفع الأرتيفاكت
         if: always()

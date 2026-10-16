@@ -271,8 +271,12 @@ jobs:
       - name: بثّ بداية السجل (تعليقات)
         if: always()
         run: |
-          head -40 "$BUILD_LOG" > /tmp/m11-head.txt
+          head -12 "$BUILD_LOG" > /tmp/m11-head.txt
           bash tools/emit_annotations.sh /tmp/m11-head.txt "." notice 9
+
+      - name: بثّ أخطاء تحليل الشيفرة (تعليقات)
+        if: always()
+        run: bash tools/emit_annotations.sh "$BUILD_LOG" "world.gd|Parse Error|parse error|Failed to load script|Cannot infer|Invalid|Compile Error" error 9 3
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
