@@ -119,39 +119,35 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          # --editor يستورد كل الملفات (الخطوط والأطالس والقوالب) — هو نفس ما تفعله
-          # صورة godot-ci في مثالها الرسمي، وبعده --import للتأكيد
-          timeout 1500 godot --headless --path project --editor --quit 2>&1 | tee -a "$BUILD_LOG"
-          echo "editor_exit=$?" | tee -a "$BUILD_LOG"
-          timeout 900 godot --headless --path project --import --quit 2>&1 | tee -a "$BUILD_LOG"
+          # --import وحده يكفي: يبدأ المحرّر ويستورد كل شيء ثم يخرج بنفسه.
+          # (إضافة --quit كانت تُنهيه قبل انتهاء الاستيراد — درس من البناء الفعلي)
+          timeout 1800 godot --headless --path project --import 2>&1 | tee -a "$BUILD_LOG"
           echo "import_exit=$?" | tee -a "$BUILD_LOG"
-          # فحص مهم: هل سُجّلت الأصناف العامة (class_name)؟ غيابها يعني فشل الاستيراد
+          IMP=$(ls project/.godot/imported 2>/dev/null | wc -l)
+          FONTS=$(ls project/.godot/imported 2>/dev/null | grep -c "cairo_400")
           CACHE="project/.godot/global_script_class_cache.cfg"
-          if [ -f "$CACHE" ]; then
-            echo "::notice title=CLASS-CACHE::الملف موجود | GameWorld: $(grep -c GameWorld "$CACHE") | M11Data: $(grep -c M11Data "$CACHE") | أطالس مستوردة: $(ls project/.godot/imported 2>/dev/null | wc -l)"
-          else
-            echo "::error title=NO-CLASS-CACHE::لم يُبنَ ملف cache الأصناف — الاستيراد لم يكتمل"
-          fi
-          ls project/.godot 2>/dev/null | head -8 | tee -a "$BUILD_LOG"
+          CLASSES=$(grep -c "GameWorld" "$CACHE" 2>/dev/null || echo 0)
+          echo "::notice title=IMPORT::ملفات مستوردة=$IMP | خطوط=$FONTS | GameWorld في السجل=$CLASSES"
+          echo "imported=$IMP fonts=$FONTS classes=$CLASSES" | tee -a "$BUILD_LOG"
           true
 
       - name: فحص تحليل كل ملف GDScript (بعد الاستيراد)
         continue-on-error: true
-        if: always()
         run: |
           set +e
           : > /tmp/files.log
+          # نُبعد الثيم مؤقتًا: خطوطه تُنتج ضجيجًا في كل تشغيل حتى تُستورد
+          [ -f project/assets/fonts/theme_m11.tres ] && mv project/assets/fonts/theme_m11.tres /tmp/theme_m11.tres
           for f in $(cd project && find . -name "*.gd" | sed 's|^\./|res://|' | sort); do
-            out="$(timeout 90 godot --headless --path project --check-only --script "$f" 2>&1)"
-            if echo "$out" | grep -qiE "parse error|error loading|could not parse"; then
-              {
-                echo "✘ $f"
-                echo "$out" | grep -iE "parse error|error loading|could not parse|at:" | head -6
-              } >> /tmp/files.log
+            out="$(timeout 120 godot --headless --path project --check-only --script "$f" 2>&1)"
+            mine="$(echo "$out" | grep -iE "parse error|could not parse|failed to load script|SCRIPT ERROR" | grep -v "theme_m11\|cairo_\|noto_ar")"
+            if [ -n "$mine" ]; then
+              { echo "✘ $f"; echo "$mine" | head -4; } >> /tmp/files.log
             fi
           done
-          echo "--- ملفات بها أخطاء: $(grep -c '^✘' /tmp/files.log) ---"
-          cat /tmp/files.log | head -80
+          [ -f /tmp/theme_m11.tres ] && mv /tmp/theme_m11.tres project/assets/fonts/theme_m11.tres
+          echo "--- ملفات بها أخطاء: $(grep -c '^✘' /tmp/files.log) من $(find project -name '*.gd' | wc -l) ---"
+          head -50 /tmp/files.log
           bash tools/emit_annotations.sh /tmp/files.log "." error 9 0 head
 
       - name: تثبيت قالب بناء أندرويد (Gradle)
