@@ -302,18 +302,26 @@ jobs:
             build/M11-release.aab
 
       # ---------- بثّ أخطاء السجل كتعليقات يقرأها المطوّر عبر واجهة GitHub ----------
-      - name: بثّ أخطاء البناء (تعليقات)
-        if: always()
-        run: bash tools/emit_annotations.sh "$BUILD_LOG" "ERROR|error:|Failed|failed|Unable|not found|Missing|missing|Could not|invalid|Exception|فشل|خطأ" error 9
-
-      - name: بثّ أسباب أخطاء الإعداد (تعليقات)
-        if: always()
-        run: bash tools/emit_annotations.sh "$BUILD_LOG" "configuration errors|valid when|template is missing|Android build template|SDK|keystore|sign" error 9 10
-
-      - name: بثّ أول أخطاء التحليل (تعليقات)
+      - name: بثّ سبب فشل الإعداد (نافذة السجل)
         if: always()
         run: |
-          bash tools/emit_annotations.sh "$BUILD_LOG" 'SCRIPT ERROR|Parse Error|ERROR: Failed|Failed to load|Cannot' error 9 2 head
+          set +e
+          awk '/configuration errors/{print "▼ " $0; for (i = 0; i < 8; i++) { if (getline > 0) print "  " $0 } print "▲"}' "$BUILD_LOG" > /tmp/why.txt
+          echo "--- سبب الفشل ---"; cat /tmp/why.txt
+          bash tools/emit_annotations.sh /tmp/why.txt "." error 9
+
+      - name: بثّ حالة قالب البناء (تعليقات)
+        if: always()
+        run: |
+          set +e
+          {
+            echo "قالب البناء: $(ls project/android/build/build.gradle 2>/dev/null || echo 'مفقود')"
+            echo "مجلدات android: $(ls project/android 2>/dev/null | tr '\n' ' ')"
+            echo "قوالب التصدير: $(ls "$HOME/.local/share/godot/export_templates/4.3.stable" 2>/dev/null | tr '\n' ' ')"
+            echo "نسخة Godot: $(godot --version 2>&1 | head -1)"
+          } > /tmp/tpl.txt
+          cat /tmp/tpl.txt
+          bash tools/emit_annotations.sh /tmp/tpl.txt "." notice 9
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
