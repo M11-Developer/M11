@@ -114,20 +114,7 @@ jobs:
               echo "::error::الأصول الخام دخلت الحزمة!"; exit 1
             fi
             # لا نطلب إذن الإنترنت إطلاقًا (القسم ٤) — نفحص نصّ البيان داخل الحزمة
-            python3 - <<'PY'
-import zipfile, sys
-z = zipfile.ZipFile('build/M11-debug.apk')
-blob = b''
-for name in z.namelist():
-    if name.startswith('AndroidManifest') or name.endswith('.xml'):
-        blob += z.read(name)
-needles = [b'android.permission.INTERNET', b'android.permission.ACCESS_FINE_LOCATION']
-bad = [n.decode() for n in needles if n in blob]
-print('فحص الأذونات: ', 'خالٍ من الأذونات الممنوعة ✔' if not bad else f'وُجد: {bad}')
-if bad:
-    print('::error::الحزمة تطلب أذونات ممنوعة')
-    sys.exit(1)
-PY
+            python3 tools/check_apk.py build/M11-debug.apk
           fi
 
       - name: رفع الملفات كأرتيفاكت
