@@ -97,6 +97,26 @@ jobs:
           chmod +x build/linux/M11.x86_64 2>/dev/null || true
           ls -la build/linux || true
 
+      - name: التحقق من اكتمال الحزمة (الملف التنفيذي + ملف البيانات .pck)
+        run: |
+          set +e
+          FAIL=0
+          check_pair () {
+            local dir="$1" exe="$2"
+            if [ ! -s "$dir/$exe" ]; then echo "::error::مفقود: $dir/$exe"; FAIL=1; return; fi
+            if [ ! -s "$dir/M11.pck" ]; then
+              echo "::error::ملف البيانات $dir/M11.pck مفقود — اللعبة لن تعمل بلا ملف البيان (PCK)"
+              FAIL=1
+            fi
+            local sz=$(stat -c%s "$dir/$exe")
+            if [ "$sz" -lt 5000000 ]; then echo "::error::حجم $dir/$exe صغير جدًا ($sz بايت)"; FAIL=1; fi
+            echo "✔ $dir/$exe ($((sz/1048576)) م.ب) + PCK $(stat -c%s "$dir/M11.pck" 2>/dev/null || echo 0) بايت"
+          }
+          check_pair build/windows M11.exe
+          check_pair build/linux M11.x86_64
+          [ "$FAIL" = "0" ] || exit 1
+          true
+
       - name: تجهيز الحزم المضغوطة
         run: |
           set +e
