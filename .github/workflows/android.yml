@@ -59,11 +59,46 @@ jobs:
           grep -o '"number":[0-9]*' /tmp/issue_resp.json | head -1 | cut -d: -f2 > /tmp/issue_number
           echo "issue=$(cat /tmp/issue_number)"
 
-      - name: تحضير مجلد إعدادات Godot
+      - name: تحضير إعدادات Godot للمحرّر (جافا + SDK + مفتاح التصحيح)
+        continue-on-error: true
         run: |
-          set -e
+          set +e
           mkdir -pv ~/.config
-          [ -d /root/.config/godot ] && cp -rv /root/.config/godot ~/.config/ || true
+          # صورة godot-ci تبني إعداداتها تحت /root بينما تشغيل Actions يستخدم
+          # /github/home — فننسخ الإعدادات ونُكمل الناقص (مسار جافا و SDK والمفتاح)،
+          # وإلا يرفض Godot التصدير برسالة «configuration errors».
+          [ -d /root/.config/godot ] && cp -rn /root/.config/godot ~/.config/ 2>/dev/null
+          JAVA_DIR="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          [ -x "$JAVA_DIR/bin/java" ] || JAVA_DIR="$(ls -d /usr/lib/jvm/*/ 2>/dev/null | head -1)"
+          DEBUG_KS="/root/debug.keystore"
+          [ -f "$DEBUG_KS" ] || DEBUG_KS="$(find / -maxdepth 4 -name 'debug.keystore' 2>/dev/null | head -1)"
+          FOUND="$(find / -maxdepth 5 -name 'editor_settings-4.3.tres' 2>/dev/null | head -1)"
+          [ -n "$FOUND" ] && cp -n "$FOUND" ~/.config/godot/editor_settings-4.3.tres 2>/dev/null
+          SET="$HOME/.config/godot/editor_settings-4.3.tres"
+          mkdir -p "$HOME/.config/godot"
+          if [ ! -f "$SET" ]; then
+            printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' > "$SET"
+          fi
+          add_setting() {
+            grep -q "^$1" "$SET" || echo "$1 = $2" >> "$SET"
+          }
+          add_setting export/android/java_sdk_path "\"$JAVA_DIR\""
+          add_setting export/android/android_sdk_path "\"/usr/lib/android-sdk\""
+          [ -f "$DEBUG_KS" ] && add_setting export/android/debug_keystore "\"$DEBUG_KS\""
+          add_setting export/android/debug_keystore_user "\"androiddebugkey\""
+          add_setting export/android/debug_keystore_pass "\"android\""
+          add_setting export/android/force_system_user "false"
+          add_setting export/android/timestamping_authority_url "\"\""
+          add_setting export/android/shutdown_adb_on_exit "true"
+          {
+            echo "=== إعدادات المحرّر ($SET) ==="
+            cat "$SET"
+            echo "=== جافا: $JAVA_DIR | مفتاح التصحيح: $DEBUG_KS | إعدادات في الصورة: $FOUND ==="
+            echo "=== java -version ==="
+            java -version 2>&1 | head -2
+          } >> "$BUILD_LOG"
+          tail -14 "$SET"
+          true
 
       - name: تأمين قوالب التصدير (٤٫٣)
         continue-on-error: true
@@ -308,20 +343,18 @@ jobs:
             build/M11-release.aab
 
       # ---------- بثّ أخطاء السجل كتعليقات يقرأها المطوّر عبر واجهة GitHub ----------
-      - name: بثّ سبب فشل الإعداد (نافذة السجل)
+      - name: بثّ سبب فشل الإعداد (تعليقات)
         if: always()
         run: |
           set +e
-          awk 'BEGIN{n=0} {buf[n % 16] = $0; n++}
-               /configuration errors|Project export for preset|Execution failed|FAILURE:|apksigner|zipalign|keystore|Cannot execute/ {
-                 print "▼▼▼ " $0;
-                 start = (n > 14) ? n - 14 : 0;
-                 for (i = start; i < n - 1; i++) print "   قبل: " buf[i % 16];
-                 for (i = 0; i < 4; i++) { if (getline > 0) print "   بعد: " $0 }
-                 print "▲▲▲";
-               }' "$BUILD_LOG" > /tmp/why.txt
-          echo "--- سبب الفشل ---"; cat /tmp/why.txt
-          bash tools/emit_annotations.sh /tmp/why.txt "." error 9
+          {
+            echo "--- الأسباب المعروفة في السجل ---"
+            grep -oE "A valid Java SDK path[^"]{0,80}|Either Debug Keystore[^"]{0,80}|Debug keystore not configured[^"]{0,80}|Either Release Keystore[^"]{0,80}|Release keystore incorrectly[^"]{0,80}|Android build template not installed[^"]{0,80}|Custom [a-z ]*not found[^"]{0,60}|Target SDK[^"]{0,90}" "$BUILD_LOG" | sort -u
+            echo "--- سطر رسالة الفشل كاملًا ---"
+            grep -oE "due to configuration errors:.{0,600}" "$BUILD_LOG" | head -2
+          } > /tmp/why.txt 2>&1
+          cat /tmp/why.txt
+          bash tools/emit_annotations.sh /tmp/why.txt "." error 9 0 head
 
       - name: بثّ حالة قالب البناء (تعليقات)
         if: always()
