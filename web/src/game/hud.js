@@ -390,12 +390,9 @@ export class HUD {
     }
     // إطار الخريطة المصغّرة
     this.icon(ctx, 'ui/minimap_frame', x - 1, y - 1);
-    // اسم الوضع والخريطة: نُصغّر الخط تلقائيًا إن طال الاسم حتى لا يُقصّ
-    const modeW = this.measure(ctx, world.mode.nameAr, 8);
-    this.text(ctx, world.mode.nameAr, x + size - 2, y + h + 11,
-      { size: modeW > size - 6 ? 7 : 8, bold: true, color: '#F2C14E' });
+    // اسم الخريطة فقط: اسم الوضع مكرر في شارة أعلى الشاشة، وكان السطران يزدحمان
     const mapW = this.measure(ctx, world.level.def.nameAr, 7);
-    this.text(ctx, world.level.def.nameAr, x + size - 2, y + h + 20,
+    this.text(ctx, world.level.def.nameAr, x + size - 2, y + h + 12,
       { size: mapW > size - 6 ? 6 : 7, color: '#9BB8C4' });
     if (this.showBigMap) {
       const bw = 380, bh = 232, bx = (W - bw) / 2, by = (H - bh) / 2;

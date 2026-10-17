@@ -461,15 +461,9 @@ export function generateMap(def, seed = 12345) {
   for (const node of lootNodes) {
     if (rng.chance(0.25)) props.push({ type: 'barrel', x: node.x + 40, y: node.y, v: 1, explosive: true });
   }
-  // 7) ماء
-  for (let i = 0; i < (layout.water || 0); i++) {
-    const ww = rng.int(10, 24);
-    const wx = Math.floor(rng.range(3, w - ww - 3));
-    const wy = heights[wx] + 1;
-    for (let x = wx; x < wx + ww; x++) {
-      for (let y = wy; y < wy + 3; y++) map.set(x, y, T.WATER);
-    }
-  }
+  // 7) ماء: أُوقف التوليد. الماء كان يُحفر تحت السطح فيظهر ككتلة سماوية
+  //    مستطيلة فوق الأرض (شكوى «المستطيل الأزرق») ولا يمكن الوصول إليه أصلًا.
+  //    أبقينا الراسم (drawWater) جاهزًا لأي خريطة مستقبلية بضفاف حقيقية.
   // 8) نقاط الظهور متباعدة
   const spawnTarget = def.size === 'br' ? 16 : 12;
   const step = Math.max(3, Math.floor(w / (spawnTarget + 1)));

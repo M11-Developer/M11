@@ -104,20 +104,19 @@ function drawTouchPreview(ctx2, inp, S) {
     ctx2.font = `700 ${Math.round(b.r * 0.85)}px "Cairo", sans-serif`;
     ctx2.textAlign = 'center';
     ctx2.fillStyle = '#EAF2F6';
-    if (b.r >= 15) ctx2.fillText(glyph[name] || '', b.x, b.y + 2);
-    ctx2.font = `700 ${Math.min(8, Math.round(b.r * 0.5))}px "Cairo", sans-serif`;
-    ctx2.fillText(label[name] || '', b.x, b.y + b.r * 0.72);
+    if (b.r >= 14) ctx2.fillText(glyph[name] || '', b.x, b.y + 2);
+    if (b.r < 15) { ctx2.restore(); continue; }
+    const fs = Math.max(6, Math.min(8, Math.round(b.r * 0.5)));
+    ctx2.font = `700 ${fs}px "Cairo", sans-serif`;
+    // نفس منطق اللعبة: نُبعد التسمية عن الحواف، ونقلبها فوق الزر إن خرجت تحت الشاشة
+    const txt = label[name] || '';
+    const lw = ctx2.measureText(txt).width;
+    const lx = Math.min(Math.max(b.x, lw / 2 + 2), CONFIG.internalWidth - lw / 2 - 2);
+    const ly = b.y + b.r * 0.72 > CONFIG.internalHeight - 8 ? b.y - b.r - 1 : b.y + b.r * 0.72;
+    ctx2.fillText(txt, lx, ly);
     ctx2.restore();
   }
-  // موضعا الإبهام
-  for (const [x, y, t] of [[72, CONFIG.internalHeight - 74, 'حركة'], [CONFIG.internalWidth - 290, CONFIG.internalHeight - 82, 'تصويب']]) {
-    ctx2.beginPath();
-    ctx2.arc(x, y, 40, 0, TAU2);
-    ctx2.fillStyle = 'rgba(10,14,18,0.16)';
-    ctx2.fill();
-    ctx2.strokeStyle = 'rgba(204,229,242,0.16)';
-    ctx2.stroke();
-  }
+  // العصا لا تُرسم وهي خاملة في اللعبة الحقيقية — لا نرسم حلقات وهمية هنا
   ctx2.restore();
 }
 

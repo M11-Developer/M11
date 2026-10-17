@@ -70,11 +70,42 @@ export function emptyProfile(name = 'مقاتل') {
   };
 }
 
+/**
+ * ترحيل ملف قديم: يكمل أي مفاتيح ناقصة من الافتراضي.
+ * ملف بلا unlocks.skins أو challenges.daily كان يُسقط القوائم باستثناء.
+ */
+export function migrateProfile(p) {
+  const base = emptyProfile(p && typeof p.name === 'string' ? p.name : undefined);
+  const out = { ...base, ...(p || {}) };
+  out.stats = { ...base.stats, ...((p && p.stats) || {}) };
+  out.unlocks = { ...base.unlocks, ...((p && p.unlocks) || {}) };
+  for (const k of ['skins', 'charms', 'emotes', 'camos', 'badges']) {
+    if (!Array.isArray(out.unlocks[k])) out.unlocks[k] = base.unlocks[k].slice();
+  }
+  out.challenges = { ...base.challenges, ...((p && p.challenges) || {}) };
+  if (!Array.isArray(out.challenges.daily)) out.challenges.daily = [];
+  if (!Array.isArray(out.challenges.weekly)) out.challenges.weekly = [];
+  out.weaponKills = (p && p.weaponKills) || {};
+  out.weaponShots = (p && p.weaponShots) || {};
+  // الإنجازات كانت مصفوفة في إصدار قديم ثم صارت خريطة — نوحّدها لخريطة
+  let ach = p && p.achievements;
+  if (Array.isArray(ach)) {
+    const map = {};
+    ach.forEach((id, i) => { map[id] = Date.now() - i; });
+    ach = map;
+  }
+  out.achievements = ach && typeof ach === 'object' ? ach : {};
+  out.leaderboard = Array.isArray(out.leaderboard) ? out.leaderboard : [];
+  out.friends = out.friends && typeof out.friends === 'object' ? out.friends : {};
+  if (!Number.isFinite(out.xp) || out.xp < 0) out.xp = 0;
+  return out;
+}
+
 export class Storage {
   static loadProfile() {
     const raw = localStorage.getItem(KEY);
     const p = raw ? decode(raw) : null;
-    return p || emptyProfile();
+    return p ? migrateProfile(p) : emptyProfile();
   }
   static saveProfile(p) {
     localStorage.setItem(KEY, encode(p));
@@ -133,8 +164,14 @@ export class Progression {
     return (this.profile.xp - cur.xp) / (next.xp - cur.xp);
   }
 
+  /** المستوى يُشتق من الخبرة — كان p.level يبقى 1 مهما لعبت */
+  get level() {
+    return Math.max(1, Math.floor(this.profile.xp / 1500) + 1);
+  }
+
   addXp(amount, reason = '') {
     this.profile.xp += amount;
+    this.profile.level = this.level;
     this.checkUnlocks();
     return amount;
   }
@@ -174,6 +211,16 @@ export class Progression {
       (result.kills || 0) * 100 + (result.win ? 500 : 0) + (result.assists || 0) * 40 +
       (result.revives || 0) * 60 + Math.round((result.survival || 0) * 2) + 80, 'match');
     this.checkAchievements(result);
+    // التحديات اليومية/الأسبوعية: كانت تبقى 0/x للأبد
+    this.progressStat('kills', result.kills || 0);
+    this.progressStat('headshots', result.headshots || 0);
+    this.progressStat('wins', result.win ? 1 : 0);
+    this.progressStat('revives', result.revives || 0);
+    this.progressStat('damageDealt', result.damage || 0);
+    this.progressStat('playTimeSeconds', result.duration || 0);
+    this.progressStat('meleeKills', result.meleeKills || 0);
+    this.progressStat('airdropsLooted', result.airdropsLooted || 0);
+    this.progressStat('brMatches', result.mode === 'br' ? 1 : 0);
     Storage.saveProfile(this.profile);
     return gained;
   }
@@ -218,6 +265,16 @@ export class Progression {
       c.lastWeekly = now;
     }
     Storage.saveProfile(this.profile);
+  }
+
+  /** يقدّم كل تحدٍّ نشط يقيس هذا الإحصاء — recordMatch لم يكن يحرّك أي تحدٍّ إطلاقًا */
+  progressStat(stat, amount = 0) {
+    if (!amount) return;
+    for (const list of [this.profile.challenges.daily, this.profile.challenges.weekly]) {
+      for (const ch of list) {
+        if (ch.stat === stat && !ch.done) this.progressChallenge(ch.id, amount);
+      }
+    }
   }
 
   progressChallenge(id, amount = 1) {

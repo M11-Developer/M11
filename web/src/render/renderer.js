@@ -289,11 +289,12 @@ export class Renderer {
     this.drawAirdrops(ctx, cam, world);
     this.drawPickups(ctx, cam, world);
     this.drawVehicles(ctx, cam, world);
-    this.drawActors(ctx, cam, world, view, dt);
+    // المقاتلون والعناصر في مرور واحد مرتّب بالعمق: كان العنصر يُرسم دائمًا فوق
+    // أي مقاتل يقف أمامه فيبدو كأنه «قرص رمادي فوق اللاعب».
+    this.drawScene(ctx, cam, world, view, dt);
     this.drawProjectiles(ctx, cam, world);
     this.drawTracers(ctx, cam, world);
     this.drawDecals(ctx, cam, world);
-    this.drawProps(ctx, cam, world);
     // 5) تفاصيل أمامية (عشب/أوراق أمام الكيانات) — عمق بصري فقط
     this.drawForeground(ctx, cam, world);
     this.particles.draw(ctx, a.get('vfx'), cam, 'top');
@@ -533,7 +534,7 @@ export class Renderer {
     let any = false;
     for (let y = y0; y <= y1 && !any; y++) for (let x = x0; x <= x1; x++) if (m.get(x, y) === T.WATER) { any = true; break; }
     if (!any) return;
-    const deep = '#17354F', mid = '#245A78', shallow = '#3E88A8';
+    const deep = '#0F2A38', mid = '#173F53', shallow = '#1E4F66';
     ctx.save();
     for (let y = y0; y <= y1; y++) {
       for (let x = x0; x <= x1; x++) {
@@ -543,9 +544,20 @@ export class Renderer {
         // عمق: كل ما نزل عن السطح يصبح أغمق (Hue shift)
         const depth = Math.min(4, y - this.waterTop(m, x, y));
         const col = depth <= 0 ? shallow : depth <= 1 ? mid : deep;
-        ctx.globalAlpha = surface ? 0.82 : 0.9;
+        ctx.globalAlpha = surface ? 0.7 : 0.8;
         ctx.fillStyle = col;
         ctx.fillRect(px, py, TS, TS);
+        // ضفّة داكنة على كل جهة لا تجاورها ماء — تلغي شكل «المستطيل الأزرق» الحاد
+        const lw = m.get(x - 1, y) === T.WATER, rw = m.get(x + 1, y) === T.WATER;
+        const up = m.get(x, y - 1) === T.WATER, dn = m.get(x, y + 1) === T.WATER;
+        if (!lw || !rw || !up || !dn) {
+          ctx.globalAlpha = 0.62;
+          ctx.fillStyle = '#0A1A26';
+          if (!lw) ctx.fillRect(px, py, 1, TS);
+          if (!rw) ctx.fillRect(px + TS - 1, py, 1, TS);
+          if (!up) ctx.fillRect(px, py, TS, 1);
+          if (!dn) ctx.fillRect(px, py + TS - 1, TS, 1);
+        }
         if (surface) {
           // شريط سطح الماء من أطلس water_surface (مولّد بالذكاء الاصطناعي):
           // نختار الشريط حسب الطقس ونزحف أفقيًا، فيبدو السطح ماءً حقيقيًا لا مربّعات.
@@ -555,19 +567,20 @@ export class Renderer {
             const img = wa.image;
             const scroll = Math.floor(this.weatherT * 14) % 4096;
             const sx = f.x + ((x * TS + scroll) % Math.max(1, f.w - TS));
-            const sh = Math.min(22, f.h);
-            ctx.globalAlpha = 0.95;
+            const sh = Math.min(20, f.h);
+            // 0.95 كان يجعل الشريط الفاتح من الأطلس يبدو نيونًا فوق الماء الداكن
+            ctx.globalAlpha = 0.45;
             ctx.drawImage(img, sx, f.y, TS, sh, px, py, TS, sh);
             ctx.globalAlpha = 1;
           }
         }
         if (surface && !(this.assets.get('water_surface') && this.assets.get('water_surface').has(this.waterStripKey))) {
           const wave = Math.sin(t * 2.2 + x * 0.7);
-          ctx.globalAlpha = 0.75;
-          ctx.fillStyle = '#9AD6F0';
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = '#7FC5E0';
           ctx.fillRect(px, py + Math.round(wave), TS, 1);
-          ctx.globalAlpha = 0.4;
-          ctx.fillStyle = '#D6F0FF';
+          ctx.globalAlpha = 0.28;
+          ctx.fillStyle = '#B8E0F2';
           const w2 = 5 + Math.round(wave * 3);
           ctx.fillRect(px + 4 + Math.round(wave * 2), py + 1, w2, 1);
           ctx.globalAlpha = 0.25;
@@ -585,49 +598,59 @@ export class Renderer {
     return yy;
   }
 
-  drawProps(ctx, cam, world) {
+  /** يدمج المقاتلين والعناصر في قائمة واحدة مرتّبة بقاعدة القدم (y) */
+  drawScene(ctx, cam, world, view, dt) {
+    const v = cam.viewRect(96);
+    const props = world.level.props.filter((p) => p.x > v.x - 64 && p.x < v.x + v.w + 64 && p.y > v.y - 96 && p.y < v.y + v.h + 96);
+    const actors = world.actors.filter((a) => a.x + a.w > v.x && a.x < v.x + v.w && a.y + a.h > v.y - 64 && a.y < v.y + v.h + 64);
+    const items = [];
+    for (const p of props) items.push({ y: p.y, prop: p });
+    for (const a of actors) items.push({ y: a.y + a.h, actor: a });
+    items.sort((p, q) => p.y - q.y);
+    for (const it of items) {
+      if (it.actor) this.drawActor(ctx, cam, world, it.actor, view, dt);
+      else this.drawProp(ctx, world, it.prop);
+    }
+    this.debug.draws = actors.length;
+  }
+
+  drawProp(ctx, world, p) {
     const worldAtlas = this.assets.get('world');
     if (!worldAtlas) return;
-    const v = cam.viewRect(64);
-    // ترتيب حسب y للعمق
-    const visible = world.level.props.filter((p) => p.x > v.x - 64 && p.x < v.x + v.w + 64 && p.y > v.y - 96 && p.y < v.y + v.h + 96);
-    visible.sort((a, b) => a.y - b.y);
-    for (const p of visible) {
-      // عناصر مولّدة بالذكاء الاصطناعي بصيغة "p:<atlas>/<name>" — تُرسم من أطلسها
-      if (typeof p.type === 'string' && p.type.startsWith('p:')) {
-        const [atlasName, frame] = p.type.slice(2).split('/');
-        const a = this.assets.get(atlasName);
-        if (a) {
-          // أطلس العناصر: المفتاح "<atlas>/<name>" — وأطالس البلاطات: "tile/<theme>/<name>"
-          const keys = [`${atlasName}/${frame}`];
-          if (atlasName.startsWith('tiles_')) keys.push(`tile/${atlasName.slice(6)}/${frame}`);
-          const key = keys.find((k) => a.has(k));
-          if (key) {
-            // العناصر المولّدة تُثبَّت من قاعدتها على الأرض (ارتفاعها يختلف عن عناصر الكود)
-            const sc = p.sc || 1;
-            const fh = ((a.frame(key) || {}).h || 0) * sc;
-            const fw = ((a.frame(key) || {}).w || 0) * sc;
-            const dy = fh ? Math.round(p.y) - fh : Math.round(p.y);
-            const dx = fw && p.flip ? Math.round(p.x) - fw / 2 : Math.round(p.x);
-            const stack = p.stack > 1 ? Math.min(p.stack, 4) : 1;
-            for (let i = 0; i < stack; i++) {
-              a.draw(ctx, key, dx, dy - i * fh, sc, !!p.flip);
-            }
-            continue;
+    // عناصر مولّدة بالذكاء الاصطناعي بصيغة "p:<atlas>/<name>" — تُرسم من أطلسها
+    if (typeof p.type === 'string' && p.type.startsWith('p:')) {
+      const [atlasName, frame] = p.type.slice(2).split('/');
+      const a = this.assets.get(atlasName);
+      if (a) {
+        // أطلس العناصر: المفتاح "<atlas>/<name>" — وأطالس البلاطات: "tile/<theme>/<name>"
+        const keys = [`${atlasName}/${frame}`];
+        if (atlasName.startsWith('tiles_')) keys.push(`tile/${atlasName.slice(6)}/${frame}`);
+        const key = keys.find((k) => a.has(k));
+        if (key) {
+          // العناصر المولّدة تُثبَّت من قاعدتها على الأرض (ارتفاعها يختلف عن عناصر الكود)
+          const sc = p.sc || 1;
+          const fh = ((a.frame(key) || {}).h || 0) * sc;
+          const fw = ((a.frame(key) || {}).w || 0) * sc;
+          const dy = fh ? Math.round(p.y) - fh : Math.round(p.y);
+          const dx = fw && p.flip ? Math.round(p.x) - fw / 2 : Math.round(p.x);
+          const stack = p.stack > 1 ? Math.min(p.stack, 4) : 1;
+          for (let i = 0; i < stack; i++) {
+            a.draw(ctx, key, dx, dy - i * fh, sc, !!p.flip);
           }
+          return;
         }
       }
-      const key = `prop/${p.type}${p.v ? '_' + p.v : ''}`;
-      const k = worldAtlas.has(key) ? key : `prop/${p.type}`;
-      worldAtlas.draw(ctx, k, Math.round(p.x), Math.round(p.y), 1, false);
-      if (p.explosive) {
-        // وميض أحمر تحذيري على البراميل المتفجرة
-        ctx.save();
-        ctx.globalAlpha = 0.35 + 0.25 * Math.sin(this.weatherT * 4 + p.x);
-        ctx.fillStyle = '#FF6B4A';
-        ctx.fillRect(Math.round(p.x) + 6, Math.round(p.y) + 8, 3, 3);
-        ctx.restore();
-      }
+    }
+    const key = `prop/${p.type}${p.v ? '_' + p.v : ''}`;
+    const k = worldAtlas.has(key) ? key : `prop/${p.type}`;
+    worldAtlas.draw(ctx, k, Math.round(p.x), Math.round(p.y), 1, false);
+    if (p.explosive) {
+      // وميض أحمر تحذيري على البراميل المتفجرة
+      ctx.save();
+      ctx.globalAlpha = 0.35 + 0.25 * Math.sin(this.weatherT * 4 + p.x);
+      ctx.fillStyle = '#FF6B4A';
+      ctx.fillRect(Math.round(p.x) + 6, Math.round(p.y) + 8, 3, 3);
+      ctx.restore();
     }
   }
 

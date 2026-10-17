@@ -48,7 +48,7 @@ let resumed = 0;
 const game = {
   canvas: { width: CONFIG.internalWidth, height: CONFIG.internalHeight },
   state: 'menu',
-  settings: { quality: 0 },
+  settings: { quality: 0, loadout: ['jabha', 'n9'], map: 'oasis', opKey: 'rashid', skinIndex: 0, throwable: 'grenade' },
   controls: {},
   profile: { name: 'لاعب' },
   audioSettings: {},
@@ -57,7 +57,8 @@ const game = {
   startMatch() {}, resume() { resumed++; }, pause() {},
   saveSettings() {}, saveControls() {}, applyQuality() {}, applyColorblind() {},
   openEditor() {}, rebuildTouchButtons() {}, updateTouchVisibility() {},
-  primaryOptions: () => [], secondaryOptions: () => [],
+  primaryOptions: () => [{ id: 'jabha', label: 'الجبهة' }],
+  secondaryOptions: () => [{ id: 'n9', label: 'نصل 9' }],
   progression: { profile: { achievements: [] }, challenges: [] },
 };
 
@@ -117,5 +118,31 @@ menus.current.index = backIdx;
 menus.key('Enter');
 if (menus.current.name !== 'main') fail('Enter على صف الرجوع لا يعمل');
 console.log('  ✔ لوحة المفاتيح: Enter على صف «رجوع» يرجع للرئيسية');
+
+// ٦) كل الشاشات: تُرسم بلا استثناء، وزر الرجوع يعود منها للرئيسية
+const allScreens = ['modes', 'maps', 'operators', 'settings', 'controls', 'lan', 'stats', 'credits', 'hotspot', 'pause'];
+for (const name of allScreens) {
+  menus.home();
+  menus.push(name);
+  menus.update(1 / 60, null);
+  menus.draw(ctx, game.settings);
+  if (!menus.backChipRect() && name !== 'main') fail(`لا زر رجوع في ${name}`);
+  menus.onPointerDown(20, 18);
+  menus.onPointerUp(20, 18);
+  if (name !== 'pause' && menus.current.name !== 'main') fail(`الرجوع من ${name} فشل`);
+}
+console.log(`  ✔ ${allScreens.length} شاشة: الرسم والرجوع سليمان`);
+
+// ٧) حفظ قديم بلا loadout لا يجب أن يُسقط شاشة المشغّلين (حماية من انهيار الواجهة)
+menus.home();
+menus.push('operators');
+delete game.settings.loadout;
+try {
+  menus.update(1 / 60, null);
+  menus.draw(ctx, game.settings);
+} catch (e) {
+  fail('شاشة المشغّلين تنهار عند غياب loadout: ' + e.message);
+}
+console.log('  ✔ شاشة المشغّلين تصمد أمام إعدادات قديمة ناقصة');
 
 console.log('✔ كل تفاعلات اللمس تعمل');

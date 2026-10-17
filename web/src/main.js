@@ -97,6 +97,9 @@ class Game {
     // لوحتا المنظر المولّدتان (اختياريتان — لو غابت الصورة تعمل اللعبة بالطبقات البرمجية فقط)
     await loadBackdrops(Assets, (name) => console.warn('لوحة المنظر غير متوفرة:', name));
     this.charMeta = meta;
+    // إصلاح أي إعدادات قديمة/ناقصة من إصدارات سابقة قبل بناء القوائم
+    this.sanitizeSettings();
+    this.sanitizeControls();
     // الخطوط تُحمَّل قبل أول رسم — وإلا رسم canvas بخط احتياطي يشوّه العربية
     await this.loadFonts();
     setProgress(0.8, 'تحميل الصوت…');
@@ -208,6 +211,48 @@ class Game {
     // تكبير الأزرار اللمسية تبعًا لحجم الشاشة
     this.rebuildTouchButtons();
     this.updateTouchVisibility();
+  }
+
+  /**
+   * يُصلح الحفظ القديم: أي مفتاح ناقص أو خارج النطاق يُعاد لقيمته الافتراضية.
+   * كان حفظ إصدار سابق بلا `loadout` يُسقط شاشة المشغّلين بخطأ.
+   */
+  sanitizeSettings() {
+    const s = this.settings;
+    const d = DEFAULT_SETTINGS;
+    const num = (k, min, max) => {
+      const v = Number(s[k]);
+      s[k] = Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : d[k];
+    };
+    num('quality', 0, 3); num('fpsLimit', 0, 240); num('shakeScale', 0, 1.5);
+    num('grain', 0, 1); num('aimAssist', 0, 1); num('botCount', 0, 11); num('difficulty', 0, 3);
+    if (![0, 30, 60, 120].includes(s.fpsLimit)) s.fpsLimit = d.fpsLimit;
+    if (![0, 1, 2, 3].includes(s.difficulty)) s.difficulty = d.difficulty;
+    if (!Array.isArray(s.loadout) || s.loadout.length < 2 || !WEAPONS[s.loadout[0]] || !WEAPONS[s.loadout[1]]) {
+      s.loadout = [...d.loadout];
+    }
+    if (!MAPS.some((m) => m.id === s.map)) s.map = d.map;
+    if (this.charMeta && this.charMeta.operators && !this.charMeta.operators[s.opKey]) {
+      s.opKey = Object.keys(this.charMeta.operators)[0] || d.opKey;
+    }
+    if (!['deuter', 'prot', 'trit', 'none'].includes(s.colorblind)) s.colorblind = d.colorblind;
+    if (!['auto', 'always', 'never'].includes(s.showTouchControls)) s.showTouchControls = d.showTouchControls;
+    if (!['grenade', 'shama'].includes(s.throwable)) s.throwable = d.throwable;
+    if (typeof s.showFps !== 'boolean') s.showFps = d.showFps;
+  }
+
+  /** يضمن أن قيم التحكم كلها أرقام/خيارات صحيحة (حفظ قديم = لا تعطّل) */
+  sanitizeControls() {
+    const c = this.controls;
+    const d = DEFAULT_CONTROLS;
+    const num = (k, min, max) => {
+      const v = Number(c[k]);
+      c[k] = Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : d[k];
+    };
+    num('stickSize', 30, 120); num('stickAlpha', 0.1, 1); num('buttonAlpha', 0.1, 1);
+    num('sensitivity', 0.2, 3); num('aimSensitivity', 0.2, 3); num('aimAssist', 0, 1);
+    num('clawLayout', 2, 4);
+    if (!['floating', 'fixed'].includes(c.joystickMode)) c.joystickMode = d.joystickMode;
   }
 
   /** يضمن جاهزية خطوط Cairo/Noto في canvas قبل أول إطار */
@@ -412,8 +457,11 @@ class Game {
     const won = !!results.won;
     audio.setMusic && audio.setMusic(won ? 'victory' : 'defeat');
     if (this.progression) {
-      const me = results.standings.find((s) => s.name === this.profile.name);
+      // المتّسع: اللاعب البشري (isBot=false) — البحث بالاسم قد يفشل فيُصفّر كل الإحصاءات
+      const me = results.standings.find((s) => !s.isBot)
+        || results.standings.find((s) => s.name === this.profile.name);
       const actor = this.player;
+      const levelBefore = this.progression.level;
       const gained = this.progression.recordMatch({
         kills: me ? me.kills : 0, deaths: me ? me.deaths : 0, assists: me ? me.assists : 0,
         headshots: me ? me.headshots : 0, damage: me ? me.damage : 0,
@@ -422,11 +470,18 @@ class Game {
         longestKill: me ? me.longestKill : 0,
         // كانت هذه الحقول لا تُمرّر إطلاقًا ⇒ الانتصارات وأسلحة القتل لا تُحفظ في الملف الشخصي
         win: won, won: won,
+        // الوضع كان لا يُمرَّر ⇒ إنجازات BR ولوحة الشرف تفقد الوضع
+        mode: this.world ? this.world.modeId : this.settings.mode,
         shotsFired: actor ? actor.shotsFired : 0, shotsHit: actor ? actor.shotsHit : 0,
         survival: actor ? actor.survivalTime : 0, duration: results.duration || 0,
         weaponKills: actor ? actor.weaponKills : null, weaponShots: actor ? actor.weaponShots : null,
       });
-      this.lastXp = gained && typeof gained === 'object' ? gained : null;
+      // HUD النتائج يتوقّع { xp, level, leveled } — كان يُمرَّر رقم فيُهمَل ولا تظهر الخبرة
+      this.lastXp = gained && typeof gained === 'object' ? gained : {
+        xp: Number(gained) || 0,
+        level: this.progression.level,
+        leveled: this.progression.level > levelBefore,
+      };
       const got = this.progression.checkAchievements({
         kills: me ? me.kills : 0, headshots: me ? me.headshots : 0,
         placement: me ? me.placement : 0, accuracy: me ? me.accuracy : 0,
@@ -782,7 +837,8 @@ class Game {
       if (glyph && r >= 14) {
         this.hud.num(ctx, glyph, x, y + 1, { size: Math.round(r * 0.8), bold: true, color: col, align: 'center' });
       }
-      if (label) {
+      // الأزرار الصغيرة (r<15) تكتفي بالرمز: الكلمة العربية كانت تُقصّ وتزدحم
+      if (label && r >= 15) {
         const fs = Math.max(6, Math.min(8, Math.round(r * 0.5)));
         const lw = this.hud.measure(ctx, label, fs);
         // نُبعد التسمية عن حواف الشاشة حتى لا تُقصّ

@@ -160,11 +160,11 @@ export class MenuSystem {
     const rows = this.rowsFor(cur);
     const row = rows[Math.min(cur.index, rows.length - 1)];
     if (!row) return;
-    cur.maxScroll = Math.max(0, rows[rows.length - 1].rect.y + 30 - (H - 30));
+    cur.maxScroll = Math.max(0, rows[rows.length - 1].rect.y + 30 - (H - 48));
     const top = row.rect.y;
     const bottom = row.rect.y + row.rect.h;
     if (top - cur.scroll < 58) cur.scroll = Math.max(0, top - 58);
-    else if (bottom - cur.scroll > H - 34) cur.scroll = Math.min(cur.maxScroll, bottom - (H - 34));
+    else if (bottom - cur.scroll > H - 54) cur.scroll = Math.min(cur.maxScroll, bottom - (H - 54));
   }
 
   activate(item, index, x = null) {
@@ -240,6 +240,16 @@ export class MenuSystem {
   }
 
   /**
+   * معرّفات الإنجازات المفتوحة.
+   * الحفظ يخزّنها كخريطة { id: timestamp } لا كمصفوفة — كانت الإحصاءات تنهار هنا.
+   */
+  unlockedAchievements() {
+    const a = this.game && this.game.profile ? this.game.profile.achievements : null;
+    if (!a) return [];
+    return Array.isArray(a) ? a : Object.keys(a);
+  }
+
+  /**
    * يبني صفوف الشاشة الحالية: مستطيل لكل عنصر (أساس الرسم واللمس معًا).
    * كان الرسم سابقًا يطلب cur.screen.rows وهي غير معرّفة ⇒ استثناء يمنع رسم القوائم.
    */
@@ -256,9 +266,10 @@ export class MenuSystem {
     let y = 62;
     for (let index = 0; index < items.length; index++) {
       const item = items[index];
-      const h = item.type === 'header' ? 20 : 24;
+      // صفوف أقصر قليلًا حتى تدخل الشاشة الرئيسية كاملة على 360p بلا تمرير
+      const h = item.type === 'header' ? 18 : 22;
       rows.push({ item, index, rect: { x: W - 348, y, w: 330, h } });
-      y += h + 4;
+      y += h + 3;
     }
     return rows;
   }
@@ -321,7 +332,7 @@ export class MenuSystem {
     ctx.save();
     this.drawBackground(ctx);
     const rows = this.rowsFor(cur);
-    cur.maxScroll = Math.max(0, rows.length && rows[rows.length - 1] ? rows[rows.length - 1].rect.y + 30 - (H - 30) : 0);
+    cur.maxScroll = Math.max(0, rows.length && rows[rows.length - 1] ? rows[rows.length - 1].rect.y + 30 - (H - 48) : 0);
     // العنوان
     const title = cur.screen.title || '';
     if (title) {
@@ -343,7 +354,7 @@ export class MenuSystem {
     ctx.fillStyle = sg;
     ctx.fillRect(W - scrimW, 50, scrimW, H - 50);
     ctx.beginPath();
-    ctx.rect(0, 54, W, H - 54 - 40);
+    ctx.rect(0, 54, W, H - 54 - 48);
     ctx.clip();
     let hovered = this.hitTest(this.mouse.x, this.mouse.y);
     if (this.drag && this.drag.moved) hovered = null;
@@ -353,6 +364,17 @@ export class MenuSystem {
       this.drawRow(ctx, row, y, row.index === cur.index, hovered && hovered.index === row.index);
     }
     ctx.restore();
+    // شريط تمرير رفيع عندما تطول القائمة — لم يكن هناك أي مؤشّر أن الأسفل صفوف أخرى
+    if (cur.maxScroll > 0) {
+      const trackX = W - 4, trackY = 58, trackH = H - 58 - 48;
+      const contentH = trackH + cur.maxScroll;
+      const thumbH = Math.max(16, trackH * (trackH / contentH));
+      const thumbY = trackY + (trackH - thumbH) * clamp(cur.scroll / cur.maxScroll, 0, 1);
+      ctx.fillStyle = 'rgba(255,255,255,0.07)';
+      ctx.fillRect(trackX, trackY, 2, trackH);
+      ctx.fillStyle = 'rgba(242,193,78,0.55)';
+      ctx.fillRect(trackX, thumbY, 2, thumbH);
+    }
     // تلاشٍ سفلي حتى لا تُقطع آخر صف بشكل حاد فوق التذييل
     const fade = ctx.createLinearGradient(0, H - 58, 0, H - 40);
     fade.addColorStop(0, 'rgba(8,11,15,0)');
@@ -427,9 +449,8 @@ export class MenuSystem {
     // شريط الميداليات: ميدالية لكل إنجاز مفتوح (أطلس medals_2) — يجعل التقدّم مرئيًا
     if (cur.name === 'stats') {
       const atlas = this.assets.get('medals_2');
-      const p = (this.game && this.game.profile) || { achievements: [] };
       if (atlas) {
-        const unlocked = p.achievements || [];
+        const unlocked = this.unlockedAchievements();
         const keys = Object.keys(atlas.frames).sort();
         // شريط ميداليات أفقي فوق التذييل في الفرع الأيسر (لا يغطي القائمة)
         const stripY = H - 62;
@@ -458,16 +479,6 @@ export class MenuSystem {
       }
     }
 
-    // شريط سكرول
-    if (cur.maxScroll > 0) {
-      const trackH = H - 70;
-      const barH = Math.max(20, trackH * (trackH / (cur.maxScroll + trackH)));
-      const barY = 60 + (trackH - barH) * (cur.scroll / cur.maxScroll);
-      ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.fillRect(4, 60, 3, trackH);
-      ctx.fillStyle = '#F2C14E';
-      ctx.fillRect(4, barY, 3, barH);
-    }
     // تذييل
     this.drawFooter(ctx, cur);
     if (this.toast) {
@@ -639,7 +650,8 @@ export class MenuSystem {
     ctx.restore();
     if (item.disabled) {
       ctx.save();
-      ctx.globalAlpha = 0.45;
+      // 0.45 كانت تجعل صفوف الإحصاءات غير مقروءة على شاشة الهاتف
+      ctx.globalAlpha = 0.72;
     }
     // أيقونة
     let labelX = x + w - 10;
@@ -658,8 +670,9 @@ export class MenuSystem {
     }
     // قيمة / سلايدر / اختيار
     if (item.type === 'slider') {
-      const raw = Number(item.get());
-      const v = Number.isFinite(raw) ? raw : item.min;
+      let rawVal;
+      try { rawVal = Number(item.get()); } catch (e) { rawVal = NaN; }
+      const v = Number.isFinite(rawVal) ? rawVal : item.min;
       const pct = clamp((v - item.min) / Math.max(1e-6, item.max - item.min), 0, 1);
       const sw = 64, sx = x + 8;
       ctx.fillStyle = 'rgba(11,13,16,0.8)';
@@ -668,10 +681,15 @@ export class MenuSystem {
       ctx.fillRect(sx, y + h / 2 - 2, Math.round(sw * pct), 5);
       ctx.fillStyle = '#EAF2F6';
       ctx.fillRect(sx + Math.round(sw * pct) - 1, y + h / 2 - 4, 2, 9);
-      this.num(ctx, item.format ? item.format(v) : `${Math.round(v * 100)}%`, sx + sw + 6, y + h / 2 + 4, { size: 8, color: '#9BB8C4' });
+      let fmt;
+      try { fmt = item.format ? item.format(v) : `${Math.round(v * 100)}%`; } catch (e) { fmt = `${Math.round(v * 100)}%`; }
+      this.num(ctx, fmt, sx + sw + 6, y + h / 2 + 4, { size: 8, color: '#9BB8C4' });
     } else if (item.type === 'choice' || item.type === 'sliderChoice') {
-      const val = item.get();
-      const txt = typeof item.format === 'function' ? item.format(val) : String(val);
+      let val;
+      try { val = item.get(); } catch (e) { val = null; }
+      let txt;
+      try { txt = typeof item.format === 'function' ? item.format(val) : String(val == null ? '—' : val); }
+      catch (e) { txt = '—'; }
       const col = active ? '#F2C14E' : '#9BB8C4';
       // القيم العربية تُرسم باتجاه RTL (كانت تُعرض معكوسة حين تُرسم LTR)
       if (/[\u0600-\u06FF]/.test(txt)) this.text(ctx, txt, x + 10, y + h / 2 + 4, { size: 9, bold: true, color: col, align: 'left' });
@@ -708,7 +726,7 @@ export class MenuSystem {
     // اسم اللاعب ورتبته
     const p = this.game.profile;
     if (p) {
-      const rank = RANKS[Math.min(RANKS.length - 1, p.rank || 0)];
+      const rank = (this.game.progression && this.game.progression.rank) || RANKS[0];
       this.text(ctx, `${p.name} — ${rank.nameAr}`, W - 12, H - 8, { size: 8, color: '#F2C14E' });
     }
   }
@@ -785,23 +803,19 @@ export class MenuSystem {
     S.main = {
       id: 'main', title: 'ميكا 11 — ساحة النار', subtitle: 'الحرب المحلية بلا إنترنت: 8 لاعبين على شبكة واحدة',
       hints: [['▲▼', 'تنقّل'], ['Enter', 'اختيار']],
+      // ١٠ صفوف فقط = تدخل الشاشة كاملة على الهاتف بلا تمرير.
+      // «هوت سبوت» انتقل إلى شاشة الشبكة، والائتمانات/تغيير الاسم إلى الإعدادات.
       items: () => [
+        header('الميدان'),
         action('لعب سريع — ضد بوتات', () => { g.startMatch({ mode: 'dm', bots: true }); g.state = 'playing'; }, { icon: 'icon_star', desc: 'ابدأ فورًا' }),
         action('اختيار الوضع', () => this.push('modes'), { icon: 'icon_skull', desc: `${MODE_LIST.length} وضعًا` }),
         action('اختيار الخريطة', () => this.push('maps'), { icon: 'icon_map', desc: `${MAPS.length} خرائط` }),
         action('تخصيص المقاتل', () => this.push('operators'), { icon: 'icon_team', desc: '10 مشغلين وأسلحة البداية' }),
         action('شبكة محلية (LAN)', () => this.push('lan'), { icon: 'icon_ping', desc: 'حتى 8 لاعبين على نقطة اتصال' }),
-        action('محرّر الخرائط', () => { g.openEditor(); }, { icon: 'icon_settings', desc: 'ابنِ خريطتك وصدّرها JSON' }),
-        action('الإحصاءات والإنجازات', () => this.push('stats'), { icon: 'icon_crown', desc: `${g.progression ? g.progression.profile.achievements.length : 0}/${ACHIEVEMENTS.length} إنجازًا` }),
-        action('الإعدادات', () => this.push('settings'), { icon: 'icon_settings' }),
-        action('تخصيص التحكم', () => this.push('controls'), { icon: 'icon_settings', desc: 'عصا مزدوجة، أحجام، شفافية، جيروسكوب' }),
-        action('كيف تجعل هوت سبوت؟', () => this.push('hotspot'), { icon: 'icon_warning', desc: 'دليل مصوّر قصير' }),
-        action('الائتمانات', () => this.push('credits'), { icon: 'icon_star' }),
-        action('تغيير الاسم', () => {
-          const name = prompt('اكتب اسمك (بالعربية أو الإنجليزية):', g.profile.name);
-          if (name && name.trim()) { g.profile.name = name.trim().slice(0, 16); g.saveProfile(); this.message('تم تغيير الاسم إلى ' + g.profile.name, 'ok'); }
-        }, { icon: 'icon_team', value: g.profile.name }),
-        action('خروج', () => { this.message('يمكنك إغلاق التبويب أو الضغط على Alt+F4', 'info'); }, { type: 'danger', label: 'خروج', icon: 'icon_warning' }),
+        header('ملفي وإعداداتي'),
+        action('محرّر الخرائط', () => { g.openEditor(); }, { icon: 'icon_map', desc: 'ابنِ خريطتك وصدّرها JSON' }),
+        action('الإحصاءات والإنجازات', () => this.push('stats'), { icon: 'icon_crown', desc: `${this.unlockedAchievements().length}/${ACHIEVEMENTS.length} إنجازًا` }),
+        action('الإعدادات', () => this.push('settings'), { icon: 'icon_settings', desc: 'الرسم، الصوت، البوتات، الأزرار، الاسم' }),
       ],
     };
 
@@ -849,8 +863,9 @@ export class MenuSystem {
         rows.push(header('شكل اللون (Skin)'));
         rows.push(choice('لون الزي', [0, 1, 2, 3].map((i) => ({ id: i, label: 'شكل ' + (i + 1) })), () => g.settings.skinIndex, (v) => { g.settings.skinIndex = v; g.saveSettings(); }));
         rows.push(header('أسلحة البداية'));
-        rows.push(choice('السلاح الأساسي', g.primaryOptions(), () => g.settings.loadout[0], (v) => { g.settings.loadout[0] = v; g.saveSettings(); }));
-        rows.push(choice('السلاح الثانوي', g.secondaryOptions(), () => g.settings.loadout[1], (v) => { g.settings.loadout[1] = v; g.saveSettings(); }));
+        const loadout = Array.isArray(g.settings.loadout) ? g.settings.loadout : ['jabha', 'n9'];
+        rows.push(choice('السلاح الأساسي', g.primaryOptions(), () => loadout[0] || g.primaryOptions()[0], (v) => { g.settings.loadout = [v, loadout[1] || 'n9']; g.saveSettings(); }));
+        rows.push(choice('السلاح الثانوي', g.secondaryOptions(), () => loadout[1] || g.secondaryOptions()[0], (v) => { g.settings.loadout = [loadout[0] || 'jabha', v]; g.saveSettings(); }));
         rows.push(choice('القنبلة', [['grenade', 'قنبلة يدوية'], ['shama', 'شمعة إشارة']], () => g.settings.throwable, (v) => { g.settings.throwable = v; g.saveSettings(); }));
         return rows;
       },
@@ -860,6 +875,7 @@ export class MenuSystem {
     S.settings = {
       id: 'settings', title: 'الإعدادات', subtitle: 'كل شيء يعمل دون إنترنت، وتُحفظ في جهازك',
       items: () => [
+        action('تخصيص التحكم (أزرار اللمس)', () => this.push('controls'), { icon: 'icon_settings', desc: 'الأحجام والشفافية والجيروسكوب' }),
         header('الشاشة والرسم'),
         choice('جودة الرسم', [{ id: 0, label: 'منخفضة' }, { id: 1, label: 'متوسطة' }, { id: 2, label: 'عالية' }, { id: 3, label: 'قصوى' }], () => g.settings.quality, (v) => { g.settings.quality = v; g.saveSettings(); g.applyQuality(); }),
         choice('حد الإطارات', [{ id: 30, label: '30' }, { id: 60, label: '60' }, { id: 120, label: '120' }, { id: 0, label: 'غير محدود' }], () => g.settings.fpsLimit, (v) => { g.settings.fpsLimit = v; g.saveSettings(); }),
@@ -888,6 +904,16 @@ export class MenuSystem {
         choice('شبكة/تشخيص (Overlay)', [{ id: false, label: 'مخفي' }, { id: true, label: 'ظاهر' }], () => g.settings.netOverlay, (v) => { g.settings.netOverlay = v; g.saveSettings(); }),
         choice('عداد الإطارات (FPS)', [{ id: false, label: 'مخفي' }, { id: true, label: 'ظاهر' }], () => g.settings.showFps, (v) => { g.settings.showFps = v; g.saveSettings(); }),
         action('تصفير الإعدادات', () => { g.resetSettings(); this.message('أُعيدت الإعدادات الافتراضية', 'ok'); }),
+        header('ملفي'),
+        action('تغيير الاسم', () => {
+          const name = prompt('اكتب اسمك (بالعربية أو الإنجليزية):', g.profile.name);
+          if (name && name.trim()) {
+            g.profile.name = name.trim().slice(0, 16);
+            g.saveProfile();
+            this.message('تم تغيير الاسم إلى ' + g.profile.name, 'ok');
+          }
+        }, { icon: 'icon_team', desc: g.profile.name }),
+        action('الائتمانات', () => this.push('credits'), { icon: 'icon_star' }),
         action('حذف كل البيانات المحفوظة', () => { g.wipeData(); this.message('حُذفت البيانات', 'error'); }, { type: 'danger' }),
       ],
     };
@@ -964,22 +990,37 @@ export class MenuSystem {
       items: () => {
         const p = g.profile;
         const s = p.stats || {};
+        // الدقة من المفاتيح الحقيقية (shotsHit/shotsFired) — كانت تقرأ hits/shots فتُظهر 0%
+        const fired = s.shotsFired || 0;
+        const acc = fired > 0 ? Math.round(((s.shotsHit || 0) / fired) * 100) : 0;
+        const level = (g.progression && g.progression.level) || p.level || 1;
+        const rank = (g.progression && g.progression.rank) || RANKS[0];
         const rows = [
           header('ملخّص'),
-          action(`المستوى ${p.level} — ${p.xp} نقطة خبرة`, () => {}, { disabled: true, icon: 'icon_crown' }),
+          action(`المستوى ${level} — ${rank.nameAr} — ${p.xp} نقطة خبرة`, () => {}, { disabled: true, icon: 'icon_crown' }),
           action(`قتلات: ${s.kills || 0} | موت: ${s.deaths || 0} | مباريات: ${s.matches || 0}`, () => {}, { disabled: true }),
-          action(`الدقة العامة: ${s.matches ? Math.round(((s.hits || 0) / Math.max(1, s.shots || 0)) * 100) : 0}%`, () => {}, { disabled: true }),
+          action(`الدقة العامة: ${acc}%`, () => {}, { disabled: true }),
           action(`أطول قتلة: ${Math.round(s.longestKill || 0)} مترًا`, () => {}, { disabled: true }),
           action(`إحياءات: ${s.revives || 0} | مساعدات: ${s.assists || 0}`, () => {}, { disabled: true }),
           header('التحديات اليومية/الأسبوعية'),
         ];
-        for (const c of (g.progression ? g.progression.challenges : [])) {
-          rows.push(action(`${c.text} — ${c.progress}/${c.goal}`, () => {}, { disabled: true, color: c.done ? '#5ED67B' : '#EAF2F6' }));
+        // التحديات الحقيقية من الملف المحلي (كان يقرأ خاصية غير موجودة فلا تظهر أبدًا)
+        const ch = g.progression && g.progression.profile ? g.progression.profile.challenges : null;
+        const chList = [...((ch && ch.daily) || []), ...((ch && ch.weekly) || [])];
+        if (!chList.length) {
+          rows.push(action('لا توجد تحديات حاليًا — العب مباراة لتظهر', () => {}, { disabled: true }));
         }
-        rows.push(header(`الإنجازات (${p.achievements.length}/${ACHIEVEMENTS.length})`));
+        for (const c of chList) {
+          const pr = Math.min(c.target || 0, c.progress || 0);
+          rows.push(action(`${c.done ? '✔ ' : ''}${c.nameAr || '—'} — ${pr}/${c.target || 0}`, () => {}, {
+            disabled: true, color: c.done ? '#5ED67B' : '#EAF2F6',
+          }));
+        }
+        const unlockedAch = this.unlockedAchievements();
+        rows.push(header(`الإنجازات (${unlockedAch.length}/${ACHIEVEMENTS.length})`));
         for (const a of ACHIEVEMENTS) {
-          const done = p.achievements.includes(a.id);
-          rows.push(action(`${done ? '✔ ' : '✖ '}${a.nameAr}`, () => {}, { disabled: true, desc: a.descAr, color: done ? '#5ED67B' : '#7E8C99' }));
+          const done = unlockedAch.includes(a.id);
+          rows.push(action(`${done ? '✔ ' : '✖ '}${a.nameAr}`, () => {}, { disabled: true, desc: a.descAr, color: done ? '#5ED67B' : '#AAB8C2' }));
         }
         return rows;
       },

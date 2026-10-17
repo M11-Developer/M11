@@ -67,8 +67,24 @@ const game = {
   },
   primaryOptions: () => ['jabha', 'n9', 'rasa'],
   secondaryOptions: () => ['n9', 'jabha'],
-  profile: { name: 'لاعب', level: 7, xp: 3200, rank: 3, achievements: ['first_blood', 'kills_50', 'wins_5'] },
-  progression: { challenges: [{ text: 'اقتل 20 عدوًا', progress: 12, goal: 20, done: false }], profile: { achievements: ['first_blood', 'kills_50', 'wins_5'] } },
+  // نفس شكل الحفظ الحقيقي: الإنجازات خريطة، والإحصاءات بالمفاتيح الصحيحة
+  profile: {
+    name: 'لاعب', level: 7, xp: 3200,
+    stats: { kills: 128, deaths: 42, matches: 30, wins: 9, revives: 4, assists: 12,
+      longestKill: 640, shotsFired: 2400, shotsHit: 900 },
+    achievements: { first_blood: 1, kills_10: 1, win_1: 1 },
+    weaponKills: {}, weaponShots: {},
+  },
+  progression: {
+    level: 7, rank: { key: 'sergeant', nameAr: 'رقيب', xp: 6800 },
+    profile: {
+      achievements: { first_blood: 1, kills_10: 1, win_1: 1 },
+      challenges: {
+        daily: [{ id: 'd_kills', nameAr: 'اقتل 15 عدوًا', target: 15, progress: 12, done: false }],
+        weekly: [{ id: 'w_kills', nameAr: 'اقتل 100 عدوًا', target: 100, progress: 100, done: true }],
+      },
+    },
+  },
   audioSettings: { master: 0.8, music: 0.6, sfx: 0.9, voice: 0.8 },
   controls: (() => {
     // نأخذ قيم التحكم الحقيقية من اللعبة نفسها حتى تعكس الصور الواقع
@@ -120,9 +136,10 @@ if (winMode || loseMode) {
 
 const input = { mouse: { x: -50, y: -50, down: false, wheel: 0 } };
 const noop = { update() {} };
+// update() يُنقص تلاشي الدخول — بدونه تبقى كل الشاشة معتمة بنسبة 55%
 for (let i = 0; i < 90; i++) {
-  menus.time += 1 / 60;
-  if (menus.current) menus.current.t += 1 / 60;
+  input.mouse.wheel = 0;
+  menus.update(1 / 60, input);
   ctx.fillStyle = '#05070A';
   ctx.fillRect(0, 0, CONFIG.internalWidth, CONFIG.internalHeight);
   if (globalThis.__results) resultsDraw(ctx); else menus.draw(ctx, game.settings);
