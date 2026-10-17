@@ -343,7 +343,7 @@ jobs:
         if: always()
         run: |
           bash tools/diag_log.sh "$BUILD_LOG"
-          bash tools/emit_annotations.sh /tmp/m11-diag.txt "." failure 9 0 head
+          bash tools/emit_annotations.sh /tmp/m11-diag.txt "." error 9 0 head
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص

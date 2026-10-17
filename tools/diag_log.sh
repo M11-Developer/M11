@@ -36,6 +36,10 @@ fi
 echo "=== النتائج ===" >> "$OUT"
 grep -E "debug_export_exit|debug_export_exit2|release_apk_exit|release_aab_exit|مفقود:|= OK|saving" "$LOG" 2>/dev/null | head -12 | sed 's/^/  /' >> "$OUT"
 
+# 3ب) إعداد التصدير والمفاتيح الفعلية
+echo "=== أسطر المفتاح في الإعدادات ===" >> "$OUT"
+grep -n "keystore/" /github/workspace/project/export_presets.cfg 2>/dev/null | head -8 >> "$OUT"
+
 # 4) ملفات APK التي وُجدت في المشروع
 echo "=== ملفات APK/AAB ===" >> "$OUT"
 find /github/workspace -name "*.apk" -o -name "*.aab" 2>/dev/null | grep -v export_templates | head -8 >> "$OUT"
