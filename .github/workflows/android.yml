@@ -74,7 +74,14 @@ jobs:
           # وإلا يرفض Godot التصدير برسالة «configuration errors».
           [ -d /root/.config/godot ] && cp -rn /root/.config/godot ~/.config/ 2>/dev/null
           JAVA_DIR="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
-          [ -x "$JAVA_DIR/bin/java" ] || JAVA_DIR="$(ls -d /usr/lib/jvm/*/ 2>/dev/null | head -1)"
+          if [ ! -x "$JAVA_DIR/bin/java" ]; then
+            JAVA_DIR="$(for d in /usr/lib/jvm/*/; do [ -x "$d/bin/javac" ] && echo "${d%/}" && break; done)"
+          fi
+          if [ ! -x "$JAVA_DIR/bin/java" ]; then
+            JAVA_DIR="$(dirname "$(dirname "$(readlink -f "$(command -v javac 2>/dev/null)")")")"
+          fi
+          [ -x "$JAVA_DIR/bin/java" ] || JAVA_DIR=/usr/lib/jvm/java-17-openjdk-amd64
+          echo "JAVA_DIR النهائي: $JAVA_DIR" 
           DEBUG_KS="/root/debug.keystore"
           [ -f "$DEBUG_KS" ] || DEBUG_KS="$(find / -maxdepth 4 -name 'debug.keystore' 2>/dev/null | head -1)"
           FOUND="$(find / -maxdepth 5 -name 'editor_settings-4.3.tres' 2>/dev/null | head -1)"
@@ -365,8 +372,7 @@ jobs:
       - name: تشخيص فشل التصدير (تعليقات)
         if: always()
         run: |
-          python3 tools/diag_log.py "$BUILD_LOG" > /dev/null 2>&1 || true
-          cat /tmp/m11-diag.txt 2>/dev/null | head -60
+          bash tools/diag_log.sh "$BUILD_LOG"
           bash tools/emit_annotations.sh /tmp/m11-diag.txt "." failure 9 0 head
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
