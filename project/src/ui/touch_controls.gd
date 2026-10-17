@@ -72,7 +72,10 @@ func _draw() -> void:
 	if player != null and is_instance_valid(player):
 		var aim: Vector2 = im.aim_stick["vec"]
 		if aim.length() < 0.15:
-			aim = Vector2.RIGHT if player.get("facing", 1) >= 0 else Vector2.LEFT
+			# Node.get() يقبل وسيطًا واحدًا فقط — نقرأ الاتجاه ثم نقرّر
+			var facing_v: Variant = player.get("facing_x")
+			var facing_dir: float = 1.0 if facing_v == null else float(facing_v)
+			aim = Vector2.RIGHT if facing_dir >= 0.0 else Vector2.LEFT
 		var origin: Vector2 = get_viewport().get_canvas_transform() * player.global_position
 		var tip: Vector2 = origin + aim.normalized() * 76.0 * scale_factor
 		draw_circle(tip, 5.0, Color(1.0, 0.45, 0.35, 0.85))
