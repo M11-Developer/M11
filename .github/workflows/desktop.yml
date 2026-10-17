@@ -132,26 +132,29 @@ jobs:
             build/linux/**
           if-no-files-found: warn
 
-      - name: نشر نسخة الكمبيوتر في نفس Release الإصدار
+      - name: تحديد وسم الإصدار المشترك
+        id: rel
         if: startsWith(github.ref, 'refs/tags/pc-v')
         run: |
-          set +e
-          # وسم الكمبيوتر pc-v2.0.0 ← يُرفق ملفاته في Release الإصدار v2.0.0
+          # pc-v2.0.0 ← يُرفق الملفان في Release الإصدار v2.0.0 نفسه
           REL="${GITHUB_REF_NAME#pc-}"
-          echo "release=$REL"
-          for i in 1 2 3 4 5; do
-            if gh release view "$REL" >/dev/null 2>&1; then break; fi
-            gh release create "$REL" --title "ميكا ١١ — الإصدار النهائي" \
-              --notes "نسخة أندرويد + نسخة كمبيوتر. كلها تعمل بلا إنترنت عبر الواي فاي المحلي." || true
-            sleep 6
-          done
-          shopt -s nullglob
-          files=(build/M11-Windows.zip build/M11-Linux.zip)
-          if [ ${#files[@]} -gt 0 ]; then
-            gh release upload "$REL" "${files[@]}" --clobber || echo "upload_failed"
-          fi
-          gh release view "$REL" --json assets --jq '.assets[].name' || true
-          true
+          echo "tag=$REL" >> "$GITHUB_OUTPUT"
+          echo "وسم الإصدار المشترك: $REL"
+
+      - name: نشر نسخة الكمبيوتر في نفس Release الإصدار
+        if: startsWith(github.ref, 'refs/tags/pc-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: "ميكا ١١ — الإصدار النهائي ٢٫٠ (أندرويد + كمبيوتر) 🎮"
+          body_path: docs/RELEASE_NOTES_AR.md
+          generate_release_notes: false
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+          files: |
+            build/M11-Windows.zip
+            build/M11-Linux.zip
 
       - name: سجل البناء عند الفشل
         if: failure()
