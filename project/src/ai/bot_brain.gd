@@ -58,7 +58,7 @@ func _world() -> GameWorld:
 
 
 func _think() -> void:
-	var w := _world()
+	var w: GameWorld = _world()
 	if w == null:
 		return
 	var visible_enemy := _find_enemy(w)
@@ -115,7 +115,7 @@ func _build_command(dt: float) -> Dictionary:
 		"swap": 0, "sprint": false,
 	}
 	# إنعاش زميل مُطرح أولوية
-	var w := _world()
+	var w: GameWorld = _world()
 	var downed := _find_downed(w)
 	if downed and downed.global_position.distance_to(actor.global_position) < 60.0:
 		downed.revive_progress += dt / Config.REVIVE_TIME
@@ -176,7 +176,7 @@ func _build_command(dt: float) -> Dictionary:
 	patrol_timer -= dt
 	if patrol_timer <= 0.0 or actor.global_position.distance_to(patrol_target) < 30.0:
 		patrol_timer = randf_range(2.0, 5.0)
-		var w2 := _world()
+		var w2: GameWorld = _world()
 		if w2:
 			patrol_target = Vector2(randf_range(80, w2.map_w * Config.TILE - 80), actor.global_position.y)
 	patrol_target.y = actor.global_position.y
@@ -188,7 +188,7 @@ func _build_command(dt: float) -> Dictionary:
 	# عقبة أمامه؟ اقفز أو شغّل الجيت باك
 	var ahead := actor.global_position + Vector2(actor.facing_x * 20.0, -6.0)
 	var below_ahead := ahead + Vector2(0, 30)
-	var w3 := _world()
+	var w3: GameWorld = _world()
 	if w3:
 		if w3.is_solid_at(ahead) and actor.is_on_floor() and jump_cooldown <= 0.0:
 			cmd["jump"] = true

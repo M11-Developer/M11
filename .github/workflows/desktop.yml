@@ -63,17 +63,20 @@ jobs:
           godot --headless --path project --import 2>&1 | tail -30
           echo "import_exit=$?"
 
-      - name: تشغيل تجريبي حقيقي (headless) — لا نسلم بناءً لم يُشغَّل
-        continue-on-error: true
+      - name: "تشغيل تجريبي حقيقي (headless) — بوابة: لا بناء لنسخة لا تُقلع"
         run: |
           set +e
           : > /tmp/run.log
           timeout 240 godot --headless --path project --quit-after 300 2>&1 | tee /tmp/run.log
           echo "run_exit=$?"
-          echo "--- أخطاء التشغيل ---"
-          grep -cE "SCRIPT ERROR|Invalid call|Nonexistent|Parse Error" /tmp/run.log || true
-          grep -E "SCRIPT ERROR|Invalid call|Nonexistent|Parse Error|\[M11\]" /tmp/run.log | head -30 || true
-          true
+          ERRS=$(grep -cE "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log || true)
+          MENU=$(grep -c "الإقلاع اكتمل" /tmp/run.log || true)
+          echo "script_errors=$ERRS menu_reached=$MENU"
+          grep -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent|\[M11\]" /tmp/run.log | head -30 || true
+          if [ "${ERRS:-0}" -ne 0 ] || [ "${MENU:-0}" -eq 0 ]; then
+            echo "::error::اللعبة لم تُقلع بنجاح (أخطاء=$ERRS، وصول للقائمة=$MENU)"
+            exit 1
+          fi
 
       - name: تصدير ويندوز
         run: |

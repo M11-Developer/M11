@@ -154,8 +154,8 @@ func _draw_minimap(vp: Vector2) -> void:
 	for a in world.actors:
 		if not a.alive:
 			continue
-		var px := x + a.global_position.x * sx
-		var py := y + a.global_position.y * sy
+		var px: float = x + a.global_position.x * sx
+		var py: float = y + a.global_position.y * sy
 		var col := Color(1, 1, 1) if a == player else (Color(0.31, 0.82, 0.77) if a.team == player.team else Color(0.91, 0.45, 0.29))
 		draw_rect(Rect2(px - 1, py - 1, 2, 2), col)
 	draw_string(font, Vector2(x + w, y + h + 12), M11Data.MODES.get(world.mode_id, {}).get("name_ar", ""), HORIZONTAL_ALIGNMENT_RIGHT, -1, 10, COLOR_GOLD)

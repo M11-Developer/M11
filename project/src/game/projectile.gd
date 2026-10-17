@@ -125,7 +125,7 @@ func _explode() -> void:
 	for a in world.actors:
 		if not a.alive:
 			continue
-		var d := a.global_position.distance_to(global_position)
+		var d: float = a.global_position.distance_to(global_position)
 		if d <= radius:
 			if a.team == team and a != owner_actor and not Config.friendly_fire:
 				continue

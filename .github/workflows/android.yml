@@ -182,8 +182,7 @@ jobs:
           echo "imported=$IMP fonts=$FONTS classes=$CLASSES" | tee -a "$BUILD_LOG"
           true
 
-      - name: تشغيل تجريبي حقيقي (headless) — يكشف أخطاء الإقلاع
-        continue-on-error: true
+      - name: "تشغيل تجريبي حقيقي (headless) — بوابة: لا بناء لنسخة لا تُقلع"
         run: |
           set +e
           : > /tmp/run.log
@@ -191,9 +190,15 @@ jobs:
           timeout 240 godot --headless --path project --quit-after 300 2>&1 | tee /tmp/run.log | tee -a "$BUILD_LOG"
           echo "run_exit=$?" | tee -a "$BUILD_LOG"
           echo "--- أخطاء التشغيل ---"
-          grep -cE "SCRIPT ERROR|Invalid call|Nonexistent|Parse Error" /tmp/run.log || true
-          grep -E "SCRIPT ERROR|Invalid call|Nonexistent|Parse Error|Cannot|error" /tmp/run.log | head -20 || true
-          true
+          ERRS=$(grep -cE "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log || true)
+          MENU=$(grep -c "الإقلاع اكتمل" /tmp/run.log || true)
+          echo "script_errors=$ERRS menu_reached=$MENU" | tee -a "$BUILD_LOG"
+          grep -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log | head -20 || true
+          # بوابة الإصدار: لا نبني نسخة لا تُقلع. أي خطأ سكربت أو عدم وصول للقائمة = فشل.
+          if [ "${ERRS:-0}" -ne 0 ] || [ "${MENU:-0}" -eq 0 ]; then
+            echo "::error::اللعبة لم تُقلع بنجاح (أخطاء=$ERRS، وصول للقائمة=$MENU) — لا نسلم هذه النسخة"
+            exit 1
+          fi
 
       - name: تثبيت قالب بناء أندرويد (Gradle)
         continue-on-error: true
