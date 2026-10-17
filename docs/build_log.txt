@@ -1,5 +1,5 @@
 == معلومات البيئة ==
-ref=v1.4.4 run=38994172466
+ref=v1.4.5 run=38994410114
 godot=4.3.stable.official.77dcf97d8
 python3=MISSING
 curl=MISSING
@@ -129,7 +129,6 @@ SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://
           at: GDScript::reload (res://src/main.gd:8)
 ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
    at: load (modules/gdscript/gdscript.cpp:2936)
-cannot connect to daemon at tcp:5037: Connection refused
 import_exit=0
 imported=1022 fonts=2 classes=1
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
@@ -165,7 +164,7 @@ Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) wi
 	for: CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG
 [Storing /__w/M11/M11/release.keystore]
 === فحص التوقيع بنفس أداة Godot: /usr/lib/jvm/java-17-openjdk-amd64/bin/keytool ===
-exit=0 | أول سطرين: m11, Oct 17, 2026, PrivateKeyEntry,  Certificate fingerprint (SHA-256): 00:DB:DF:64:53:99:ED:B4:10:9E:C9:AA:AC:59:60:72:F5:17:5A:0D:60:64:0E:A2:51:48:55:B3:76:E5:DD:EF 
+exit=0 | أول سطرين: m11, Oct 17, 2026, PrivateKeyEntry,  Certificate fingerprint (SHA-256): 1D:EC:EA:56:0A:EB:56:6E:7A:82:C2:8C:4C:E1:15:D5:5C:ED:6A:4D:5E:3B:79:A4:3A:2D:31:46:DD:DC:2C:3D 
 ✔ مفتاح الإصدار سليم ويحتوي على الاسم m11
 ✔ بيانات المفتاح مُدرجة في project/export_presets.cfg
 211:keystore/release="/__w/M11/M11/release.keystore"
@@ -227,7 +226,9 @@ Loading adaptive foreground icon from res://assets/atlases/app_icon.png
 Loading adaptive background icon from res://assets/atlases/app_icon.png
 0 param: --xr_mode_regular
 1 param: --use_immersive
-ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
+Starting gradle build...
+Checking build version...
+ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
    at: add_message (editor/export/editor_export_platform.h:182)
 export: end
 ERROR: Project export for preset "Android APK" failed.
@@ -275,22 +276,133 @@ Loading adaptive foreground icon from res://assets/atlases/app_icon.png
 Loading adaptive background icon from res://assets/atlases/app_icon.png
 0 param: --xr_mode_regular
 1 param: --use_immersive
-ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
-   at: add_message (editor/export/editor_export_platform.h:182)
+Starting legacy build system...
+	export: step 0: Creating APK...
+ADDING: classes.dex
+ADDING: classes2.dex
+ADDING: classes3.dex
+ADDING: classes4.dex
+ADDING: lib/arm64-v8a/libc++_shared.so
+ADDING: lib/arm64-v8a/libgodot_android.so
+ADDING: lib/armeabi-v7a/libc++_shared.so
+ADDING: lib/armeabi-v7a/libgodot_android.so
+ADDING: DebugProbesKt.bin
+ADDING: kotlin/annotation/annotation.kotlin_builtins
+ADDING: kotlin/collections/collections.kotlin_builtins
+ADDING: kotlin/coroutines/coroutines.kotlin_builtins
+ADDING: kotlin/internal/internal.kotlin_builtins
+ADDING: kotlin/kotlin.kotlin_builtins
+ADDING: kotlin/ranges/ranges.kotlin_builtins
+ADDING: kotlin/reflect/reflect.kotlin_builtins
+Adding permission android.permission.NEARBY_WIFI_DEVICES
+ADDING: AndroidManifest.xml
+ADDING: res/anim-v21/fragment_fast_out_extra_slow_in.xml
+ADDING: res/animator/fragment_close_enter.xml
+ADDING: res/animator/fragment_close_exit.xml
+ADDING: res/animator/fragment_fade_enter.xml
+ADDING: res/animator/fragment_fade_exit.xml
+ADDING: res/animator/fragment_open_enter.xml
+ADDING: res/animator/fragment_open_exit.xml
+ADDING: res/drawable-hdpi-v4/notification_bg_low_normal.9.png
+ADDING: res/drawable-hdpi-v4/notification_bg_low_pressed.9.png
+ADDING: res/drawable-hdpi-v4/notification_bg_normal.9.png
+ADDING: res/drawable-hdpi-v4/notification_bg_normal_pressed.9.png
+ADDING: res/drawable-hdpi-v4/notify_panel_notification_icon_bg.png
+ADDING: res/drawable-mdpi-v4/notification_bg_low_normal.9.png
+ADDING: res/drawable-mdpi-v4/notification_bg_low_pressed.9.png
+ADDING: res/drawable-mdpi-v4/notification_bg_normal.9.png
+ADDING: res/drawable-mdpi-v4/notification_bg_normal_pressed.9.png
+ADDING: res/drawable-mdpi-v4/notify_panel_notification_icon_bg.png
+ADDING: res/drawable-v21/notification_action_background.xml
+ADDING: res/drawable-v23/compat_splash_screen.xml
+ADDING: res/drawable-v23/compat_splash_screen_no_icon_background.xml
+ADDING: res/drawable-xhdpi-v4/notification_bg_low_normal.9.png
+ADDING: res/drawable-xhdpi-v4/notification_bg_low_pressed.9.png
+ADDING: res/drawable-xhdpi-v4/notification_bg_normal.9.png
+ADDING: res/drawable-xhdpi-v4/notification_bg_normal_pressed.9.png
+ADDING: res/drawable-xhdpi-v4/notify_panel_notification_icon_bg.png
+ADDING: res/drawable/compat_splash_screen.xml
+ADDING: res/drawable/compat_splash_screen_no_icon_background.xml
+ADDING: res/drawable/icon_background.xml
+ADDING: res/drawable/notification_bg.xml
+ADDING: res/drawable/notification_bg_low.xml
+ADDING: res/drawable/notification_icon_background.xml
+ADDING: res/drawable/notification_tile_bg.xml
+ADDING: res/layout-v21/notification_action.xml
+ADDING: res/layout-v21/notification_action_tombstone.xml
+ADDING: res/layout-v21/notification_template_custom_big.xml
+ADDING: res/layout-v21/notification_template_icon_group.xml
+ADDING: res/layout/custom_dialog.xml
+ADDING: res/layout/downloading_expansion.xml
+ADDING: res/layout/godot_app_layout.xml
+ADDING: res/layout/notification_template_part_chronometer.xml
+ADDING: res/layout/notification_template_part_time.xml
+ADDING: res/layout/splash_screen_view.xml
+ADDING: res/layout/status_bar_ongoing_event_progress_bar.xml
+ADDING: res/mipmap-anydpi-v26/icon.xml
+ADDING: res/mipmap-hdpi-v4/icon.png
+ADDING: res/mipmap-hdpi-v4/icon_background.png
+ADDING: res/mipmap-hdpi-v4/icon_foreground.png
+ADDING: res/mipmap-mdpi-v4/icon.png
+ADDING: res/mipmap-mdpi-v4/icon_background.png
+ADDING: res/mipmap-mdpi-v4/icon_foreground.png
+ADDING: res/mipmap-xhdpi-v4/icon.png
+ADDING: res/mipmap-xhdpi-v4/icon_background.png
+ADDING: res/mipmap-xhdpi-v4/icon_foreground.png
+ADDING: res/mipmap-xxhdpi-v4/icon.png
+ADDING: res/mipmap-xxhdpi-v4/icon_background.png
+ADDING: res/mipmap-xxhdpi-v4/icon_foreground.png
+ADDING: res/mipmap-xxxhdpi-v4/icon.png
+ADDING: res/mipmap-xxxhdpi-v4/icon_background.png
+ADDING: res/mipmap-xxxhdpi-v4/icon_foreground.png
+ADDING: res/mipmap/icon.png
+ADDING: res/mipmap/icon_background.png
+ADDING: res/mipmap/icon_foreground.png
+ADDING: res/xml/godot_provider_paths.xml
+ADDING: resources.arsc
+	export: step 1: Adding files...
+SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
+          at: GDScript::reload (res://src/game/world.gd:657)
+ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/main.gd:8)
+ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+	export: step 103: Aligning APK...
+Starting signing of the APK binary using /usr/lib/android-sdk/build-tools/34.0.0/apksigner
+	export: step 104: Signing debug APK...
+Signing debug binary using: 
+/usr/lib/android-sdk/build-tools/34.0.0/apksigner sign --verbose --ks /root/debug.keystore --ks-pass pass:android --ks-key-alias androiddebugkey /__w/M11/M11/build/M11-debug.apk
+Signed
+
+	export: step 105: Verifying APK...
+Verifying signed build using: 
+/usr/lib/android-sdk/build-tools/34.0.0/apksigner verify --verbose /__w/M11/M11/build/M11-debug.apk
+Verifies
+Verified using v1 scheme (JAR signing): true
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+
+Successfully completed signing build.
 export: end
-ERROR: Project export for preset "Android APK" failed.
-   at: _fs_changed (editor/editor_node.cpp:1028)
 EditorSettings: Save OK!
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
 XR: Removed interface "OpenXR"
-Orphan StringName: Node (static: 6, total: 7)
+Orphan StringName: Node (static: 9, total: 10)
 StringName: 1 unclaimed string names at exit.
 debug_export_exit2=0
 ===== EXPORT-DEBUG2 END =====
-total 8
-drwxr-xr-x  2 root root 4096 Oct 17 02:17 .
-drwxr-xr-x 11 1001 1001 4096 Oct 17 02:17 ..
+total 61544
+drwxr-xr-x  2 root root     4096 Oct 17 02:21 .
+drwxr-xr-x 11 1001 1001     4096 Oct 17 02:20 ..
+-rw-r--r--  1 root root 62510476 Oct 17 02:21 M11-debug.apk
+-rw-r--r--  1 root root   497075 Oct 17 02:21 M11-debug.apk.idsig
 ===== EXPORT-RELEASE START =====
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 TextServer: Added interface "Dummy"
@@ -308,13 +420,30 @@ EditorTheme: Generating new fonts.
 EditorTheme: Generating new styles.
 Loaded system CA certificates
 EditorSettings: Save OK!
-ERROR: Cannot export project with preset "Android APK" due to configuration errors:
-Release keystore incorrectly configured in the export preset.
-
-   at: _fs_changed (editor/editor_node.cpp:1012)
+export: begin: Exporting for Android steps: 105
+Exporting for Android...
+- debug build: false
+- export path: /__w/M11/M11/build/M11-release.apk
+- export format: 0
+- sign build: true
+- gradle build enabled: true
+- apk expansion enabled: false
+- enabled abis: armeabi-v7a,arm64-v8a
+- export filter: 0
+- include filter: 
+- exclude filter: assets/raw/*, assets/processed/*, docs/*, tools/*, *.md, .github/*
+Loading regular icon from res://assets/atlases/app_icon.png
+Loading adaptive foreground icon from res://assets/atlases/app_icon.png
+Loading adaptive background icon from res://assets/atlases/app_icon.png
+0 param: --xr_mode_regular
+1 param: --use_immersive
+Starting gradle build...
+Checking build version...
+ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
+   at: add_message (editor/export/editor_export_platform.h:182)
+export: end
 ERROR: Project export for preset "Android APK" failed.
    at: _fs_changed (editor/editor_node.cpp:1028)
-cannot connect to daemon at tcp:5037: Connection refused
 EditorSettings: Save OK!
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
@@ -339,13 +468,30 @@ EditorTheme: Generating new fonts.
 EditorTheme: Generating new styles.
 Loaded system CA certificates
 EditorSettings: Save OK!
-ERROR: Cannot export project with preset "Android AAB" due to configuration errors:
-Release keystore incorrectly configured in the export preset.
-
-   at: _fs_changed (editor/editor_node.cpp:1012)
+export: begin: Exporting for Android steps: 105
+Exporting for Android...
+- debug build: false
+- export path: /__w/M11/M11/build/M11-release.aab
+- export format: 1
+- sign build: true
+- gradle build enabled: true
+- apk expansion enabled: false
+- enabled abis: armeabi-v7a,arm64-v8a
+- export filter: 0
+- include filter: 
+- exclude filter: assets/raw/*, assets/processed/*, docs/*, tools/*, *.md, .github/*
+Loading regular icon from res://assets/atlases/app_icon.png
+Loading adaptive foreground icon from res://assets/atlases/app_icon.png
+Loading adaptive background icon from res://assets/atlases/app_icon.png
+0 param: --xr_mode_regular
+1 param: --use_immersive
+Starting gradle build...
+Checking build version...
+ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
+   at: add_message (editor/export/editor_export_platform.h:182)
+export: end
 ERROR: Project export for preset "Android AAB" failed.
    at: _fs_changed (editor/editor_node.cpp:1028)
-cannot connect to daemon at tcp:5037: Connection refused
 EditorSettings: Save OK!
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
@@ -353,9 +499,18 @@ XR: Removed interface "OpenXR"
 Orphan StringName: Node (static: 6, total: 7)
 StringName: 1 unclaimed string names at exit.
 release_aab_exit=0
-total 8
-drwxr-xr-x  2 root root 4096 Oct 17 02:17 .
-drwxr-xr-x 11 1001 1001 4096 Oct 17 02:17 ..
-✘ مفقود: build/M11-debug.apk
+total 61544
+drwxr-xr-x  2 root root     4096 Oct 17 02:21 .
+drwxr-xr-x 11 1001 1001     4096 Oct 17 02:20 ..
+-rw-r--r--  1 root root 62510476 Oct 17 02:21 M11-debug.apk
+-rw-r--r--  1 root root   497075 Oct 17 02:21 M11-debug.apk.idsig
+✔ build/M11-debug.apk — 60M
 ✘ مفقود: build/M11-release.apk
 ✘ مفقود: build/M11-release.aab
+--- فحص بسيط لـ build/M11-debug.apk (بلا بايثون) ---
+  6933952  2026-10-17 02:21   lib/arm64-v8a/libc++_shared.so
+ 65494072  2026-10-17 02:21   lib/arm64-v8a/libgodot_android.so
+  4359916  2026-10-17 02:21   lib/armeabi-v7a/libc++_shared.so
+ 71512764  2026-10-17 02:21   lib/armeabi-v7a/libgodot_android.so
+    83708  2026-10-17 02:21   assets/.godot/imported/bg_parallax_coast.png-c06c6ae647d883ed184a4088b64ae150.ctex
+0
