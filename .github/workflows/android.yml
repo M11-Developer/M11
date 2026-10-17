@@ -251,6 +251,14 @@ jobs:
                 -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG" 2>&1 | tee -a "$BUILD_LOG"
             fi
           fi
+          # ---- اختبار بنفس الاستدعاء الذي يستخدمه Godot بالضبط ----
+          JAVA_KS_BIN="$(grep -h '^export/android/java_sdk_path' "$SET" 2>/dev/null | cut -d'"' -f2)"
+          GODOT_KEYTOOL="${JAVA_KS_BIN:-/usr/lib/jvm/java-17-openjdk-amd64}/bin/keytool"
+          echo "=== فحص التوقيع بنفس أداة Godot: $GODOT_KEYTOOL ===" | tee -a "$BUILD_LOG"
+          if [ -f "$REL_KS" ]; then
+            "$GODOT_KEYTOOL" -list -keystore "$REL_KS" -storepass "$KS_PASS" -alias "$KS_USER" > /tmp/kt.out 2>&1
+            echo "exit=$? | أول سطرين: $(head -2 /tmp/kt.out | tr '\n' ' ')" | tee -a "$BUILD_LOG"
+          fi
           if [ -f "$REL_KS" ] && "$KEYTOOL" -list -keystore "$REL_KS" -storepass "$KS_PASS" 2>/dev/null | grep -q m11; then
             echo "✔ مفتاح الإصدار سليم ويحتوي على الاسم m11" | tee -a "$BUILD_LOG"
             bash tools/patch_presets.sh "$REL_KS" "$KS_USER" "$KS_PASS" \
