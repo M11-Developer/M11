@@ -97,10 +97,9 @@ script_export_mode=2
 def preset_options(idx: int, is_aab: bool) -> str:  # noqa: C901
     # APK: مسار القالب الجاهز (بلا Gradle) — أسرع وأبسط ولا يحتاج قالب بناء أندرويد.
     # AAB: يحتاج Gradle إلزاميًا (قيد في Godot: «Export AAB is only valid when Use Gradle Build is enabled»).
-    # نستخدم مسار Gradle للنمطين: هو المسار الرسمي المدعوم، وبه تُطبَّق minSdk 26
-    # وtargetSdk 35 كما تطلب المواصفة (القسم ٢). مسار القالب الجاهز لا يسمح
-    # بتغيير minSdk إطلاقًا (قيد في محرّك Godot 4.3).
-    use_gradle = "true"
+    # APK: مسار القالب الجاهز (بلا Gradle) — أسرع وأثبت، ولا يحتاج قالب بناء.
+    # AAB: يتطلّب Gradle إلزاميًا في Godot 4.3.
+    use_gradle = "true" if is_aab else "false"
     compress = "true" if use_gradle == "true" else "false"
     min_sdk = "26" if use_gradle == "true" else ""
     target_sdk = "35" if use_gradle == "true" else ""

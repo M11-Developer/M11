@@ -208,6 +208,8 @@ jobs:
             mkdir -p project/android/build
             unzip -oq "$DEST/android_source.zip" -d project/android/build 2>&1 | tail -3 | tee -a "$BUILD_LOG"
             touch project/android/.gdignore     # حتى لا يستوردها Godot كمشروع فرعي
+            # Godot يرفض البناء بـGradle إن غاب هذا الملف (يُكتب عادة عند التثبيت من المحرّر)
+            printf '4.3.stable' > project/android/.build_version
           fi
           echo "قالب البناء النهائي: $(ls project/android/build/build.gradle 2>/dev/null || echo 'مفقود')" | tee -a "$BUILD_LOG"
           ls -1 project/android/build 2>/dev/null | head -12 | tee -a "$BUILD_LOG"
