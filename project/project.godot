@@ -74,6 +74,9 @@ textures/canvas_textures/default_texture_filter=0
 environment/defaults/default_clear_color=Color(0.043, 0.051, 0.063, 1)
 anti_aliasing/quality/msaa_2d=0
 textures/default_filters/use_nearest_mipmap_filter=false
+# مطلوب لتصدير أندرويد: بدونه يرفض Godot التصدير برسالة فارغة تمامًا
+# (سطر في المحرّك: if (!should_import_etc2_astc()) valid = false; بلا أي رسالة)
+textures/vram_compression/import_etc2_astc=true
 
 [audio]
 
