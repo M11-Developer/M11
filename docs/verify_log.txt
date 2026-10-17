@@ -1,105 +1,23 @@
 run_exit=0
-script_errors=82
+script_errors=2
 menu_reached=1
 --- أول ٤٠ سطرًا ---
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/ui/menu.gd:-1)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/ai/bot_brain.gd:-1)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/ui/hud.gd:-1)
 SCRIPT ERROR: Parse Error: Too many arguments for "get()" call. Expected at most 1 but received 2.
           at: GDScript::reload (res://src/ui/touch_controls.gd:75)
 SCRIPT ERROR: Compile Error: 
           at: GDScript::reload (res://src/main.gd:-1)
 ERROR: Failed to load script "res://src/main.gd" with error "Compilation failed".
    at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-          at: AtlasLoader.load_atlas (res://src/core/atlas_loader.gd:111)
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-          at: AtlasLoader.load_atlas (res://src/core/atlas_loader.gd:111)
+[M11] الإقلاع اكتمل — القائمة جاهزة
+[M11] تحسينات الكمبيوتر مفعّلة (Fullscreen + Post-FX)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+     at: cleanup (core/object/object.cpp:2284)
+ERROR: 2 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:604)
 --- كل أخطاء السكربت ---
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/ui/menu.gd:-1)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/ai/bot_brain.gd:-1)
-SCRIPT ERROR: Parse Error: Cannot assign a new value to a constant.
-          at: GDScript::reload (res://src/game/world.gd:351)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "best" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/world.gd:542)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/ui/hud.gd:-1)
 SCRIPT ERROR: Parse Error: Too many arguments for "get()" call. Expected at most 1 but received 2.
           at: GDScript::reload (res://src/ui/touch_controls.gd:75)
 SCRIPT ERROR: Compile Error: 
           at: GDScript::reload (res://src/main.gd:-1)
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'anchors' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
-SCRIPT ERROR: Invalid access to property or key 'offsets' on a base object of type 'Dictionary'.
