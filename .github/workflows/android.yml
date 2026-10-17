@@ -339,36 +339,6 @@ jobs:
             build/M11-release.aab
 
       # ---------- بثّ أخطاء السجل كتعليقات يقرأها المطوّر عبر واجهة GitHub ----------
-      - name: بثّ حالة قالب البناء (تعليقات)
-        if: always()
-        run: |
-          set +e
-          {
-            echo "قالب البناء: $(ls project/android/build/build.gradle 2>/dev/null || echo 'مفقود')"
-            echo "مجلدات android: $(ls project/android 2>/dev/null | tr '\n' ' ')"
-            echo "قوالب التصدير: $(ls "$HOME/.local/share/godot/export_templates/4.3.stable" 2>/dev/null | tr '\n' ' ')"
-            echo "نسخة Godot: $(godot --version 2>&1 | head -1)"
-          } > /tmp/tpl.txt
-          cat /tmp/tpl.txt
-          bash tools/emit_annotations.sh /tmp/tpl.txt "." notice 9
-
-      - name: تشخيص التصدير (نافذة كل أمر + ملفات APK الناتجة)
-        if: always()
-        run: |
-          set +e
-          {
-            echo "ملفات APK/AAB في المشروع كله:"
-            find "$GITHUB_WORKSPACE" -name "*.apk" -o -name "*.aab" 2>/dev/null | grep -v export_templates | head -10
-          } > /tmp/exp.txt
-          for M in EXPORT-DEBUG1 EXPORT-DEBUG2 EXPORT-RELEASE; do
-            {
-              echo "===== $M ====="
-              grep -n -A 30 "$M START" "$BUILD_LOG" 2>/dev/null | head -34
-            } >> /tmp/exp.txt
-          done
-          head -c 9000 /tmp/exp.txt
-          bash tools/emit_annotations.sh /tmp/exp.txt "." error 9 0 head
-
       - name: تشخيص فشل التصدير (تعليقات)
         if: always()
         run: |
