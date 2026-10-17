@@ -9,15 +9,6 @@ LOG="${1:-/tmp/m11-build.log}"
 OUT=/tmp/m11-diag.txt
 : > "$OUT"
 
-echo "=== ملخّص ===" >> "$OUT"
-echo "حجم السجل: $(wc -c < "$LOG" 2>/dev/null) بايت | أسطر: $(wc -l < "$LOG" 2>/dev/null)" >> "$OUT"
-for K in "configuration errors" "Android build template not installed" "Java SDK path" \
-         "keystore" "apksigner" "build-tools" "No export template" "Target SDK" \
-         "Failed to load script" "Parse Error" "Cannot"; do
-  N=$(grep -c "$K" "$LOG" 2>/dev/null)
-  [ "$N" != "0" ] && echo "  [$N] $K" >> "$OUT"
-done
-
 # 1) سياق سبب فشل الإعداد (السبب في الأسطر التالية للرسالة)
 LINE=$(grep -n "configuration errors" "$LOG" 2>/dev/null | head -1 | cut -d: -f1)
 if [ -n "$LINE" ]; then
@@ -43,6 +34,25 @@ grep -n "keystore/" /github/workspace/project/export_presets.cfg 2>/dev/null | h
 # 4) ملفات APK التي وُجدت في المشروع
 echo "=== ملفات APK/AAB ===" >> "$OUT"
 find /github/workspace -name "*.apk" -o -name "*.aab" 2>/dev/null | grep -v export_templates | head -8 >> "$OUT"
+
+# 5) ملفات إعدادات المحرّر في النظام كله (لمعرفة أيّ ملف يقرأه Godot فعلًا)
+echo "=== ملفات editor_settings ===" >> "$OUT"
+find / -name "editor_settings-*.tres" 2>/dev/null | head -6 >> "$OUT"
+for F in $(find / -name "editor_settings-4.3.tres" 2>/dev/null | head -2); do
+  echo "--- $F ---" >> "$OUT"
+  grep -E "java_sdk_path|android_sdk_path|debug_keystore" "$F" 2>/dev/null | head -6 >> "$OUT"
+done
+
+echo "=== ملخّص ===" >> "$OUT"
+echo "حجم السجل: $(wc -c < "$LOG" 2>/dev/null) بايت | أسطر: $(wc -l < "$LOG" 2>/dev/null)" >> "$OUT"
+for K in "configuration errors" "Android build template not installed" "Java SDK path" \
+         "keystore" "apksigner" "build-tools" "No export template" "Target SDK" \
+         "Failed to load script" "Parse Error" "Cannot"; do
+  N=$(grep -c "$K" "$LOG" 2>/dev/null)
+  [ "$N" != "0" ] && echo "  [$N] $K" >> "$OUT"
+done
+
+
 
 wc -c "$OUT"
 head -c 4000 "$OUT"

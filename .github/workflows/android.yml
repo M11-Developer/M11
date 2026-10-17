@@ -111,7 +111,13 @@ jobs:
             echo "=== java -version ==="
             java -version 2>&1 | head -2
           } >> "$BUILD_LOG"
-          tail -14 "$SET"
+          timeout 300 godot --headless --path project --editor --quit >> "$BUILD_LOG" 2>&1
+          {
+            echo "=== الملفات الفعلية بعد تشغيل Godot ==="
+            find / -name "editor_settings-4.3.tres" 2>/dev/null | head -4
+            grep -E "java_sdk_path|android_sdk_path|debug_keystore" "$SET" 2>/dev/null | head -6
+          } >> "$BUILD_LOG"
+          tail -10 "$SET"
           true
 
       - name: تأمين قوالب التصدير (٤٫٣)
