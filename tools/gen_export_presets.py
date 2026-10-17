@@ -94,10 +94,18 @@ script_export_mode=2
 """
 
 
-def preset_options(idx: int, is_aab: bool) -> str:
+def preset_options(idx: int, is_aab: bool) -> str:  # noqa: C901
     # APK: مسار القالب الجاهز (بلا Gradle) — أسرع وأبسط ولا يحتاج قالب بناء أندرويد.
     # AAB: يحتاج Gradle إلزاميًا (قيد في Godot: «Export AAB is only valid when Use Gradle Build is enabled»).
-    use_gradle = "false"   # مسار القالب الجاهز: لا يحتاج Gradle ولا قالب بناء — أبسط وأضمن
+    # APK: مسار القالب الجاهز (بلا Gradle) — أبسط وأضمن وأسرع.
+    # AAB: يتطلّب Gradle إلزاميًا في Godot 4.3 («Export AAB is only valid when Use Gradle Build is enabled»).
+    use_gradle = "true" if is_aab else "false"
+    compress = "true" if use_gradle == "true" else "false"
+    min_sdk = "26" if use_gradle == "true" else ""
+    target_sdk = "35" if use_gradle == "true" else ""
+    # قيد في Godot نفسه (platform/android/export/export_plugin.cpp):
+    # مع تعطيل Gradle يجب أن تكون min_sdk/target_sdk فارغة وضغط المكتبات مطفأً،
+    # وإلا يفشل التصدير برسالة «... can only be overridden when "Use Gradle Build" is enabled»
     perms = "\n".join(f"permissions/{p}={'true' if p in PERMISSIONS_TRUE else 'false'}"
                       for p in ALL_PERMISSIONS)
     custom = ", ".join(f'"{p}"' for p in CUSTOM_PERMISSIONS)
@@ -108,10 +116,10 @@ custom_template/release=""
 gradle_build/use_gradle_build={use_gradle}
 gradle_build/gradle_build_directory="res://android/"
 gradle_build/android_source_template=""
-gradle_build/compress_native_libraries=true
+gradle_build/compress_native_libraries={compress}
 gradle_build/export_format={1 if is_aab else 0}
-gradle_build/min_sdk="26"
-gradle_build/target_sdk="35"
+gradle_build/min_sdk="{min_sdk}"
+gradle_build/target_sdk="{target_sdk}"
 architectures/armeabi-v7a=true
 architectures/arm64-v8a=true
 architectures/x86=false
