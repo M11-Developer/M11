@@ -400,6 +400,17 @@ for (const f of gdFiles) {
     if (!fs.existsSync(path.join(ROOT, 'project', rel))) badPaths.push(`${path.relative(ROOT, f)}→${m[1]}`);
   }
 }
+
+// لا يُسمح برسم نص بمحاذاة يمين/وسط مع عرض -1: هذا يجعله يمتد خارج الشاشة
+const badText = [];
+for (const f of gdFiles) {
+  const src = fs.readFileSync(f, 'utf8');
+  const re = /draw_string\([^;]*?HORIZONTAL_ALIGNMENT_(RIGHT|CENTER)\s*,\s*-1\s*,/g;
+  const hits = [...src.matchAll(re)];
+  if (hits.length) badText.push(`${path.relative(ROOT, f)} (${hits.length})`);
+}
+ok('لا نص يُرسم بلا صندوق عرض (يمنع خروجه من الشاشة)', badText.length === 0, badText.join(', '));
+
 ok('كل مسارات preload/load في Godot موجودة', badPaths.length === 0, badPaths.slice(0, 5).join(', '));
 
 // ============================================================ النتيجة

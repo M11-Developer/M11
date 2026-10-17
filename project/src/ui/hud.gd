@@ -65,6 +65,17 @@ func _process(dt: float) -> void:
 	queue_redraw()
 
 
+
+# نص عربي بمحاذاة يمين داخل صندوق صريح.
+# كان يُرسم بـ HORIZONTAL_ALIGNMENT_RIGHT وعرض -1 فيمتد يمينًا خارج الشاشة
+# (اسم السلاح ونقاط الفرق وأسماء الأوضاع كانت تُقصّ عند الحافة).
+func _text_right(right_x: float, y: float, txt: String, fs: int, col: Color, width: float = 220.0) -> void:
+	var fsz := fs
+	while fsz > 8 and font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, fsz).x > width - 6.0:
+		fsz -= 1
+	draw_string(font, Vector2(right_x - width, y), txt, HORIZONTAL_ALIGNMENT_RIGHT, width, fsz, col)
+
+
 func _draw() -> void:
 	if world == null or player == null:
 		return
@@ -117,7 +128,7 @@ func _draw_weapon(vp: Vector2) -> void:
 	var x := vp.x - 190.0
 	var y := vp.y - 92.0
 	draw_rect(Rect2(x, y, 180, 42), Color(0.04, 0.05, 0.06, 0.8))
-	draw_string(font, Vector2(vp.x - 20, y + 18), String(w.get("name_ar", "")), HORIZONTAL_ALIGNMENT_RIGHT, -1, 13, COLOR_GOLD)
+	_text_right(vp.x - 20, y + 18, String(w.get("name_ar", "")), 13, COLOR_GOLD, 200)
 	var mag := player.weapon_ammo()
 	draw_string(font, Vector2(x + 10, y + 32), "%d" % mag, HORIZONTAL_ALIGNMENT_LEFT, -1, 18,
 		COLOR_WARN if mag == 0 else Color(0.92, 0.95, 0.97))
@@ -133,9 +144,9 @@ func _draw_top(vp: Vector2) -> void:
 	var mins := int(maxf(0.0, world.match_time) / 60.0)
 	var secs := int(fmod(maxf(0.0, world.match_time), 60.0))
 	draw_rect(Rect2(vp.x * 0.5 - 44, 6, 88, 20), Color(0.04, 0.05, 0.06, 0.8))
-	draw_string(font, Vector2(vp.x * 0.5 + 34, 21), "%02d:%02d" % [mins, secs], HORIZONTAL_ALIGNMENT_RIGHT, -1, 14, Color(0.92, 0.95, 0.97))
-	draw_string(font, Vector2(vp.x * 0.5 - 50, 21), "ف١ %d" % world.team_scores[0], HORIZONTAL_ALIGNMENT_RIGHT, -1, 10, Color(0.31, 0.82, 0.77))
-	draw_string(font, Vector2(vp.x * 0.5 - 10, 21), "ف٢ %d" % world.team_scores[1], HORIZONTAL_ALIGNMENT_RIGHT, -1, 10, Color(0.91, 0.45, 0.29))
+	_text_right(vp.x * 0.5 + 34, 21, "%02d:%02d" % [mins, secs], 14, Color(0.92, 0.95, 0.97), 110)
+	_text_right(vp.x * 0.5 - 50, 21, "ف١ %d" % world.team_scores[0], 10, Color(0.31, 0.82, 0.77), 90)
+	_text_right(vp.x * 0.5 - 10, 21, "ف٢ %d" % world.team_scores[1], 10, Color(0.91, 0.45, 0.29), 90)
 
 
 func _draw_minimap(vp: Vector2) -> void:
@@ -158,7 +169,7 @@ func _draw_minimap(vp: Vector2) -> void:
 		var py: float = y + a.global_position.y * sy
 		var col := Color(1, 1, 1) if a == player else (Color(0.31, 0.82, 0.77) if a.team == player.team else Color(0.91, 0.45, 0.29))
 		draw_rect(Rect2(px - 1, py - 1, 2, 2), col)
-	draw_string(font, Vector2(x + w, y + h + 12), M11Data.MODES.get(world.mode_id, {}).get("name_ar", ""), HORIZONTAL_ALIGNMENT_RIGHT, -1, 10, COLOR_GOLD)
+	_text_right(x + w, y + h + 12, String(M11Data.MODES.get(world.mode_id, {}).get("name_ar", "")), 10, COLOR_GOLD, maxf(90.0, w))
 
 
 func _draw_toasts(vp: Vector2) -> void:
@@ -166,7 +177,7 @@ func _draw_toasts(vp: Vector2) -> void:
 	for t in toasts:
 		var col: Color = t["color"]
 		col.a = clampf(t["life"] / minf(0.6, t["max"]), 0.0, 1.0)
-		draw_string(font, Vector2(vp.x * 0.5 + 120, y), String(t["text"]), HORIZONTAL_ALIGNMENT_RIGHT, -1, 12, col)
+		_text_right(vp.x * 0.5 + 120, y, String(t["text"]), 12, col, 240)
 		y -= 14.0
 
 

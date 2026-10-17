@@ -31,6 +31,7 @@ var thumbs: Dictionary = {}             # map_id -> Texture2D (مصغّرة ال
 var portraits: Dictionary = {}          # op_key -> Texture2D (بورتريه المشغّل)
 var result: Dictionary = {}             # نتيجة المباراة لشاشة النتائج
 var ip_edit: LineEdit = null            # إدخال عنوان IP يدويًا (PC ↔ جوال)
+var main_ref: Node = null               # العقدة الرئيسية (Main) — تُضبط من main.gd
 
 
 func _ready() -> void:
@@ -176,7 +177,20 @@ func _rows() -> Array:
 
 
 func activate(i: int) -> void:
-	var main := get_parent()
+	# كانت القائمة تُضاف سابقًا كابن مباشر لـ Main، ثم نُقلت إلى CanvasLayer
+	# فصار get_parent() يعيد الطبقة لا العقدة الرئيسية ⇒ كل ضغطة تفشل بصمت.
+	# الآن نبحث صعودًا عن العقدة التي تملك start_match.
+	var main: Node = null
+	if main_ref != null and is_instance_valid(main_ref):
+		main = main_ref
+	else:
+		var p := get_parent()
+		while p != null and not p.has_method("start_match"):
+			p = p.get_parent()
+		main = p
+	if main == null:
+		push_error("تعذّر العثور على العقدة الرئيسية من القائمة")
+		return
 	match screen:
 		S_MAIN:
 			match i:
@@ -288,6 +302,39 @@ func activate(i: int) -> void:
 				screen = S_MAIN
 
 
+# كل إدخال المؤشّر (ماوس على الكمبيوتر + لمس على الهاتف) يمرّ من هنا.
+# كان الكود يعالج اللمس فقط، فكانت أزرار القائمة لا تستجيب للماوس إطلاقًا.
+func _gui_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if ip_edit != null and ip_edit.visible and ip_edit.has_focus():
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_pointer_down(event.position)
+		accept_event()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+		index = (index + 1) % maxi(1, _rows().size())
+		accept_event()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+		index = (index - 1 + _rows().size()) % maxi(1, _rows().size())
+		accept_event()
+	elif event is InputEventScreenTouch and event.pressed:
+		_pointer_down(event.position)
+		accept_event()
+	elif event is InputEventMouseMotion:
+		var i := _row_at(event.position, _rows())
+		if i >= 0:
+			index = i
+
+
+func _pointer_down(pos: Vector2) -> void:
+	var rows := _rows()
+	var i := _row_at(pos, rows)
+	if i >= 0:
+		index = i
+		activate(i)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
@@ -307,17 +354,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			screen = S_MAIN
 			index = 0
-	elif event is InputEventScreenTouch and event.pressed:
-		var vp := get_viewport().get_visible_rect().size
-		# الأزرار على اليمين (RTL): نطابق الصف بمربع
-		var row_h := 26.0
-		var top := 60.0
-		for i in rows.size():
-			var r := Rect2(vp.x - 340, top + i * row_h - scroll, 320, row_h - 2)
-			if r.has_point(event.position):
-				index = i
-				activate(i)
-				break
+
 
 
 func _process(dt: float) -> void:
@@ -329,8 +366,54 @@ func _process(dt: float) -> void:
 		ip_edit.visible = on_lan
 		if on_lan:
 			var vp := get_viewport().get_visible_rect().size
-			ip_edit.position = Vector2(vp.x - 360, vp.y - 70)
+			# يسار الشاشة حتى لا يزاحم قائمة الصفوف على اليمين
+			ip_edit.size = Vector2(minf(300.0, vp.x - 360.0), 34)
+			ip_edit.position = Vector2(16, vp.y - 64)
 	queue_redraw()
+
+
+
+# مستطيل الصف — مصدر واحد للحقيقة: الرسم واللمس والماوس كلهم يستخدمونه
+# (كان الرسم يزحزح الصف ١٨ بكسل عن مستطيل اللمس فتفشل الضغطات)
+const ROW_W := 320.0
+const ROW_TOP := 76.0
+const ROW_STEP_MAX := 28.0
+const ROW_STEP_MIN := 15.0
+
+
+# ارتفاع الصف يتكيّف مع عدد العناصر وشاشة الجهاز حتى لا يختفي شيء
+func _row_step() -> float:
+	var vp := get_viewport().get_visible_rect().size
+	var n := maxi(1, _rows().size())
+	return clampf((vp.y - ROW_TOP - 26.0) / float(n), ROW_STEP_MIN, ROW_STEP_MAX)
+
+
+func _row_rect(i: int, vp: Vector2) -> Rect2:
+	var step := _row_step()
+	var y := ROW_TOP + i * step - scroll
+	return Rect2(vp.x - ROW_W - 20.0, y, ROW_W, step - 3.0)
+
+
+func _row_at(pos: Vector2, rows: Array) -> int:
+	var vp := get_viewport().get_visible_rect().size
+	for i in rows.size():
+		if _row_rect(i, vp).has_point(pos):
+			return i
+	return -1
+
+
+# يُبقي الصف المختار داخل الشاشة ويحدّث مقدار التمرير
+func _update_scroll() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var n := maxi(1, _rows().size())
+	var step := _row_step()
+	var view_h: float = maxf(1.0, vp.y - ROW_TOP - 26.0)
+	var sel_y := index * step
+	if sel_y < scroll:
+		scroll = sel_y
+	elif sel_y + step > scroll + view_h:
+		scroll = sel_y + step - view_h
+	scroll = clampf(scroll, 0.0, maxf(0.0, n * step - view_h))
 
 
 func _draw() -> void:
@@ -415,27 +498,61 @@ func _draw() -> void:
 			draw_texture_rect(pt, Rect2(Vector2(0, 0), Vector2(vp.x, vp.x * 0.5625)), false,
 				Color(1, 1, 1, 0.95))
 		draw_rect(Rect2(0, vp.y * 0.42, vp.x, vp.y * 0.58), Color(0.04, 0.05, 0.07, 0.72))
-	# العنوان (يمين)
-	draw_string(font, Vector2(vp.x - 20, 34), _title(), HORIZONTAL_ALIGNMENT_RIGHT, -1, 22, Color(0.95, 0.76, 0.31))
+	# العنوان (يمين) — حجم متكيّف حتى لا يُقصّ أبدًا
+	var title := _title()
+	var ts := 22
+	while ts > 12 and font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, ts).x > vp.x - 60:
+		ts -= 1
+	draw_string(font, Vector2(16, 34), title, HORIZONTAL_ALIGNMENT_RIGHT, vp.x - 32, ts,
+		Color(0.95, 0.76, 0.31))
 	var rows := _rows()
-	var top := 60.0
+	_update_scroll()
+	var step := _row_step()
+	# لوحة خلفية واحدة للقائمة كلها حتى تُقرأ فوق أي صورة
+	var view_h: float = maxf(1.0, vp.y - ROW_TOP - 26.0)
+	var list_h: float = minf(rows.size() * step, view_h) + 6.0
+	draw_rect(Rect2(vp.x - ROW_W - 28.0, ROW_TOP - 8.0, ROW_W + 16.0, list_h),
+		Color(0.03, 0.04, 0.06, 0.45))
 	for i in rows.size():
-		var y := top + i * 26.0 - scroll
-		if y < 48.0 or y > vp.y - 20.0:
+		var r := _row_rect(i, vp)
+		if r.end.y < 46.0 or r.position.y > vp.y - 22.0:
 			continue
-		var r := Rect2(vp.x - 340, y - 18, 320, 24)
 		var sel := i == index
-		draw_rect(r, Color(0.95, 0.76, 0.31, 0.18) if sel else Color(0.05, 0.06, 0.08, 0.55))
+		draw_rect(r, Color(0.95, 0.76, 0.31, 0.22) if sel else Color(0.05, 0.06, 0.08, 0.62))
 		if sel:
-			draw_rect(Rect2(r.position + Vector2(r.size.x - 2, 0), Vector2(2, r.size.y)), Color(0.95, 0.76, 0.31))
-		draw_string(font, Vector2(vp.x - 30, y), String(rows[i]), HORIZONTAL_ALIGNMENT_RIGHT, -1, 14,
-			Color(0.92, 0.95, 0.97) if not sel else Color(0.98, 0.86, 0.5))
+			draw_rect(Rect2(r.position + Vector2(r.size.x - 3, 0), Vector2(3, r.size.y)), Color(0.95, 0.76, 0.31))
+		# نص الصف داخل صندوقه، مع تصغير الخط إن طال النص (لا نص مقطوع أبدًا)
+		var label := String(rows[i])
+		var fs := int(clampf(step * 0.55, 9.0, 14.0))
+		while fs > 8 and font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > r.size.x - 24:
+			fs -= 1
+		draw_string(font, Vector2(r.position.x + 10, r.position.y + r.size.y * 0.72), label,
+			HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 20, fs,
+			Color(0.92, 0.95, 0.97) if not sel else Color(1.0, 0.90, 0.58))
+	# مؤشّر تمرير + عدّاد (يظهران فقط حين تكون القائمة أطول من الشاشة)
+	if rows.size() * step > vp.y - ROW_TOP - 26.0 + 1.0:
+		var track := Rect2(vp.x - 14, ROW_TOP, 4, vp.y - ROW_TOP - 26.0)
+		draw_rect(track, Color(0.3, 0.36, 0.4, 0.35))
+		var total := rows.size() * step
+		var frac := track.size.y / total
+		var knob_h: float = maxf(18.0, track.size.y * frac)
+		var knob_y := track.position.y + (scroll / maxf(1.0, total - track.size.y)) * (track.size.y - knob_h)
+		draw_rect(Rect2(track.position.x, knob_y, track.size.x, knob_h), Color(0.95, 0.76, 0.31, 0.75))
+		# عدّاد أعلى القائمة (لا يزاحم التلميحات أسفل الشاشة)
+		draw_string(font, Vector2(vp.x - ROW_W - 20.0, ROW_TOP - 8.0), "%d / %d" % [index + 1, rows.size()],
+			HORIZONTAL_ALIGNMENT_RIGHT, ROW_W, 11, Color(0.75, 0.82, 0.86))
 	# رسالة
 	if message_life > 0.0:
 		var a := clampf(message_life, 0.0, 1.0)
-		draw_string(font, Vector2(vp.x * 0.5, vp.y - 16), message, HORIZONTAL_ALIGNMENT_CENTER, -1, 13, Color(0.95, 0.76, 0.31, a))
+		draw_string(font, Vector2(16, vp.y - 30), message, HORIZONTAL_ALIGNMENT_CENTER, vp.x - 32, 13,
+			Color(0.95, 0.76, 0.31, a))
 	# تلميحات
-	draw_string(font, Vector2(14, vp.y - 10), "الأسهم للتنقل • Enter للاختيار • Esc للرجوع", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.5, 0.58, 0.64))
+	var hint := "الأسهم للتنقل • Enter للاختيار • Esc للرجوع • بالماوس: اضغط على السطر"
+	var hs := 11
+	while hs > 8 and font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, hs).x > vp.x - 28:
+		hs -= 1
+	draw_string(font, Vector2(14, vp.y - 10), hint, HORIZONTAL_ALIGNMENT_LEFT, vp.x - 28, hs,
+		Color(0.5, 0.58, 0.64))
 
 
 func _title() -> String:

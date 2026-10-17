@@ -43,22 +43,25 @@ jobs:
         run: |
           set +e
           : > /tmp/run.log
-          timeout 240 godot --headless --path project --quit-after 300 2>&1 | tee /tmp/run.log
+          # ٦٠٠ إطار + اختبار ذاتي يضغط زر القائمة فعليًا ويبدأ مباراة
+          timeout 300 godot --headless --path project --quit-after 600 -- --m11-selftest 2>&1 | tee /tmp/run.log
           RUN_EXIT=$?
           ERRS=$(grep -cE "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log || true)
           MENU=$(grep -c "الإقلاع اكتمل" /tmp/run.log || true)
+          SELF=$(grep -c "M11-SELFTEST] OK" /tmp/run.log || true)
           {
             echo "run_exit=$RUN_EXIT"
             echo "script_errors=$ERRS"
             echo "menu_reached=$MENU"
+            echo "selftest_ok=$SELF"
             echo "--- أول ٤٠ سطرًا ---"
             head -40 /tmp/run.log
             echo "--- كل أخطاء السكربت ---"
             grep -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent|at: GDScript::reload" /tmp/run.log | head -60
           } > docs/verify_log.txt
           cat docs/verify_log.txt
-          if [ "${ERRS:-0}" -ne 0 ] || [ "${MENU:-0}" -eq 0 ]; then
-            echo "::error::فشل الإقلاع (أخطاء=$ERRS، قائمة=$MENU) — لن يُبنى APK"
+          if [ "${ERRS:-0}" -ne 0 ] || [ "${MENU:-0}" -eq 0 ] || [ "${SELF:-0}" -eq 0 ]; then
+            echo "::error::فشل الإقلاع أو الأزرار (أخطاء=$ERRS، قائمة=$MENU، أزرار=$SELF) — لن يُبنى APK"
             exit 1
           fi
 

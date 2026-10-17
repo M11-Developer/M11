@@ -4,6 +4,8 @@
 extends Node
 
 const ATLASES := ["world", "vfx", "ui", "weapons", "arms"]
+# اختبار ذاتي يُشغَّل في CI: يضغط زر القائمة فعليًا ويبدأ مباراة ويتأكد أنها تعمل
+const SELFTEST_FLAG := "--m11-selftest"
 
 var world: GameWorld = null
 var hud: Node = null
@@ -114,11 +116,55 @@ func _ensure_menu() -> void:
 		boot_ui.visible = false
 	menu = preload("res://src/ui/menu.gd").new()
 	menu.name = "Menu"
+	# نمرّر مرجع العقدة الرئيسية صراحةً — القائمة تعيش داخل HUDLayer
+	# فلا يصح أن تعتمد على get_parent()
+	if "main_ref" in menu:
+		menu.main_ref = self
 	hud_layer.add_child(menu)
 	state = "menu"
 	loading = false
 	AudioBus.play_music("menu_theme")
 	print("[M11] الإقلاع اكتمل — القائمة جاهزة")
+	# في CI فقط: نجرّب ضغط زر حقيقي — لأن «القائمة ظهرت» لا تعني «الأزرار تعمل»
+	if SELFTEST_FLAG in OS.get_cmdline_user_args():
+		_run_selftest.call_deferred()
+
+
+func _run_selftest() -> void:
+	# اختبار سلوكي حقيقي: يضغط «لعب سريع» ثم يرجع للقائمة.
+	# سبب وجوده: نسخة سابقة كانت تعرض القائمة لكن كل زر فيها يفشل بصمت
+	# لأن القائمة لم تجد العقدة الرئيسية (كانت تبحث في get_parent()).
+	await get_tree().process_frame
+	await get_tree().process_frame
+	print("[M11-SELFTEST] بدء الاختبار")
+	var ok := true
+	if menu == null:
+		print("[M11-SELFTEST] FAIL: القائمة غير موجودة")
+		get_tree().quit(1)
+		return
+	# ١) الضغط على أول سطر (لعب سريع ضد بوتات)
+	menu.activate(0)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if world == null or state != "playing":
+		print("[M11-SELFTEST] FAIL: لم تبدأ المباراة (state=%s)" % state)
+		ok = false
+	else:
+		print("[M11-SELFTEST] بدأت المباراة: الوضع=%s الخريطة=%s المقاتلون=%d"
+			% [world.mode_id, world.map_id, world.actors.size()])
+		if world.actors.size() < 2:
+			print("[M11-SELFTEST] FAIL: عدد المقاتلين غير كافٍ")
+			ok = false
+	# ٢) الرجوع للقائمة
+	back_to_menu()
+	await get_tree().process_frame
+	if state != "menu" or menu == null or not menu.visible:
+		print("[M11-SELFTEST] FAIL: الرجوع للقائمة لم ينجح (state=%s)" % state)
+		ok = false
+	else:
+		print("[M11-SELFTEST] الرجوع للقائمة ناجح")
+	print("[M11-SELFTEST] %s" % ("OK" if ok else "FAIL"))
+	get_tree().quit(0 if ok else 1)
 
 
 func _prewarm() -> void:

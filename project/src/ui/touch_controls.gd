@@ -64,9 +64,11 @@ func _draw() -> void:
 		var label: String = String(ICONS[name]) if ICONS.has(name) else ""
 		if label != "":
 			var fs := int(clampf(radius * 0.72, 9.0, 18.0))
-			var w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_CENTER, -1, fs).x
-			draw_string(font, center + Vector2(-w * 0.5, fs * 0.34), label,
-				HORIZONTAL_ALIGNMENT_CENTER, -1, fs, Color(0.92, 0.96, 0.98, 0.92))
+			# نص الزر داخل صندوق بعرض الزر نفسه + تصغير إن لزم
+			while fs > 7 and font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > radius * 1.7:
+				fs -= 1
+			draw_string(font, Vector2(center.x - radius, center.y + fs * 0.34), label,
+				HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, fs, Color(0.92, 0.96, 0.98, 0.92))
 
 	# ---- مؤشر التصويب ----
 	if player != null and is_instance_valid(player):
