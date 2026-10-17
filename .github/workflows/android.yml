@@ -315,30 +315,30 @@ jobs:
           echo "release_aab_exit=$?" | tee -a "$BUILD_LOG"
           ls -la build | tee -a "$BUILD_LOG"
 
-      - name: التحقق من الملفات الناتجة
+      - name: التحقق من الملفات الناتجة (أذونات + توقيع + محتوى)
         continue-on-error: true
         run: |
           set +e
-          for f in build/M11-debug.apk build/M11-release.apk build/M11-release.aab; do
-            if [ -s "$f" ]; then echo "✔ $f — $(du -h "$f" | cut -f1)" | tee -a "$BUILD_LOG";
-            else echo "✘ مفقود: $f" | tee -a "$BUILD_LOG"; fi
+          AAPT="$(ls -1 /usr/lib/android-sdk/build-tools/*/aapt2 2>/dev/null | tail -1)"
+          APKSIGNER="$(ls -1 /usr/lib/android-sdk/build-tools/*/apksigner 2>/dev/null | tail -1)"
+          for f in build/M11-debug.apk build/M11-release.apk; do
+            [ -s "$f" ] || { echo "✘ مفقود: $f" | tee -a "$BUILD_LOG"; continue; }
+            echo "════ $f — $(du -h "$f" | cut -f1) ════" | tee -a "$BUILD_LOG"
+            # 1) الأذونات الفعلية من البيان
+            if [ -n "$AAPT" ]; then
+              "$AAPT" dump permissions "$f" 2>/dev/null | head -12 | tee -a "$BUILD_LOG"
+              BAD=$("$AAPT" dump permissions "$f" 2>/dev/null | grep -cE "LOCATION|READ_PHONE|AD_ID|READ_CONTACTS")
+              echo "أذونات ممنوعة: $BAD" | tee -a "$BUILD_LOG"
+            fi
+            # 2) التوقيع
+            if [ -n "$APKSIGNER" ]; then
+              "$APKSIGNER" verify --verbose "$f" 2>&1 | head -6 | tee -a "$BUILD_LOG"
+            fi
+            # 3) المحتوى: مكتبات المعماريتين + غياب الأصول الخام
+            unzip -l "$f" 2>/dev/null | grep -cE "lib/arm64-v8a/libgodot_android.so|lib/armeabi-v7a/libgodot_android.so" | tee -a "$BUILD_LOG"
+            RAW=$(unzip -l "$f" 2>/dev/null | grep -cE "assets/raw/|assets/processed/")
+            echo "ملفات خام داخل الحزمة: $RAW" | tee -a "$BUILD_LOG"
           done
-          if command -v python3 >/dev/null 2>&1; then
-            for f in build/M11-debug.apk build/M11-release.apk; do
-              [ -s "$f" ] && python3 tools/check_apk.py "$f" 2>&1 | tee -a "$BUILD_LOG"
-            done
-          else
-            for f in build/M11-debug.apk build/M11-release.apk; do
-              [ -s "$f" ] && python3 -c "pass" 2>/dev/null
-            done
-            for f in build/M11-debug.apk build/M11-release.apk; do
-              if [ -s "$f" ]; then
-                echo "--- فحص بسيط لـ $f (بلا بايثون) ---" | tee -a "$BUILD_LOG"
-                unzip -l "$f" 2>/dev/null | grep -E "lib/|assets/" | head -5 | tee -a "$BUILD_LOG"
-                unzip -p "$f" AndroidManifest.xml 2>/dev/null | tr -d '\0' | grep -c "permission.INTERNET" | tee -a "$BUILD_LOG"
-              fi
-            done
-          fi
           echo ok > /tmp/m11-status
           true
 
@@ -371,7 +371,7 @@ jobs:
         if: success() && (startsWith(github.ref, 'refs/tags/v') || inputs.makerelease == 'yes')
         uses: softprops/action-gh-release@v2
         with:
-          name: "ميكا ١١ — الإصدار ١٫٠ (لعب محلي عبر الشبكة)"
+          name: "ميكا ١١ — الإصدار ١٫٠ (لعب محلي عبر الشبكة) 🎮"
           body_path: docs/RELEASE_NOTES_AR.md
           generate_release_notes: false
           draft: false
