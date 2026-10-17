@@ -1,0 +1,356 @@
+== معلومات البيئة ==
+ref=v1.4.3 run=38993776277
+godot=4.3.stable.official.77dcf97d8
+python3=MISSING
+curl=MISSING
+unzip=/usr/bin/unzip
+java=openjdk version "17.0.12" 2024-07-16
+keytool=/usr/bin/keytool
+templates=
+sdk=/usr/lib/android-sdk
+=== إعدادات المحرّر (/github/home/.config/godot/editor_settings-4.3.tres) ===
+[gd_resource type="EditorSettings" format=3]
+[resource]
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/debug_keystore = "/root/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+export/android/force_system_user = false
+export/android/timestamping_authority_url = ""
+export/android/shutdown_adb_on_exit = true
+export/windows/rcedit = "/opt/rcedit.exe"
+export/windows/wine = "/usr/bin/wine64-stable"
+=== جافا: /usr/lib/jvm/java-17-openjdk-amd64 | مفتاح التصحيح: /root/debug.keystore | إعدادات في الصورة: /root/.config/godot/editor_settings-4.3.tres ===
+=== java -version ===
+openjdk version "17.0.12" 2024-07-16
+OpenJDK Runtime Environment (build 17.0.12+7-Ubuntu-1ubuntu222.04)
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+ERROR: No loader found for resource: res://assets/fonts/cairo_400.ttf (expected type: FontFile)
+   at: _load (core/io/resource_loader.cpp:291)
+ERROR: No loader found for resource: res://assets/fonts/cairo_700.ttf (expected type: FontFile)
+   at: _load (core/io/resource_loader.cpp:291)
+ERROR: No loader found for resource: res://assets/fonts/noto_ar_500.ttf (expected type: FontFile)
+   at: _load (core/io/resource_loader.cpp:291)
+ERROR: res://assets/fonts/theme_m11.tres:10 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/fonts/cairo_400.ttf
+   at: _parse_ext_resource (scene/resources/resource_format_text.cpp:159)
+ERROR: res://assets/fonts/theme_m11.tres:10 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/fonts/cairo_400.ttf
+   at: load (scene/resources/resource_format_text.cpp:717)
+ERROR: Failed loading resource: res://assets/fonts/theme_m11.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:283)
+ERROR: Error loading custom project theme 'res://assets/fonts/theme_m11.tres'
+   at: initialize_theme (scene/theme/theme_db.cpp:72)
+Could not find version of build tools that matches Target SDK, using 33.0.2
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/ai/bot_brain.gd:56)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/ai/bot_brain.gd:81)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/ai/bot_brain.gd:99)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/ai/bot_brain.gd:229)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/ai/bot_brain.gd:57)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "w" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/ai/bot_brain.gd:61)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "w" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/ai/bot_brain.gd:118)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "w2" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/ai/bot_brain.gd:179)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "w3" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/ai/bot_brain.gd:191)
+ERROR: Failed to load script "res://src/ai/bot_brain.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "d" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/game/projectile.gd:128)
+ERROR: Failed to load script "res://src/game/projectile.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
+          at: GDScript::reload (res://src/game/world.gd:657)
+ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/ui/hud.gd:7)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/ui/hud.gd:32)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "px" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/ui/hud.gd:157)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "py" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/ui/hud.gd:158)
+ERROR: Failed to load script "res://src/ui/hud.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:67)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:116)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:117)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:117)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:117)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:200)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:203)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:340)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:351)
+SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+          at: GDScript::reload (res://src/ui/menu.gd:417)
+ERROR: Failed to load script "res://src/ui/menu.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/main.gd:8)
+ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+=== الملفات الفعلية بعد تشغيل Godot ===
+/root/.config/godot/editor_settings-4.3.tres
+/github/home/.config/godot/editor_settings-4.3.tres
+/__w/_temp/_github_home/.config/godot/editor_settings-4.3.tres
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/debug_keystore = "/root/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+sdkmanager=/usr/lib/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager
+Loading package information...                                                  Loading local repository...                                                     [                                       ] 3% Loading local repository...        [                                       ] 3% Fetch remote repository...         [=                                      ] 3% Fetch remote repository...         [=                                      ] 4% Fetch remote repository...         [=                                      ] 5% Fetch remote repository...         [==                                     ] 5% Fetch remote repository...         [==                                     ] 6% Fetch remote repository...         [==                                     ] 7% Fetch remote repository...         [==                                     ] 7% Computing updates...               [===                                    ] 8% Computing updates...               [===                                    ] 10% Computing updates...              [===                                    ] 10% Installing Android SDK Build-Tools[===                                    ] 10% Downloading build-tools_r34-linux.[====                                   ] 10% Downloading build-tools_r34-linux.[====                                   ] 11% Downloading build-tools_r34-linux.[====                                   ] 12% Downloading build-tools_r34-linux.[=====                                  ] 13% Downloading build-tools_r34-linux.[=====                                  ] 14% Downloading build-tools_r34-linux.[=====                                  ] 15% Downloading build-tools_r34-linux.[=====                                  ] 15% Unzipping...                      [=====                                  ] 15% Unzipping... android-14/NOTICE.txt[=====                                  ] 15% Unzipping... android-14/aapt      [=====                                  ] 15% Unzipping... android-14/aapt2     [=====                                  ] 15% Unzipping... android-14/aarch64-li[=====                                  ] 15% Unzipping... android-14/aidl      [=====                                  ] 15% Unzipping... android-14/apksigner [=====                                  ] 15% Unzipping... android-14/arm-linux-[=====                                  ] 15% Unzipping... android-14/bcc_compat[=====                                  ] 15% Unzipping... android-14/core-lambd[=====                                  ] 15% Unzipping... android-14/d8        [=====                                  ] 15% Unzipping... android-14/dexdump   [======                                 ] 15% Unzipping... android-14/dexdump   [======                                 ] 15% Unzipping... android-14/i686-linux[======                                 ] 15% Unzipping... android-14/lld       [======                                 ] 15% Unzipping... android-14/llvm-rs-cc[======                                 ] 15% Unzipping... android-14/mipsel-lin[======                                 ] 15% Unzipping... android-14/runtime.pr[======                                 ] 15% Unzipping... android-14/source.pro[======                                 ] 15% Unzipping... android-14/split-sele[======                                 ] 15% Unzipping... android-14/x86_64-lin[======                                 ] 15% Unzipping... android-14/zipalign  [======                                 ] 15% Unzipping... android-14/lib/apksig[======                                 ] 15% Unzipping... android-14/lib/d8.jar[======                                 ] 16% Unzipping... android-14/lib/d8.jar[======                                 ] 16% Unzipping... android-14/lib64/libL[======                                 ] 17% Unzipping... android-14/lib64/libL[======                                 ] 17% Unzipping... android-14/lib64/libb[======                                 ] 17% Unzipping... android-14/lib64/libc[======                                 ] 17% Unzipping... android-14/lld-bin/ll[=======                                ] 18% Unzipping... android-14/lld-bin/ll[=======                                ] 18% Unzipping... android-14/renderscri[=======                                ] 19% Unzipping... android-14/renderscri[===========                            ] 28% Unzipping... android-14/renderscri[===========                            ] 28% Installing Android SDK Platform 35[===========                            ] 28% Downloading platform-35_r02.zip...[===========                            ] 29% Downloading platform-35_r02.zip...[===========                            ] 30% Downloading platform-35_r02.zip...[============                           ] 30% Downloading platform-35_r02.zip...[============                           ] 31% Downloading platform-35_r02.zip...[============                           ] 32% Downloading platform-35_r02.zip...[============                           ] 33% Downloading platform-35_r02.zip...[============                           ] 33% Unzipping... android-14/renderscri[============                           ] 33% Unzipping... android-35/android-st[=============                          ] 33% Unzipping... android-35/android-st[=============                          ] 33% Unzipping... android-35/android.ja[=============                          ] 34% Unzipping... android-35/android.ja[=============                          ] 35% Unzipping... android-35/android.ja[=============                          ] 35% Unzipping... android-35/build.prop[=============                          ] 35% Unzipping... android-35/core-for-s[=============                          ] 35% Unzipping... android-35/framework.[=============                          ] 35% Unzipping... android-35/sdk.proper[=============                          ] 35% Unzipping... android-35/source.pro[=============                          ] 35% Unzipping... android-35/uiautomato[=============                          ] 35% Unzipping... android-35/data/NOTIC[=============                          ] 35% Unzipping... android-35/data/activ[=============                          ] 35% Unzipping... android-35/data/annot[=============                          ] 35% Unzipping... android-35/data/api-v[=============                          ] 35% Unzipping... android-35/data/broad[=============                          ] 35% Unzipping... android-35/data/categ[=============                          ] 35% Unzipping... android-35/data/featu[=============                          ] 35% Unzipping... android-35/data/servi[=============                          ] 35% Unzipping... android-35/data/widge[=============                          ] 35% Unzipping... android-35/data/res/a[=============                          ] 35% Unzipping... android-35/data/res/c[=============                          ] 35% Unzipping... android-35/data/res/d[==============                         ] 35% Unzipping... android-35/data/res/d[==============                         ] 36% Unzipping... android-35/data/res/d[==============                         ] 36% Unzipping... android-35/data/res/i[==============                         ] 36% Unzipping... android-35/data/res/l[==============                         ] 36% Unzipping... android-35/data/res/m[==============                         ] 36% Unzipping... android-35/data/res/r[==============                         ] 36% Unzipping... android-35/data/res/t[==============                         ] 36% Unzipping... android-35/data/res/v[==============                         ] 37% Unzipping... android-35/data/res/v[==============                         ] 37% Unzipping... android-35/data/res/x[==============                         ] 37% Unzipping... android-35/optional/a[==============                         ] 37% Unzipping... android-35/optional/o[==============                         ] 37% Unzipping... android-35/optional/l[==============                         ] 37% Unzipping... android-35/skins/NOTI[==============                         ] 37% Unzipping... android-35/skins/HVGA[==============                         ] 37% Unzipping... android-35/skins/QVGA[==============                         ] 37% Unzipping... android-35/skins/WQVG[==============                         ] 37% Unzipping... android-35/skins/WSVG[==============                         ] 37% Unzipping... android-35/skins/WVGA[==============                         ] 37% Unzipping... android-35/skins/WXGA[==============                         ] 37% Unzipping... android-35/templates/[==================                     ] 46% Unzipping... android-35/templates/[==================                     ] 46% Installing Android SDK Platform-To[==================                     ] 46% Downloading platform-tools_r37.0.1[==================                     ] 47% Downloading platform-tools_r37.0.1[===================                    ] 48% Downloading platform-tools_r37.0.1[===================                    ] 49% Downloading platform-tools_r37.0.1[===================                    ] 50% Downloading platform-tools_r37.0.1[====================                   ] 50% Downloading platform-tools_r37.0.1[====================                   ] 51% Downloading platform-tools_r37.0.1[====================                   ] 51% Unzipping... android-35/templates/[====================                   ] 51% Unzipping... platform-tools/NOTICE[====================                   ] 51% Unzipping... platform-tools/adb   [====================                   ] 52% Unzipping... platform-tools/adb   [=====================                  ] 53% Unzipping... platform-tools/adb   [=====================                  ] 53% Unzipping... platform-tools/etc1to[=====================                  ] 53% Unzipping... platform-tools/fastbo[=====================                  ] 54% Unzipping... platform-tools/fastbo[=====================                  ] 54% Unzipping... platform-tools/hprof-[=====================                  ] 54% Unzipping... platform-tools/lib64/[=====================                  ] 54% Unzipping... platform-tools/make_f[=====================                  ] 54% Unzipping... platform-tools/mke2fs[=====================                  ] 54% Unzipping... platform-tools/source[=====================                  ] 54% Unzipping... platform-tools/sqlite[=====================                  ] 55% Unzipping... platform-tools/sqlite[=========================              ] 64% Unzipping... platform-tools/sqlite[=========================              ] 64% Installing Android SDK Platform 34[=========================              ] 64% Downloading platform-34-ext7_r03.z[=========================              ] 65% Downloading platform-34-ext7_r03.z[==========================             ] 65% Downloading platform-34-ext7_r03.z[==========================             ] 66% Downloading platform-34-ext7_r03.z[==========================             ] 67% Downloading platform-34-ext7_r03.z[===========================            ] 68% Downloading platform-34-ext7_r03.z[===========================            ] 69% Downloading platform-34-ext7_r03.z[===========================            ] 69% Unzipping... platform-tools/sqlite[===========================            ] 69% Unzipping... android-34/          [===========================            ] 69% Unzipping... android-34/android.ja[===========================            ] 70% Unzipping... android-34/android.ja[============================           ] 70% Unzipping... android-34/android.ja[============================           ] 70% Unzipping... android-34/optional/ [============================           ] 70% Unzipping... android-34/optional/a[============================           ] 70% Unzipping... android-34/optional/l[============================           ] 70% Unzipping... android-34/optional/o[============================           ] 70% Unzipping... android-34/optional/a[============================           ] 70% Unzipping... android-34/optional/o[============================           ] 70% Unzipping... android-34/templates/[============================           ] 70% Unzipping... android-34/core-for-s[============================           ] 70% Unzipping... android-34/build.prop[============================           ] 70% Unzipping... android-34/android-st[============================           ] 71% Unzipping... android-34/android-st[============================           ] 71% Unzipping... android-34/uiautomato[============================           ] 71% Unzipping... android-34/source.pro[============================           ] 71% Unzipping... android-34/data/     [============================           ] 71% Unzipping... android-34/data/servi[============================           ] 71% Unzipping... android-34/data/NOTIC[============================           ] 71% Unzipping... android-34/data/widge[============================           ] 71% Unzipping... android-34/data/broad[============================           ] 71% Unzipping... android-34/data/api-v[============================           ] 71% Unzipping... android-34/data/featu[============================           ] 71% Unzipping... android-34/data/annot[============================           ] 71% Unzipping... android-34/data/res/ [============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/l[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/m[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/a[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/d[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/x[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/l[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/l[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/r[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/x[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/r[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/a[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/r[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/c[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/d[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/t[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/x[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/r[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/r[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/l[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/r[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/d[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 71% Unzipping... android-34/data/res/d[============================           ] 71% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/m[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/c[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/c[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/m[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/i[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/m[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/x[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/a[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/m[============================           ] 72% Unzipping... android-34/data/res/x[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/a[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/i[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/l[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/l[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/l[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/m[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/l[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/l[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/l[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/c[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/r[============================           ] 72% Unzipping... android-34/data/res/v[============================           ] 72% Unzipping... android-34/data/res/d[=============================          ] 73% Unzipping... android-34/data/res/d[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/m[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/d[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/m[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/r[=============================          ] 73% Unzipping... android-34/data/res/l[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/r[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/d[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/r[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/d[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/res/d[=============================          ] 73% Unzipping... android-34/data/res/v[=============================          ] 73% Unzipping... android-34/data/categ[=============================          ] 73% Unzipping... android-34/data/activ[=============================          ] 73% Unzipping... android-34/sdk.proper[=============================          ] 73% Unzipping... android-34/skins/    [=============================          ] 73% Unzipping... android-34/skins/WXGA[=============================          ] 73% Unzipping... android-34/skins/WQVG[=============================          ] 73% Unzipping... android-34/skins/NOTI[=============================          ] 73% Unzipping... android-34/skins/HVGA[=============================          ] 73% Unzipping... android-34/skins/WVGA[=============================          ] 73% Unzipping... android-34/skins/WQVG[=============================          ] 73% Unzipping... android-34/skins/WVGA[=============================          ] 73% Unzipping... android-34/skins/QVGA[=============================          ] 73% Unzipping... android-34/skins/WXGA[=============================          ] 73% Unzipping... android-34/skins/WSVG[=============================          ] 73% Unzipping... android-34/skins/WXGA[=============================          ] 73% Unzipping... android-34/framework.[================================       ] 82% Unzipping... android-34/framework.[================================       ] 82% Installing Android SDK Build-Tools[================================       ] 82% Downloading build-tools_r35_linux.[=================================      ] 83% Downloading build-tools_r35_linux.[=================================      ] 84% Downloading build-tools_r35_linux.[=================================      ] 85% Downloading build-tools_r35_linux.[==================================     ] 85% Downloading build-tools_r35_linux.[==================================     ] 86% Downloading build-tools_r35_linux.[==================================     ] 87% Downloading build-tools_r35_linux.[==================================     ] 87% Unzipping... android-34/framework.[==================================     ] 87% Unzipping... android-15/NOTICE.txt[==================================     ] 87% Unzipping... android-15/aapt      [==================================     ] 87% Unzipping... android-15/aapt2     [==================================     ] 87% Unzipping... android-15/aarch64-li[==================================     ] 87% Unzipping... android-15/aidl      [==================================     ] 87% Unzipping... android-15/apksigner [==================================     ] 87% Unzipping... android-15/arm-linux-[==================================     ] 87% Unzipping... android-15/bcc_compat[==================================     ] 87% Unzipping... android-15/core-lambd[==================================     ] 87% Unzipping... android-15/d8        [==================================     ] 87% Unzipping... android-15/dexdump   [==================================     ] 87% Unzipping... android-15/i686-linux[==================================     ] 87% Unzipping... android-15/lld       [==================================     ] 87% Unzipping... android-15/llvm-rs-cc[==================================     ] 87% Unzipping... android-15/mipsel-lin[==================================     ] 87% Unzipping... android-15/runtime.pr[==================================     ] 87% Unzipping... android-15/source.pro[==================================     ] 87% Unzipping... android-15/split-sele[==================================     ] 87% Unzipping... android-15/x86_64-lin[==================================     ] 87% Unzipping... android-15/zipalign  [==================================     ] 87% Unzipping... android-15/lib/apksig[==================================     ] 87% Unzipping... android-15/lib/d8.jar[===================================    ] 88% Unzipping... android-15/lib/d8.jar[===================================    ] 88% Unzipping... android-15/lib64/libL[===================================    ] 89% Unzipping... android-15/lib64/libL[===================================    ] 89% Unzipping... android-15/lib64/libb[===================================    ] 89% Unzipping... android-15/lib64/libc[===================================    ] 89% Unzipping... android-15/lld-bin/ll[===================================    ] 90% Unzipping... android-15/lld-bin/ll[====================================   ] 90% Unzipping... android-15/lld-bin/ll[====================================   ] 90% Unzipping... android-15/renderscri[====================================   ] 91% Unzipping... android-15/renderscri[=======================================] 100% Unzipping... android-15/renderscr
+platforms=android-33 android-34 android-35 
+build-tools=33.0.2 34.0.0 35.0.0 
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
+          at: GDScript::reload (res://src/game/world.gd:657)
+ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/main.gd:8)
+ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+import_exit=0
+imported=1022 fonts=2 classes=1
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
+          at: GDScript::reload (res://src/game/world.gd:657)
+ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+          at: GDScript::reload (res://src/main.gd:8)
+ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+install_exit=0
+قالب بعد أمر Godot: مفقود
+--- استخراج القالب يدويًا من android_source.zip ---
+android_debug.apk
+android_release.apk
+android_source.zip
+قالب البناء النهائي: project/android/build/build.gradle
+AndroidManifest.xml
+assetPacks
+assets
+build.gradle
+config.gradle
+gradle
+gradle.properties
+gradlew
+gradlew.bat
+libs
+res
+settings.gradle
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10,000 days
+	for: CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG
+[Storing /__w/M11/M11/release.keystore]
+✔ مفتاح الإصدار سليم ويحتوي على الاسم m11
+✔ بيانات المفتاح مُدرجة في project/export_presets.cfg
+211:keystore/release="/__w/M11/M11/release.keystore"
+212:keystore/release_user="m11"
+213:keystore/release_password="m11localwar"
+214:keystore/debug="/root/debug.keystore"
+215:keystore/debug_user="androiddebugkey"
+216:keystore/debug_password="android"
+426:keystore/release="/__w/M11/M11/release.keystore"
+427:keystore/release_user="m11"
+428:keystore/release_password="m11localwar"
+429:keystore/debug="/root/debug.keystore"
+430:keystore/debug_user="androiddebugkey"
+431:keystore/debug_password="android"
+--- أسطر المفتاح في الإعدادات ---
+211:keystore/release="/__w/M11/M11/release.keystore"
+212:keystore/release_user="m11"
+213:keystore/release_password="m11localwar"
+214:keystore/debug="/root/debug.keystore"
+215:keystore/debug_user="androiddebugkey"
+216:keystore/debug_password="android"
+426:keystore/release="/__w/M11/M11/release.keystore"
+427:keystore/release_user="m11"
+428:keystore/release_password="m11localwar"
+429:keystore/debug="/root/debug.keystore"
+430:keystore/debug_user="androiddebugkey"
+431:keystore/debug_password="android"
+===== EXPORT-DEBUG1 START =====
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+JoypadLinux: udev enabled and loaded successfully.
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 966092234
+EDITOR API HASH: 444927587
+EditorSettings: Load OK!
+EditorTheme: Generating new theme for the config '66886095'.
+EditorTheme: Generating new icons.
+EditorTheme: Generating new fonts.
+EditorTheme: Generating new styles.
+Loaded system CA certificates
+EditorSettings: Save OK!
+export: begin: Exporting for Android steps: 105
+Exporting for Android...
+- debug build: true
+- export path: /__w/M11/M11/build/M11-debug.apk
+- export format: 0
+- sign build: true
+- gradle build enabled: true
+- apk expansion enabled: false
+- enabled abis: armeabi-v7a,arm64-v8a
+- export filter: 0
+- include filter: 
+- exclude filter: assets/raw/*, assets/processed/*, docs/*, tools/*, *.md, .github/*
+Loading regular icon from res://assets/atlases/app_icon.png
+Loading adaptive foreground icon from res://assets/atlases/app_icon.png
+Loading adaptive background icon from res://assets/atlases/app_icon.png
+0 param: --xr_mode_regular
+1 param: --use_immersive
+ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
+   at: add_message (editor/export/editor_export_platform.h:182)
+export: end
+ERROR: Project export for preset "Android APK" failed.
+   at: _fs_changed (editor/editor_node.cpp:1028)
+EditorSettings: Save OK!
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+Orphan StringName: Node (static: 6, total: 7)
+StringName: 1 unclaimed string names at exit.
+debug_export_exit=0
+===== EXPORT-DEBUG1 END =====
+::warning::فشل مسار Gradle — نعيد بقالب التصدير المباشر (بلا Gradle)
+===== EXPORT-DEBUG2 START =====
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+JoypadLinux: udev enabled and loaded successfully.
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 966092234
+EDITOR API HASH: 444927587
+EditorSettings: Load OK!
+EditorTheme: Generating new theme for the config '66886095'.
+EditorTheme: Generating new icons.
+EditorTheme: Generating new fonts.
+EditorTheme: Generating new styles.
+Loaded system CA certificates
+EditorSettings: Save OK!
+export: begin: Exporting for Android steps: 105
+Exporting for Android...
+- debug build: true
+- export path: /__w/M11/M11/build/M11-debug.apk
+- export format: 0
+- sign build: true
+- gradle build enabled: false
+- apk expansion enabled: false
+- enabled abis: armeabi-v7a,arm64-v8a
+- export filter: 0
+- include filter: 
+- exclude filter: assets/raw/*, assets/processed/*, docs/*, tools/*, *.md, .github/*
+Loading regular icon from res://assets/atlases/app_icon.png
+Loading adaptive foreground icon from res://assets/atlases/app_icon.png
+Loading adaptive background icon from res://assets/atlases/app_icon.png
+0 param: --xr_mode_regular
+1 param: --use_immersive
+ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
+   at: add_message (editor/export/editor_export_platform.h:182)
+export: end
+ERROR: Project export for preset "Android APK" failed.
+   at: _fs_changed (editor/editor_node.cpp:1028)
+EditorSettings: Save OK!
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+Orphan StringName: Node (static: 6, total: 7)
+StringName: 1 unclaimed string names at exit.
+debug_export_exit2=0
+===== EXPORT-DEBUG2 END =====
+total 8
+drwxr-xr-x  2 root root 4096 Oct 17 02:11 .
+drwxr-xr-x 11 1001 1001 4096 Oct 17 02:11 ..
+===== EXPORT-RELEASE START =====
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+JoypadLinux: udev enabled and loaded successfully.
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 966092234
+EDITOR API HASH: 444927587
+EditorSettings: Load OK!
+EditorTheme: Generating new theme for the config '66886095'.
+EditorTheme: Generating new icons.
+EditorTheme: Generating new fonts.
+EditorTheme: Generating new styles.
+Loaded system CA certificates
+EditorSettings: Save OK!
+ERROR: Cannot export project with preset "Android APK" due to configuration errors:
+Release keystore incorrectly configured in the export preset.
+
+   at: _fs_changed (editor/editor_node.cpp:1012)
+ERROR: Project export for preset "Android APK" failed.
+   at: _fs_changed (editor/editor_node.cpp:1028)
+EditorSettings: Save OK!
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+Orphan StringName: Node (static: 6, total: 7)
+StringName: 1 unclaimed string names at exit.
+release_apk_exit=0
+===== EXPORT-RELEASE END =====
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+JoypadLinux: udev enabled and loaded successfully.
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 966092234
+EDITOR API HASH: 444927587
+EditorSettings: Load OK!
+EditorTheme: Generating new theme for the config '66886095'.
+EditorTheme: Generating new icons.
+EditorTheme: Generating new fonts.
+EditorTheme: Generating new styles.
+Loaded system CA certificates
+EditorSettings: Save OK!
+ERROR: Cannot export project with preset "Android AAB" due to configuration errors:
+Release keystore incorrectly configured in the export preset.
+
+   at: _fs_changed (editor/editor_node.cpp:1012)
+ERROR: Project export for preset "Android AAB" failed.
+   at: _fs_changed (editor/editor_node.cpp:1028)
+EditorSettings: Save OK!
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+Orphan StringName: Node (static: 6, total: 7)
+StringName: 1 unclaimed string names at exit.
+release_aab_exit=0
+total 8
+drwxr-xr-x  2 root root 4096 Oct 17 02:11 .
+drwxr-xr-x 11 1001 1001 4096 Oct 17 02:11 ..
+✘ مفقود: build/M11-debug.apk
+✘ مفقود: build/M11-release.apk
+✘ مفقود: build/M11-release.aab
