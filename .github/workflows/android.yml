@@ -166,25 +166,6 @@ jobs:
           echo "imported=$IMP fonts=$FONTS classes=$CLASSES" | tee -a "$BUILD_LOG"
           true
 
-      - name: فحص تحليل كل ملف GDScript (بعد الاستيراد)
-        continue-on-error: true
-        run: |
-          set +e
-          : > /tmp/files.log
-          # نُبعد الثيم مؤقتًا: خطوطه تُنتج ضجيجًا في كل تشغيل حتى تُستورد
-          [ -f project/assets/fonts/theme_m11.tres ] && mv project/assets/fonts/theme_m11.tres /tmp/theme_m11.tres
-          for f in $(cd project && find . -name "*.gd" | sed 's|^\./|res://|' | sort); do
-            out="$(timeout 120 godot --headless --path project --check-only --script "$f" 2>&1)"
-            mine="$(echo "$out" | grep -iE "parse error|could not parse|failed to load script|SCRIPT ERROR" | grep -v "theme_m11\|cairo_\|noto_ar")"
-            if [ -n "$mine" ]; then
-              { echo "✘ $f"; echo "$mine" | head -4; } >> /tmp/files.log
-            fi
-          done
-          [ -f /tmp/theme_m11.tres ] && mv /tmp/theme_m11.tres project/assets/fonts/theme_m11.tres
-          echo "--- ملفات بها أخطاء: $(grep -c '^✘' /tmp/files.log) من $(find project -name '*.gd' | wc -l) ---"
-          head -50 /tmp/files.log
-          bash tools/emit_annotations.sh /tmp/files.log "." error 9 0 head
-
       - name: تثبيت قالب بناء أندرويد (Gradle)
         continue-on-error: true
         run: |
@@ -385,6 +366,15 @@ jobs:
           done
           head -c 9000 /tmp/exp.txt
           bash tools/emit_annotations.sh /tmp/exp.txt "." error 9 0 head
+
+      - name: تفريغ سياق فشل التصدير (تعليقات)
+        if: always()
+        run: |
+          set +e
+          grep -n -B 40 -A 12 "due to configuration errors" "$BUILD_LOG" | head -1 > /dev/null
+          sed -n "$(grep -n 'due to configuration errors' "$BUILD_LOG" | head -1 | cut -d: -f1                    | awk '{print ($1 > 45) ? $1 - 45 : 1}'),+900p" "$BUILD_LOG" > /tmp/ctx.txt
+          wc -c /tmp/ctx.txt
+          bash tools/emit_annotations.sh /tmp/ctx.txt "." warning 9 0 head
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
