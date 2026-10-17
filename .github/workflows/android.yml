@@ -72,7 +72,7 @@ jobs:
         run: |
           set +e
           grep -A1 -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log \
-            | head -9 | while IFS= read -r line; do echo "::error::$line"; done
+            | head -9 | while IFS= read -r line; do echo "::warning::$line"; done
           true
 
       - name: أخطاء الإقلاع ٢ (الحزمة الثانية)
@@ -80,7 +80,7 @@ jobs:
         run: |
           set +e
           grep -A1 -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log \
-            | tail -9 | while IFS= read -r line; do echo "::error::$line"; done
+            | tail -9 | while IFS= read -r line; do echo "::warning::$line"; done
           true
 
       - name: نتائج الاختبار الذاتي (تعليقات)
@@ -88,9 +88,9 @@ jobs:
         run: |
           set +e
           grep -n "M11-SELFTEST" /tmp/run.log | head -9 \
-            | while IFS= read -r line; do echo "::error::SELF $line"; done
+            | while IFS= read -r line; do echo "::warning::SELF $line"; done
           grep -nE "run_exit=|script_errors=|menu_reached=|selftest_ok=" docs/verify_log.txt \
-            | head -4 | while IFS= read -r line; do echo "::error::SUM $line"; done
+            | head -4 | while IFS= read -r line; do echo "::warning::SUM $line"; done
           true
 
       - name: رفع سجل الفحص كأرتيفاكت
