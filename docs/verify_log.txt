@@ -1,15 +1,9 @@
 run_exit=0
-script_errors=2
+script_errors=0
 menu_reached=1
 --- أول ٤٠ سطرًا ---
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 
-SCRIPT ERROR: Parse Error: Too many arguments for "get()" call. Expected at most 1 but received 2.
-          at: GDScript::reload (res://src/ui/touch_controls.gd:75)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/main.gd:-1)
-ERROR: Failed to load script "res://src/main.gd" with error "Compilation failed".
-   at: load (modules/gdscript/gdscript.cpp:2936)
 [M11] الإقلاع اكتمل — القائمة جاهزة
 [M11] تحسينات الكمبيوتر مفعّلة (Fullscreen + Post-FX)
 WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
@@ -17,7 +11,3 @@ WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
 ERROR: 2 resources still in use at exit (run with --verbose for details).
    at: clear (core/io/resource.cpp:604)
 --- كل أخطاء السكربت ---
-SCRIPT ERROR: Parse Error: Too many arguments for "get()" call. Expected at most 1 but received 2.
-          at: GDScript::reload (res://src/ui/touch_controls.gd:75)
-SCRIPT ERROR: Compile Error: 
-          at: GDScript::reload (res://src/main.gd:-1)
