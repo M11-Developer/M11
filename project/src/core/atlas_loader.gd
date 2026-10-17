@@ -101,15 +101,12 @@ func load_atlas(name: String) -> AtlasResource:
 		push_warning("ملف أطلس غير صالح: %s" % name)
 		data = {}
 	var d: Dictionary = data
-	if not (d.get("frames", {}) is Dictionary):
-		d["frames"] = {}
-	if not (d.get("offsets", {}) is Dictionary):
-		d["offsets"] = {}
-	if not (d.get("anchors", {}) is Dictionary):
-		d["anchors"] = {}
-	res.frames = d["frames"]
-	res.offsets = d["offsets"]
-	res.anchors = d["anchors"]
+	var fr: Variant = d.get("frames", {})
+	var of: Variant = d.get("offsets", {})
+	var an: Variant = d.get("anchors", {})
+	res.frames = fr if fr is Dictionary else {}
+	res.offsets = of if of is Dictionary else {}
+	res.anchors = an if an is Dictionary else {}
 	res.meta = d
 	atlases[name] = res
 	meta[name] = d

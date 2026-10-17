@@ -61,7 +61,7 @@ func _draw() -> void:
 		draw_circle(center, radius, Color(0.08, 0.10, 0.12, 0.55) if not pressed else Color(0.31, 0.82, 0.77, 0.45))
 		draw_arc(center, radius, 0.0, TAU, 24, Color(0.55, 0.66, 0.72, 0.55), 2.0, true)
 		# النص
-		var label: String = ICONS.get(name, "")
+		var label: String = String(ICONS[name]) if ICONS.has(name) else ""
 		if label != "":
 			var fs := int(clampf(radius * 0.72, 9.0, 18.0))
 			var w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_CENTER, -1, fs).x

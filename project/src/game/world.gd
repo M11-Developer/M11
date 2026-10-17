@@ -46,7 +46,8 @@ const TILE_BACK := M11Tiles.BACK
 const TILE_GIRDER := M11Tiles.GIRDER
 
 const SOLID_TILES := [TILE_SOLID, TILE_TOP, TILE_CRATE, TILE_GLASS, TILE_SANDBAG, TILE_GIRDER]
-const DESTRUCTIBLE := {TILE_CRATE: 60.0, TILE_GLASS: 15.0, TILE_SANDBAG: 90.0, TILE_GIRDER: 140.0}
+# قابل للتعديل (var) لأننا نخصم منه صحّة الجدران القابلة للكسر
+var DESTRUCTIBLE := {TILE_CRATE: 60.0, TILE_GLASS: 15.0, TILE_SANDBAG: 90.0, TILE_GIRDER: 140.0}
 
 @onready var terrain: Node2D = $Terrain
 @onready var entities: Node2D = $Entities
@@ -539,7 +540,7 @@ func player_pos() -> Vector2:
 
 
 func pick_spawn_point(for_team: int) -> Vector2:
-	var best := spawns[0]["x"] if spawns.size() > 0 else Vector2(100, 100)
+	var best: Vector2 = (spawns[0]["x"] as Vector2) if spawns.size() > 0 else Vector2(100, 100)
 	var best_score := -1.0
 	for i in 6:
 		if spawns.is_empty():
