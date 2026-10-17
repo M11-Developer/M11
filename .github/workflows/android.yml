@@ -29,6 +29,11 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       ANDROID_HOME: /usr/lib/android-sdk
       ANDROID_SDK_ROOT: /usr/lib/android-sdk
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+      # Godot 4.3 يقرأ بيانات مفتاح الإصدار من متغيّرات البيئة أيضًا (احتياط ثانٍ)
+      GODOT_ANDROID_KEYSTORE_RELEASE_PATH: /github/workspace/release.keystore
+      GODOT_ANDROID_KEYSTORE_RELEASE_USER: m11
+      GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: m11localwar
     steps:
       - name: جلب الشيفرة
         uses: actions/checkout@v4
@@ -75,6 +80,8 @@ jobs:
           FOUND="$(find / -maxdepth 5 -name 'editor_settings-4.3.tres' 2>/dev/null | head -1)"
           [ -n "$FOUND" ] && cp -n "$FOUND" ~/.config/godot/editor_settings-4.3.tres 2>/dev/null
           SET="$HOME/.config/godot/editor_settings-4.3.tres"
+          # نكتب الملف أيضًا باسمين محتملين يقرأهما Godot حسب الإصدار
+          cp -n "$SET" "$HOME/.config/godot/editor_settings-4.3.tres" 2>/dev/null || true
           mkdir -p "$HOME/.config/godot"
           if [ ! -f "$SET" ]; then
             printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' > "$SET"
@@ -215,11 +222,12 @@ jobs:
           else
             echo "NO KEYTOOL — نحاول مفتاح الصورة /root/debug.keystore" | tee -a "$BUILD_LOG"
           fi
-          if [ -f "$GITHUB_WORKSPACE/release.keystore" ]; then
-            bash tools/patch_presets.sh "$GITHUB_WORKSPACE/release.keystore" m11 m11localwar 2>&1 | tee -a "$BUILD_LOG"
-          elif [ -f /root/debug.keystore ]; then
-            bash tools/patch_presets.sh /root/debug.keystore androiddebugkey android 2>&1 | tee -a "$BUILD_LOG"
-          fi
+          DEBUG_KS="/root/debug.keystore"
+          [ -f "$DEBUG_KS" ] || DEBUG_KS="$(find / -maxdepth 4 -name 'debug.keystore' 2>/dev/null | head -1)"
+          REL_KS="$GITHUB_WORKSPACE/release.keystore"
+          [ -f "$REL_KS" ] || REL_KS="$DEBUG_KS"
+          [ -n "$REL_KS" ] && bash tools/patch_presets.sh "$REL_KS" m11 m11localwar \
+            project/export_presets.cfg "$DEBUG_KS" androiddebugkey android 2>&1 | tee -a "$BUILD_LOG"
           echo "--- أسطر المفتاح في الإعدادات ---" | tee -a "$BUILD_LOG"
           grep -n "keystore/" project/export_presets.cfg | tee -a "$BUILD_LOG"
 
@@ -324,19 +332,6 @@ jobs:
             build/M11-release.aab
 
       # ---------- بثّ أخطاء السجل كتعليقات يقرأها المطوّر عبر واجهة GitHub ----------
-      - name: بثّ سبب فشل الإعداد (تعليقات)
-        if: always()
-        run: |
-          set +e
-          {
-            echo "--- الأسباب المعروفة في السجل ---"
-            grep -oE "A valid Java SDK path[^"]{0,80}|Either Debug Keystore[^"]{0,80}|Debug keystore not configured[^"]{0,80}|Either Release Keystore[^"]{0,80}|Release keystore incorrectly[^"]{0,80}|Android build template not installed[^"]{0,80}|Custom [a-z ]*not found[^"]{0,60}|Target SDK[^"]{0,90}" "$BUILD_LOG" | sort -u
-            echo "--- سطر رسالة الفشل كاملًا ---"
-            grep -oE "due to configuration errors:.{0,600}" "$BUILD_LOG" | head -2
-          } > /tmp/why.txt 2>&1
-          cat /tmp/why.txt
-          bash tools/emit_annotations.sh /tmp/why.txt "." error 9 0 head
-
       - name: بثّ حالة قالب البناء (تعليقات)
         if: always()
         run: |
@@ -367,14 +362,12 @@ jobs:
           head -c 9000 /tmp/exp.txt
           bash tools/emit_annotations.sh /tmp/exp.txt "." error 9 0 head
 
-      - name: تفريغ سياق فشل التصدير (تعليقات)
+      - name: تشخيص فشل التصدير (تعليقات)
         if: always()
         run: |
-          set +e
-          grep -n -B 40 -A 12 "due to configuration errors" "$BUILD_LOG" | head -1 > /dev/null
-          sed -n "$(grep -n 'due to configuration errors' "$BUILD_LOG" | head -1 | cut -d: -f1                    | awk '{print ($1 > 45) ? $1 - 45 : 1}'),+900p" "$BUILD_LOG" > /tmp/ctx.txt
-          wc -c /tmp/ctx.txt
-          bash tools/emit_annotations.sh /tmp/ctx.txt "." warning 9 0 head
+          python3 tools/diag_log.py "$BUILD_LOG" > /dev/null 2>&1 || true
+          cat /tmp/m11-diag.txt 2>/dev/null | head -60
+          bash tools/emit_annotations.sh /tmp/m11-diag.txt "." failure 9 0 head
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
