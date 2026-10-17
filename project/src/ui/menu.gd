@@ -807,7 +807,8 @@ func _gui_input(event: InputEvent) -> void:
 			_drag["active"] = false
 	elif event is InputEventScreenDrag:
 		if bool(_drag["active"]):
-			var dy := event.position.y - float(_drag["y"])
+			var drag := event as InputEventScreenDrag
+			var dy: float = drag.position.y - float(_drag["y"])
 			if absf(dy) > 8.0:
 				_drag["moved"] = true
 			scroll = clampf(float(_drag["scroll"]) - dy, 0.0, _max_scroll(get_viewport().get_visible_rect().size))

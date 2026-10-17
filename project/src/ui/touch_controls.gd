@@ -50,7 +50,7 @@ func _draw() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	var scale_factor := vp / Vector2(im.view_size)
 	# ---- موضعا الإبهام (خفيفان جدًا قبل اللمس) ----
-	var homes := im._home_positions()
+	var homes: Dictionary = im._home_positions()
 	_draw_stick_home(Vector2(homes["move"]) * scale_factor, 52.0 * minf(scale_factor.x, scale_factor.y), "حركة")
 	_draw_stick_home(Vector2(homes["aim"]) * scale_factor, 46.0 * minf(scale_factor.x, scale_factor.y), "تصويب")
 	# ---- العصي النشطة ----

@@ -13,6 +13,8 @@ on:
   push:
     tags:
       - "v*"      # كل وسوم الإصدارات (نسخة الويب لها وسم web-*)
+    branches:
+      - "arena/29211bc6-m11"   # فحص إقلاع سريع عند كل تعديل (التصدير للوسوم فقط)
 
 permissions:
   contents: write   # لنشر الـRelease ورفع الأرتيفاكت
@@ -69,7 +71,7 @@ jobs:
         if: always()
         run: |
           set +e
-          grep -nE "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent|at: " /tmp/run.log \
+          grep -A1 -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log \
             | head -9 | while IFS= read -r line; do echo "::error::$line"; done
           true
 
@@ -77,7 +79,7 @@ jobs:
         if: always()
         run: |
           set +e
-          grep -nE "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent|at: " /tmp/run.log \
+          grep -A1 -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log \
             | tail -9 | while IFS= read -r line; do echo "::error::$line"; done
           true
 
@@ -98,6 +100,8 @@ jobs:
 
   export-android:
     needs: verify-boot
+    # البناء والتوقيع والنشر عند الوسوم فقط؛ الفحص السريع يعمل على الفرع أيضًا
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3

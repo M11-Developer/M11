@@ -182,7 +182,7 @@ func _draw_minimap(vp: Vector2) -> void:
 	for a in world.actors:
 		if not a.alive:
 			continue
-		var p := area.position + a.global_position * (area.size.x / (float(world.map_w) * Config.TILE))
+		var p: Vector2 = area.position + a.global_position * (area.size.x / (float(world.map_w) * Config.TILE))
 		var col := COLOR_GOLD if a == player else (COLOR_TEAL if int(a.team) == int(player.team) else COLOR_ORANGE)
 		draw_circle(p, 2.2 if a == player else 1.6, col)
 	M11UI.text(self, M11UI.FONT_REG, String(world.mode_def().get("name_ar", world.mode_id)),
@@ -385,7 +385,7 @@ func _draw_big_map(vp: Vector2) -> void:
 	for a in world.actors:
 		if not a.alive:
 			continue
-		var p := box.position + Vector2(a.global_position.x / (float(world.map_w) * Config.TILE),
+		var p: Vector2 = box.position + Vector2(a.global_position.x / (float(world.map_w) * Config.TILE),
 			a.global_position.y / (float(world.map_h) * Config.TILE)) * box.size
 		var col := COLOR_GOLD if a == player else (COLOR_TEAL if int(a.team) == int(player.team) else COLOR_ORANGE)
 		draw_circle(p, 3.0 if a == player else 2.0, col)
