@@ -157,7 +157,7 @@ jobs:
           echo "sdkmanager=$SDKM" | tee -a "$BUILD_LOG"
           if [ -n "$SDKM" ]; then
             yes | "$SDKM" --sdk_root=/usr/lib/android-sdk --licenses >/dev/null 2>&1
-            yes | "$SDKM" --sdk_root=/usr/lib/android-sdk "platforms;android-35" "build-tools;35.0.0" "platform-tools" 2>&1 | tail -6 | tee -a "$BUILD_LOG"
+            yes | "$SDKM" --sdk_root=/usr/lib/android-sdk "platforms;android-35" "platforms;android-34" "build-tools;35.0.0" "build-tools;34.0.0" "build-tools;33.0.2" "platform-tools" 2>&1 | tail -6 | tee -a "$BUILD_LOG"
           fi
           PL="$(ls -1 /usr/lib/android-sdk/platforms 2>/dev/null | tr '\n' ' ')"
           BT="$(ls -1 /usr/lib/android-sdk/build-tools 2>/dev/null | tr '\n' ' ')"
