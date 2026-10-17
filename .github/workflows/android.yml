@@ -251,8 +251,9 @@ jobs:
         run: |
           set +e
           mkdir -p build
+          EXP_LOG=/tmp/export.log; : > "$EXP_LOG"
           echo "===== EXPORT-DEBUG1 START =====" >> "$BUILD_LOG"
-          timeout 2400 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG"
+          timeout 2400 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG" "$EXP_LOG" "$EXP_LOG" "$EXP_LOG"
           echo "debug_export_exit=$?" | tee -a "$BUILD_LOG"
           echo "===== EXPORT-DEBUG1 END =====" >> "$BUILD_LOG"
           if [ ! -s build/M11-debug.apk ]; then
@@ -265,7 +266,7 @@ jobs:
                    -e 's|gradle_build/target_sdk="[^"]*"|gradle_build/target_sdk=""|g' \
                    project/export_presets.cfg
             echo "===== EXPORT-DEBUG2 START =====" >> "$BUILD_LOG"
-            timeout 2400 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG"
+            timeout 2400 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG" "$EXP_LOG" "$EXP_LOG" "$EXP_LOG"
             echo "debug_export_exit2=$?" | tee -a "$BUILD_LOG"
             echo "===== EXPORT-DEBUG2 END =====" >> "$BUILD_LOG"
           fi
@@ -278,7 +279,7 @@ jobs:
           # نعيد تمكين Gradle (خطوة التصحيح قد تكون عطّلته في مسار الاحتياط)
           sed -i 's|gradle_build/use_gradle_build=false|gradle_build/use_gradle_build=true|g' project/export_presets.cfg
           echo "===== EXPORT-RELEASE START =====" >> "$BUILD_LOG"
-          timeout 2400 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" 2>&1 | tee -a "$BUILD_LOG"
+          timeout 2400 godot --headless --verbose --path project --export-release "Android APK" "$GITHUB_WORKSPACE/build/M11-release.apk" 2>&1 | tee -a "$BUILD_LOG" /tmp/export.log
           echo "release_apk_exit=$?" | tee -a "$BUILD_LOG"
           echo "===== EXPORT-RELEASE END =====" >> "$BUILD_LOG"
           timeout 2400 godot --headless --verbose --path project --export-release "Android AAB" "$GITHUB_WORKSPACE/build/M11-release.aab" 2>&1 | tee -a "$BUILD_LOG"
@@ -366,6 +367,8 @@ jobs:
           cp "$BUILD_LOG" docs/build_log.txt 2>/dev/null || echo "(لا سجل)" > docs/build_log.txt
           bash tools/diag_log.sh "$BUILD_LOG" > /dev/null 2>&1 || true
           cp /tmp/m11-diag.txt docs/build_diag.txt 2>/dev/null || true
+          git config --global --add safe.directory "$GITHUB_WORKSPACE" 2>/dev/null || true
+          git config --global --add safe.directory /__w/M11/M11 2>/dev/null || true
           git config user.name "M11 CI"
           git config user.email "ci@m11.local"
           mkdir -p docs
@@ -382,6 +385,19 @@ jobs:
           fi
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
+      - name: سجل التصدير (أهم الأسطر)
+        if: always()
+        run: |
+          set +e
+          {
+            echo "--- حجم سجل التصدير: $(wc -c < /tmp/export.log 2>/dev/null) بايت ---"
+            grep -nE "ERROR|error:|Failed|failed|Exception|What went wrong|Cannot|BUILD|apksigner|zipalign|keystore|Saving|saving|export" /tmp/export.log 2>/dev/null | tail -22
+            echo "--- آخر ١٢ سطرًا ---"
+            tail -12 /tmp/export.log 2>/dev/null
+          } > /tmp/exp.txt
+          wc -l < /tmp/exp.txt
+          bash tools/emit_annotations.sh /tmp/exp.txt "." error 9 0 head
+
       - name: آخر ٣٠ سطرًا من السجل (تعليق واحد)
         if: always()
         run: |
