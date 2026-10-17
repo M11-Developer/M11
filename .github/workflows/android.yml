@@ -359,6 +359,19 @@ jobs:
           bash tools/diag_log.sh "$BUILD_LOG"
           bash tools/emit_annotations.sh /tmp/m11-diag.txt "." error 9 0 head
 
+      - name: رفع سجل البناء إلى الفرع (قناة قراءة موثوقة)
+        if: always()
+        run: |
+          set +e
+          cp "$BUILD_LOG" docs/build_log.txt 2>/dev/null || echo "(لا سجل)" > docs/build_log.txt
+          bash tools/diag_log.sh "$BUILD_LOG" > /dev/null 2>&1 || true
+          cp /tmp/m11-diag.txt docs/build_diag.txt 2>/dev/null || true
+          git config user.name "M11 CI"
+          git config user.email "ci@m11.local"
+          git add -f docs/build_log.txt docs/build_diag.txt
+          git commit -m "CI: سجل البناء [skip ci]" -q || true
+          git push origin "HEAD:${GITHUB_REF_NAME}" -q 2>&1 | tail -3 || echo "تعذّر الدفع"
+
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
         if: always()
