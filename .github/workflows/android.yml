@@ -202,8 +202,10 @@ jobs:
             ls -1 "$DEST" 2>/dev/null | grep -i android | tee -a "$BUILD_LOG"
             if [ ! -f "$DEST/android_source.zip" ]; then
               echo "--- android_source.zip غير موجود — ننزّل القوالب كاملة ---" | tee -a "$BUILD_LOG"
-              curl -sSL -w "http=%{http_code} bytes=%{size_download}" -o /tmp/templates.tpz \
-                "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz" 2>&1 | tee -a "$BUILD_LOG"
+              ( curl -sSL -w "http=%{http_code} bytes=%{size_download}" -o /tmp/templates.tpz \
+                  "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz" \
+                || wget -q -O /tmp/templates.tpz \
+                  "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz" ) 2>&1 | tee -a "$BUILD_LOG"
               rm -rf /tmp/tpl && mkdir -p /tmp/tpl && unzip -oq /tmp/templates.tpz -d /tmp/tpl
               cp -rf /tmp/tpl/templates/. "$DEST/" 2>/dev/null
             fi

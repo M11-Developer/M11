@@ -13,14 +13,17 @@ OUT=/tmp/m11-diag.txt
 LINE=$(grep -n "configuration errors" "$LOG" 2>/dev/null | head -1 | cut -d: -f1)
 if [ -n "$LINE" ]; then
   echo "=== سبب فشل الإعداد (سطر $LINE) ===" >> "$OUT"
-  sed -n "$(( LINE > 10 ? LINE - 10 : 1 )),$(( LINE + 7 ))p" "$LOG" | sed 's/^/  /' >> "$OUT"
+  sed -n "$(( LINE > 2 ? LINE - 2 : 1 )),$(( LINE + 6 ))p" "$LOG" | sed 's/^/  /' >> "$OUT"
+  # نسخة خام (od) لكشف أي محارف خفيّة تمنع قراءة السبب
+  echo "  --- خام (od) ---" >> "$OUT"
+  sed -n "${LINE},$(( LINE + 2 ))p" "$LOG" | head -c 400 | od -c | head -8 | sed 's/^/  /' >> "$OUT"
 fi
 
 # 2) نافذة أول محاولة تصدير
 S=$(grep -n "EXPORT-DEBUG1 START" "$LOG" 2>/dev/null | head -1 | cut -d: -f1)
 if [ -n "$S" ]; then
   echo "=== أول محاولة تصدير (من سطر $S) ===" >> "$OUT"
-  sed -n "$(( S > 3 ? S - 3 : 1 )),$(( S + 34 ))p" "$LOG" | sed 's/^/  /' >> "$OUT"
+  sed -n "$(( S > 2 ? S - 2 : 1 )),$(( S + 16 ))p" "$LOG" | sed 's/^/  /' >> "$OUT"
 fi
 
 # 3) نتائج التصدير
@@ -28,6 +31,9 @@ echo "=== النتائج ===" >> "$OUT"
 grep -E "debug_export_exit|debug_export_exit2|release_apk_exit|release_aab_exit|مفقود:|= OK|saving" "$LOG" 2>/dev/null | head -12 | sed 's/^/  /' >> "$OUT"
 
 # 3ب) إعداد التصدير والمفاتيح الفعلية
+echo "=== أدوات متاحة ===" >> "$OUT"
+echo "  curl=$(command -v curl || echo MISSING) wget=$(command -v wget || echo MISSING) python3=$(command -v python3 || echo MISSING) unzip=$(command -v unzip || echo MISSING)" >> "$OUT"
+grep -E "java_sdk_path|android_sdk_path|debug_keystore|JAVA_DIR" "$LOG" 2>/dev/null | head -8 >> "$OUT"
 echo "=== أسطر المفتاح في الإعدادات ===" >> "$OUT"
 grep -n "keystore/" /github/workspace/project/export_presets.cfg 2>/dev/null | head -8 >> "$OUT"
 
