@@ -370,7 +370,10 @@ jobs:
           git config user.email "ci@m11.local"
           git add -f docs/build_log.txt docs/build_diag.txt
           git commit -m "CI: سجل البناء [skip ci]" -q || true
-          git push origin "HEAD:${GITHUB_REF_NAME}" -q 2>&1 | tail -3 || echo "تعذّر الدفع"
+          # GITHUB_REF_NAME في بناء الوسم يساوي اسم الوسم لا اسم الفرع — لذلك
+          # ندفع دائمًا إلى فرع العمل الثابت لهذه الجلسة.
+          TARGET_BRANCH="arena/3dc6c87e-m11"
+          git push origin "HEAD:${TARGET_BRANCH}" -q 2>&1 | tail -3 || echo "تعذّر الدفع"
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: نشر سجل البناء في قناة التشخيص
