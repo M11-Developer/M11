@@ -1,5 +1,5 @@
 == معلومات البيئة ==
-ref=v1.4.6 run=38994672473
+ref=v2.0.2 run=38999758233
 godot=4.3.stable.official.77dcf97d8
 python3=MISSING
 curl=MISSING
@@ -42,70 +42,6 @@ ERROR: Failed loading resource: res://assets/fonts/theme_m11.tres. Make sure res
 ERROR: Error loading custom project theme 'res://assets/fonts/theme_m11.tres'
    at: initialize_theme (scene/theme/theme_db.cpp:72)
 Could not find version of build tools that matches Target SDK, using 33.0.2
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/ai/bot_brain.gd:56)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/ai/bot_brain.gd:81)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/ai/bot_brain.gd:99)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/ai/bot_brain.gd:229)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/ai/bot_brain.gd:57)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "w" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/ai/bot_brain.gd:61)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "w" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/ai/bot_brain.gd:118)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "w2" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/ai/bot_brain.gd:179)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "w3" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/ai/bot_brain.gd:191)
-ERROR: Failed to load script "res://src/ai/bot_brain.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "d" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/game/projectile.gd:128)
-ERROR: Failed to load script "res://src/game/projectile.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
-          at: GDScript::reload (res://src/game/world.gd:657)
-ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/ui/hud.gd:7)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/ui/hud.gd:32)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "px" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/ui/hud.gd:157)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "py" variable because the value doesn't have a set type.
-          at: GDScript::reload (res://src/ui/hud.gd:158)
-ERROR: Failed to load script "res://src/ui/hud.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:67)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:116)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:117)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:117)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:117)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:200)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:203)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:340)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:351)
-SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
-          at: GDScript::reload (res://src/ui/menu.gd:417)
-ERROR: Failed to load script "res://src/ui/menu.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/main.gd:8)
-ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
 === الملفات الفعلية بعد تشغيل Godot ===
 /root/.config/godot/editor_settings-4.3.tres
 /github/home/.config/godot/editor_settings-4.3.tres
@@ -121,26 +57,22 @@ platforms=android-33 android-34 android-35
 build-tools=33.0.2 34.0.0 35.0.0 
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 
-SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
-          at: GDScript::reload (res://src/game/world.gd:657)
-ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/main.gd:8)
-ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
 import_exit=0
 imported=1022 fonts=2 classes=1
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 
-SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
-          at: GDScript::reload (res://src/game/world.gd:657)
-ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/main.gd:8)
-ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
+[M11] الإقلاع اكتمل — القائمة جاهزة
+[M11] تحسينات الكمبيوتر مفعّلة (Fullscreen + Post-FX)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+     at: cleanup (core/object/object.cpp:2284)
+ERROR: 2 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:604)
+run_exit=0
+script_errors=0 menu_reached=1
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+[M11] الإقلاع اكتمل — القائمة جاهزة
+[M11] تحسينات الكمبيوتر مفعّلة (Fullscreen + Post-FX)
 install_exit=0
 قالب بعد أمر Godot: مفقود
 --- استخراج القالب يدويًا من android_source.zip ---
@@ -164,7 +96,7 @@ Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) wi
 	for: CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG
 [Storing /__w/M11/M11/release.keystore]
 === فحص التوقيع بنفس أداة Godot: /usr/lib/jvm/java-17-openjdk-amd64/bin/keytool ===
-exit=0 | أول سطرين: m11, Oct 17, 2026, PrivateKeyEntry,  Certificate fingerprint (SHA-256): B1:CD:18:75:3C:11:C7:E1:2A:A4:CC:C3:A9:3C:1B:4E:87:74:02:F9:23:9B:34:73:3D:7B:B2:E6:74:C4:8D:03 
+exit=0 | أول سطرين: m11, Oct 17, 2026, PrivateKeyEntry,  Certificate fingerprint (SHA-256): 7B:D2:73:9D:34:44:FF:10:00:45:38:93:BF:98:79:43:7D:CD:EB:6E:34:51:06:1C:6D:5F:FE:9E:3D:2E:E2:D2 
 ✔ مفتاح الإصدار سليم ويحتوي على الاسم m11
 ✔ بيانات المفتاح مُدرجة في project/export_presets.cfg
 211:keystore/release="/__w/M11/M11/release.keystore"
@@ -173,12 +105,24 @@ exit=0 | أول سطرين: m11, Oct 17, 2026, PrivateKeyEntry,  Certificate fin
 214:keystore/debug="/root/debug.keystore"
 215:keystore/debug_user="androiddebugkey"
 216:keystore/debug_password="android"
-426:keystore/release="/__w/M11/M11/release.keystore"
-427:keystore/release_user="m11"
-428:keystore/release_password="m11localwar"
-429:keystore/debug="/root/debug.keystore"
-430:keystore/debug_user="androiddebugkey"
-431:keystore/debug_password="android"
+427:keystore/release="/__w/M11/M11/release.keystore"
+428:keystore/release_user="m11"
+429:keystore/release_password="m11localwar"
+430:keystore/debug="/root/debug.keystore"
+431:keystore/debug_user="androiddebugkey"
+432:keystore/debug_password="android"
+483:keystore/release="/__w/M11/M11/release.keystore"
+484:keystore/release_user="m11"
+485:keystore/release_password="m11localwar"
+486:keystore/debug="/root/debug.keystore"
+487:keystore/debug_user="androiddebugkey"
+488:keystore/debug_password="android"
+524:keystore/release="/__w/M11/M11/release.keystore"
+525:keystore/release_user="m11"
+526:keystore/release_password="m11localwar"
+527:keystore/debug="/root/debug.keystore"
+528:keystore/debug_user="androiddebugkey"
+529:keystore/debug_password="android"
 --- أسطر المفتاح في الإعدادات ---
 211:keystore/release="/__w/M11/M11/release.keystore"
 212:keystore/release_user="m11"
@@ -186,12 +130,24 @@ exit=0 | أول سطرين: m11, Oct 17, 2026, PrivateKeyEntry,  Certificate fin
 214:keystore/debug="/root/debug.keystore"
 215:keystore/debug_user="androiddebugkey"
 216:keystore/debug_password="android"
-426:keystore/release="/__w/M11/M11/release.keystore"
-427:keystore/release_user="m11"
-428:keystore/release_password="m11localwar"
-429:keystore/debug="/root/debug.keystore"
-430:keystore/debug_user="androiddebugkey"
-431:keystore/debug_password="android"
+427:keystore/release="/__w/M11/M11/release.keystore"
+428:keystore/release_user="m11"
+429:keystore/release_password="m11localwar"
+430:keystore/debug="/root/debug.keystore"
+431:keystore/debug_user="androiddebugkey"
+432:keystore/debug_password="android"
+483:keystore/release="/__w/M11/M11/release.keystore"
+484:keystore/release_user="m11"
+485:keystore/release_password="m11localwar"
+486:keystore/debug="/root/debug.keystore"
+487:keystore/debug_user="androiddebugkey"
+488:keystore/debug_password="android"
+524:keystore/release="/__w/M11/M11/release.keystore"
+525:keystore/release_user="m11"
+526:keystore/release_password="m11localwar"
+527:keystore/debug="/root/debug.keystore"
+528:keystore/debug_user="androiddebugkey"
+529:keystore/debug_password="android"
 ===== EXPORT-DEBUG1 START =====
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 TextServer: Added interface "Dummy"
@@ -311,14 +267,6 @@ ADDING: res/mipmap/icon_foreground.png
 ADDING: res/xml/godot_provider_paths.xml
 ADDING: resources.arsc
 	export: step 1: Adding files...
-SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
-          at: GDScript::reload (res://src/game/world.gd:657)
-ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
-SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-          at: GDScript::reload (res://src/main.gd:8)
-ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2936)
 	export: step 103: Aligning APK...
 Starting signing of the APK binary using /usr/lib/android-sdk/build-tools/34.0.0/apksigner
 	export: step 104: Signing debug APK...
@@ -348,11 +296,11 @@ Orphan StringName: Node (static: 9, total: 10)
 StringName: 1 unclaimed string names at exit.
 debug_export_exit=0
 ===== EXPORT-DEBUG1 END =====
-total 61544
-drwxr-xr-x  2 root root     4096 Oct 17 02:25 .
-drwxr-xr-x 11 1001 1001     4096 Oct 17 02:25 ..
--rw-r--r--  1 root root 62510476 Oct 17 02:25 M11-debug.apk
--rw-r--r--  1 root root   497075 Oct 17 02:25 M11-debug.apk.idsig
+total 61560
+drwxr-xr-x  2 root root     4096 Oct 17 03:46 .
+drwxr-xr-x 11 1001 1001     4096 Oct 17 03:45 ..
+-rw-r--r--  1 root root 62527272 Oct 17 03:46 M11-debug.apk
+-rw-r--r--  1 root root   497075 Oct 17 03:46 M11-debug.apk.idsig
 ===== EXPORT-RELEASE START =====
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 TextServer: Added interface "Dummy"
@@ -434,7 +382,7 @@ Storing manifest into res://android/build/src/release/AndroidManifest.xml:
         tools:replace="android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <activity android:name="com.godot.game.GodotApp" tools:replace="android:screenOrientation,android:excludeFromRecents,android:resizeableActivity" tools:node="mergeOnlyAttributes" android:excludeFromRecents="false" android:screenOrientation="portrait" android:resizeableActivity="true">
+        <activity android:name="com.godot.game.GodotApp" tools:replace="android:screenOrientation,android:excludeFromRecents,android:resizeableActivity" tools:node="mergeOnlyAttributes" android:excludeFromRecents="false" android:screenOrientation="userLandscape" android:resizeableActivity="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -1139,46 +1087,51 @@ Saving project files from res://assets/fonts/noto_ar_500.ttf.import into res://a
 Saving project files from res://.godot/imported/pixel_400.ttf-f47536a61e42d06934e1bb2611540824.fontdata into res://android/build/assets/.godot/imported/pixel_400.ttf-f47536a61e42d06934e1bb2611540824.fontdata
 Saving project files from res://assets/fonts/pixel_400.ttf.import into res://android/build/assets/assets/fonts/pixel_400.ttf.import
 Saving project files from res://.godot/exported/133200997/export-18e3d43dbd851c782e1b2ab1a3a3fe17-theme_m11.res into res://android/build/assets/.godot/exported/133200997/export-18e3d43dbd851c782e1b2ab1a3a3fe17-theme_m11.res
-Saving project files from res://src/game/projectile.gdc into res://android/build/assets/src/game/projectile.gdc
+Saving project files from res://src/net/net_manager.gdc into res://android/build/assets/src/net/net_manager.gdc
+Saving project files from res://src/core/tiles.gdc into res://android/build/assets/src/core/tiles.gdc
+Saving project files from res://assets/shaders/pc_post.gdshader into res://android/build/assets/assets/shaders/pc_post.gdshader
 Saving project files from res://src/ui/menu.gdc into res://android/build/assets/src/ui/menu.gdc
-Saving project files from res://src/ui/boot_ui.gdc into res://android/build/assets/src/ui/boot_ui.gdc
-Saving project files from res://.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn into res://android/build/assets/.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn
-Saving project files from res://src/core/config.gdc into res://android/build/assets/src/core/config.gdc
-Saving project files from res://src/ai/bot_brain.gdc into res://android/build/assets/src/ai/bot_brain.gdc
-Saving project files from res://src/core/input_manager.gdc into res://android/build/assets/src/core/input_manager.gdc
-Saving project files from res://src/game/world.gdc into res://android/build/assets/src/game/world.gdc
 Saving project files from res://src/core/save_data.gdc into res://android/build/assets/src/core/save_data.gdc
 Saving project files from res://src/game/data_generated.gdc into res://android/build/assets/src/game/data_generated.gdc
-Saving project files from res://src/net/net_manager.gdc into res://android/build/assets/src/net/net_manager.gdc
-Saving project files from res://.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn into res://android/build/assets/.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn
-Saving project files from res://src/core/audio_bus.gdc into res://android/build/assets/src/core/audio_bus.gdc
-Saving project files from res://src/core/tiles.gdc into res://android/build/assets/src/core/tiles.gdc
-Saving project files from res://src/core/atlas_loader.gdc into res://android/build/assets/src/core/atlas_loader.gdc
-Saving project files from res://src/ui/hud.gdc into res://android/build/assets/src/ui/hud.gdc
-Saving project files from res://src/main.gdc into res://android/build/assets/src/main.gdc
+Saving project files from res://src/ui/touch_controls.gdc into res://android/build/assets/src/ui/touch_controls.gdc
+Saving project files from res://src/game/world.gdc into res://android/build/assets/src/game/world.gdc
 Saving project files from res://src/game/player.gdc into res://android/build/assets/src/game/player.gdc
 Saving project files from res://.godot/exported/133200997/export-57a8a85058368be1f5628ef4b8140bf5-World.scn into res://android/build/assets/.godot/exported/133200997/export-57a8a85058368be1f5628ef4b8140bf5-World.scn
+Saving project files from res://src/ui/hud.gdc into res://android/build/assets/src/ui/hud.gdc
+Saving project files from res://.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn into res://android/build/assets/.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn
+Saving project files from res://src/platform/pc_graphics.gdc into res://android/build/assets/src/platform/pc_graphics.gdc
+Saving project files from res://src/core/atlas_loader.gdc into res://android/build/assets/src/core/atlas_loader.gdc
+Saving project files from res://.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn into res://android/build/assets/.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn
+Saving project files from res://src/core/audio_bus.gdc into res://android/build/assets/src/core/audio_bus.gdc
+Saving project files from res://src/ui/boot_ui.gdc into res://android/build/assets/src/ui/boot_ui.gdc
+Saving project files from res://src/core/config.gdc into res://android/build/assets/src/core/config.gdc
+Saving project files from res://src/ai/bot_brain.gdc into res://android/build/assets/src/ai/bot_brain.gdc
+Saving project files from res://src/main.gdc into res://android/build/assets/src/main.gdc
+Saving project files from res://src/core/input_manager.gdc into res://android/build/assets/src/core/input_manager.gdc
+Saving project files from res://src/game/projectile.gdc into res://android/build/assets/src/game/projectile.gdc
 Saving project files from res://assets/audio/default_bus_layout.tres.remap into res://android/build/assets/assets/audio/default_bus_layout.tres.remap
 Saving project files from res://assets/fonts/theme_m11.tres.remap into res://android/build/assets/assets/fonts/theme_m11.tres.remap
-Saving project files from res://src/game/projectile.gd.remap into res://android/build/assets/src/game/projectile.gd.remap
+Saving project files from res://src/net/net_manager.gd.remap into res://android/build/assets/src/net/net_manager.gd.remap
+Saving project files from res://src/core/tiles.gd.remap into res://android/build/assets/src/core/tiles.gd.remap
 Saving project files from res://src/ui/menu.gd.remap into res://android/build/assets/src/ui/menu.gd.remap
-Saving project files from res://src/ui/boot_ui.gd.remap into res://android/build/assets/src/ui/boot_ui.gd.remap
-Saving project files from res://scenes/Actor.tscn.remap into res://android/build/assets/scenes/Actor.tscn.remap
-Saving project files from res://src/core/config.gd.remap into res://android/build/assets/src/core/config.gd.remap
-Saving project files from res://src/ai/bot_brain.gd.remap into res://android/build/assets/src/ai/bot_brain.gd.remap
-Saving project files from res://src/core/input_manager.gd.remap into res://android/build/assets/src/core/input_manager.gd.remap
-Saving project files from res://src/game/world.gd.remap into res://android/build/assets/src/game/world.gd.remap
 Saving project files from res://src/core/save_data.gd.remap into res://android/build/assets/src/core/save_data.gd.remap
 Saving project files from res://src/game/data_generated.gd.remap into res://android/build/assets/src/game/data_generated.gd.remap
-Saving project files from res://src/net/net_manager.gd.remap into res://android/build/assets/src/net/net_manager.gd.remap
-Saving project files from res://scenes/Main.tscn.remap into res://android/build/assets/scenes/Main.tscn.remap
-Saving project files from res://src/core/audio_bus.gd.remap into res://android/build/assets/src/core/audio_bus.gd.remap
-Saving project files from res://src/core/tiles.gd.remap into res://android/build/assets/src/core/tiles.gd.remap
-Saving project files from res://src/core/atlas_loader.gd.remap into res://android/build/assets/src/core/atlas_loader.gd.remap
-Saving project files from res://src/ui/hud.gd.remap into res://android/build/assets/src/ui/hud.gd.remap
-Saving project files from res://src/main.gd.remap into res://android/build/assets/src/main.gd.remap
+Saving project files from res://src/ui/touch_controls.gd.remap into res://android/build/assets/src/ui/touch_controls.gd.remap
+Saving project files from res://src/game/world.gd.remap into res://android/build/assets/src/game/world.gd.remap
 Saving project files from res://src/game/player.gd.remap into res://android/build/assets/src/game/player.gd.remap
 Saving project files from res://scenes/World.tscn.remap into res://android/build/assets/scenes/World.tscn.remap
+Saving project files from res://src/ui/hud.gd.remap into res://android/build/assets/src/ui/hud.gd.remap
+Saving project files from res://scenes/Main.tscn.remap into res://android/build/assets/scenes/Main.tscn.remap
+Saving project files from res://src/platform/pc_graphics.gd.remap into res://android/build/assets/src/platform/pc_graphics.gd.remap
+Saving project files from res://src/core/atlas_loader.gd.remap into res://android/build/assets/src/core/atlas_loader.gd.remap
+Saving project files from res://scenes/Actor.tscn.remap into res://android/build/assets/scenes/Actor.tscn.remap
+Saving project files from res://src/core/audio_bus.gd.remap into res://android/build/assets/src/core/audio_bus.gd.remap
+Saving project files from res://src/ui/boot_ui.gd.remap into res://android/build/assets/src/ui/boot_ui.gd.remap
+Saving project files from res://src/core/config.gd.remap into res://android/build/assets/src/core/config.gd.remap
+Saving project files from res://src/ai/bot_brain.gd.remap into res://android/build/assets/src/ai/bot_brain.gd.remap
+Saving project files from res://src/main.gd.remap into res://android/build/assets/src/main.gd.remap
+Saving project files from res://src/core/input_manager.gd.remap into res://android/build/assets/src/core/input_manager.gd.remap
+Saving project files from res://src/game/projectile.gd.remap into res://android/build/assets/src/game/projectile.gd.remap
 Saving project files from res://.godot/global_script_class_cache.cfg into res://android/build/assets/.godot/global_script_class_cache.cfg
 Saving project files from res://assets/atlases/app_icon.png into res://android/build/assets/assets/atlases/app_icon.png
 Saving project files from res://assets/atlases/app_loading.png into res://android/build/assets/assets/atlases/app_loading.png
@@ -1226,42 +1179,42 @@ The current default is 'false'.
 > Task :parseReleaseLocalResources
 > Task :processReleaseMainManifest
 > Task :processReleaseManifest
+> Task :processReleaseManifestForPackage
 > Task :javaPreCompileRelease
 > Task :extractProguardFiles
 > Task :mergeReleaseJniLibFolders
-> Task :checkReleaseDuplicateClasses
-> Task :processReleaseManifestForPackage
-> Task :mergeReleaseArtProfile
-> Task :mergeReleaseNativeLibs
-> Task :mergeReleaseShaders
-> Task :compileReleaseShaders NO-SOURCE
-> Task :generateReleaseAssets UP-TO-DATE
-> Task :mergeReleaseAssets
 > Task :processReleaseResources
+> Task :compileReleaseKotlin NO-SOURCE
+> Task :mergeReleaseNativeLibs
+> Task :compileReleaseJavaWithJavac
+> Task :generateReleaseLintVitalReportModel
+> Task :checkReleaseDuplicateClasses
 
 > Task :stripReleaseDebugSymbols
 Unable to strip the following libraries, packaging them as they are: libc++_shared.so, libgodot_android.so.
 
-> Task :compileReleaseKotlin NO-SOURCE
-> Task :compressReleaseAssets
-> Task :desugarReleaseFileDependencies
-> Task :compileReleaseJavaWithJavac
-> Task :generateReleaseLintVitalReportModel
-> Task :extractReleaseNativeSymbolTables
 > Task :dexBuilderRelease
+> Task :extractReleaseNativeSymbolTables
 > Task :mergeReleaseNativeDebugMetadata NO-SOURCE
-> Task :lintVitalAnalyzeRelease
-> Task :lintVitalReportRelease
-> Task :lintVitalRelease
-> Task :mergeReleaseGlobalSynthetics
+> Task :mergeReleaseArtProfile
+> Task :mergeReleaseShaders
+> Task :compileReleaseShaders NO-SOURCE
+> Task :generateReleaseAssets UP-TO-DATE
+> Task :mergeReleaseAssets
 > Task :processReleaseJavaRes
+> Task :compressReleaseAssets
+> Task :optimizeReleaseResources
 > Task :collectReleaseDependencies
 > Task :sdkReleaseDependencyData
 > Task :validateSigningRelease
+> Task :mergeReleaseJavaResource
 > Task :writeReleaseAppMetadata
 > Task :writeReleaseSigningConfigVersions
-> Task :optimizeReleaseResources
-> Task :mergeReleaseJavaResource
+> Task :lintVitalAnalyzeRelease
+> Task :lintVitalReportRelease
+> Task :lintVitalRelease
+> Task :desugarReleaseFileDependencies
+> Task :mergeReleaseGlobalSynthetics
 > Task :mergeExtDexRelease
 > Task :mergeDexRelease
 > Task :compileReleaseArtProfile
@@ -1269,7 +1222,7 @@ Unable to strip the following libraries, packaging them as they are: libc++_shar
 > Task :createReleaseApkListingFileRedirect
 > Task :assembleRelease
 
-BUILD SUCCESSFUL in 1m 5s
+BUILD SUCCESSFUL in 1m 13s
 48 actionable tasks: 46 executed, 2 up-to-date
 
 Copying Android binary using gradle command: 
@@ -1282,7 +1235,7 @@ The current default is 'false'.
 
 > Task :copyAndRenameReleaseApk
 
-BUILD SUCCESSFUL in 824ms
+BUILD SUCCESSFUL in 961ms
 1 actionable task: 1 executed
 
 Successfully completed Android gradle build.
@@ -1375,7 +1328,7 @@ Storing manifest into res://android/build/src/release/AndroidManifest.xml:
         tools:replace="android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <activity android:name="com.godot.game.GodotApp" tools:replace="android:screenOrientation,android:excludeFromRecents,android:resizeableActivity" tools:node="mergeOnlyAttributes" android:excludeFromRecents="false" android:screenOrientation="portrait" android:resizeableActivity="true">
+        <activity android:name="com.godot.game.GodotApp" tools:replace="android:screenOrientation,android:excludeFromRecents,android:resizeableActivity" tools:node="mergeOnlyAttributes" android:excludeFromRecents="false" android:screenOrientation="userLandscape" android:resizeableActivity="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -2080,46 +2033,51 @@ Saving project files from res://assets/fonts/noto_ar_500.ttf.import into res://a
 Saving project files from res://.godot/imported/pixel_400.ttf-f47536a61e42d06934e1bb2611540824.fontdata into res://android/build/assetPacks/installTime/src/main/assets/.godot/imported/pixel_400.ttf-f47536a61e42d06934e1bb2611540824.fontdata
 Saving project files from res://assets/fonts/pixel_400.ttf.import into res://android/build/assetPacks/installTime/src/main/assets/assets/fonts/pixel_400.ttf.import
 Saving project files from res://.godot/exported/133200997/export-18e3d43dbd851c782e1b2ab1a3a3fe17-theme_m11.res into res://android/build/assetPacks/installTime/src/main/assets/.godot/exported/133200997/export-18e3d43dbd851c782e1b2ab1a3a3fe17-theme_m11.res
-Saving project files from res://src/game/projectile.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/game/projectile.gdc
+Saving project files from res://src/net/net_manager.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/net/net_manager.gdc
+Saving project files from res://src/core/tiles.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/tiles.gdc
+Saving project files from res://assets/shaders/pc_post.gdshader into res://android/build/assetPacks/installTime/src/main/assets/assets/shaders/pc_post.gdshader
 Saving project files from res://src/ui/menu.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ui/menu.gdc
-Saving project files from res://src/ui/boot_ui.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ui/boot_ui.gdc
-Saving project files from res://.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn into res://android/build/assetPacks/installTime/src/main/assets/.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn
-Saving project files from res://src/core/config.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/config.gdc
-Saving project files from res://src/ai/bot_brain.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ai/bot_brain.gdc
-Saving project files from res://src/core/input_manager.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/input_manager.gdc
-Saving project files from res://src/game/world.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/game/world.gdc
 Saving project files from res://src/core/save_data.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/save_data.gdc
 Saving project files from res://src/game/data_generated.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/game/data_generated.gdc
-Saving project files from res://src/net/net_manager.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/net/net_manager.gdc
-Saving project files from res://.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn into res://android/build/assetPacks/installTime/src/main/assets/.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn
-Saving project files from res://src/core/audio_bus.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/audio_bus.gdc
-Saving project files from res://src/core/tiles.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/tiles.gdc
-Saving project files from res://src/core/atlas_loader.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/atlas_loader.gdc
-Saving project files from res://src/ui/hud.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ui/hud.gdc
-Saving project files from res://src/main.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/main.gdc
+Saving project files from res://src/ui/touch_controls.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ui/touch_controls.gdc
+Saving project files from res://src/game/world.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/game/world.gdc
 Saving project files from res://src/game/player.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/game/player.gdc
 Saving project files from res://.godot/exported/133200997/export-57a8a85058368be1f5628ef4b8140bf5-World.scn into res://android/build/assetPacks/installTime/src/main/assets/.godot/exported/133200997/export-57a8a85058368be1f5628ef4b8140bf5-World.scn
+Saving project files from res://src/ui/hud.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ui/hud.gdc
+Saving project files from res://.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn into res://android/build/assetPacks/installTime/src/main/assets/.godot/exported/133200997/export-4a24720ee5e787dbe30abc634fa3679d-Main.scn
+Saving project files from res://src/platform/pc_graphics.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/platform/pc_graphics.gdc
+Saving project files from res://src/core/atlas_loader.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/atlas_loader.gdc
+Saving project files from res://.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn into res://android/build/assetPacks/installTime/src/main/assets/.godot/exported/133200997/export-57021df316d27bd07d3cf2d8e12f092b-Actor.scn
+Saving project files from res://src/core/audio_bus.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/audio_bus.gdc
+Saving project files from res://src/ui/boot_ui.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ui/boot_ui.gdc
+Saving project files from res://src/core/config.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/config.gdc
+Saving project files from res://src/ai/bot_brain.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/ai/bot_brain.gdc
+Saving project files from res://src/main.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/main.gdc
+Saving project files from res://src/core/input_manager.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/core/input_manager.gdc
+Saving project files from res://src/game/projectile.gdc into res://android/build/assetPacks/installTime/src/main/assets/src/game/projectile.gdc
 Saving project files from res://assets/audio/default_bus_layout.tres.remap into res://android/build/assetPacks/installTime/src/main/assets/assets/audio/default_bus_layout.tres.remap
 Saving project files from res://assets/fonts/theme_m11.tres.remap into res://android/build/assetPacks/installTime/src/main/assets/assets/fonts/theme_m11.tres.remap
-Saving project files from res://src/game/projectile.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/game/projectile.gd.remap
+Saving project files from res://src/net/net_manager.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/net/net_manager.gd.remap
+Saving project files from res://src/core/tiles.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/tiles.gd.remap
 Saving project files from res://src/ui/menu.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ui/menu.gd.remap
-Saving project files from res://src/ui/boot_ui.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ui/boot_ui.gd.remap
-Saving project files from res://scenes/Actor.tscn.remap into res://android/build/assetPacks/installTime/src/main/assets/scenes/Actor.tscn.remap
-Saving project files from res://src/core/config.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/config.gd.remap
-Saving project files from res://src/ai/bot_brain.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ai/bot_brain.gd.remap
-Saving project files from res://src/core/input_manager.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/input_manager.gd.remap
-Saving project files from res://src/game/world.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/game/world.gd.remap
 Saving project files from res://src/core/save_data.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/save_data.gd.remap
 Saving project files from res://src/game/data_generated.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/game/data_generated.gd.remap
-Saving project files from res://src/net/net_manager.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/net/net_manager.gd.remap
-Saving project files from res://scenes/Main.tscn.remap into res://android/build/assetPacks/installTime/src/main/assets/scenes/Main.tscn.remap
-Saving project files from res://src/core/audio_bus.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/audio_bus.gd.remap
-Saving project files from res://src/core/tiles.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/tiles.gd.remap
-Saving project files from res://src/core/atlas_loader.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/atlas_loader.gd.remap
-Saving project files from res://src/ui/hud.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ui/hud.gd.remap
-Saving project files from res://src/main.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/main.gd.remap
+Saving project files from res://src/ui/touch_controls.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ui/touch_controls.gd.remap
+Saving project files from res://src/game/world.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/game/world.gd.remap
 Saving project files from res://src/game/player.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/game/player.gd.remap
 Saving project files from res://scenes/World.tscn.remap into res://android/build/assetPacks/installTime/src/main/assets/scenes/World.tscn.remap
+Saving project files from res://src/ui/hud.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ui/hud.gd.remap
+Saving project files from res://scenes/Main.tscn.remap into res://android/build/assetPacks/installTime/src/main/assets/scenes/Main.tscn.remap
+Saving project files from res://src/platform/pc_graphics.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/platform/pc_graphics.gd.remap
+Saving project files from res://src/core/atlas_loader.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/atlas_loader.gd.remap
+Saving project files from res://scenes/Actor.tscn.remap into res://android/build/assetPacks/installTime/src/main/assets/scenes/Actor.tscn.remap
+Saving project files from res://src/core/audio_bus.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/audio_bus.gd.remap
+Saving project files from res://src/ui/boot_ui.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ui/boot_ui.gd.remap
+Saving project files from res://src/core/config.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/config.gd.remap
+Saving project files from res://src/ai/bot_brain.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/ai/bot_brain.gd.remap
+Saving project files from res://src/main.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/main.gd.remap
+Saving project files from res://src/core/input_manager.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/core/input_manager.gd.remap
+Saving project files from res://src/game/projectile.gd.remap into res://android/build/assetPacks/installTime/src/main/assets/src/game/projectile.gd.remap
 Saving project files from res://.godot/global_script_class_cache.cfg into res://android/build/assetPacks/installTime/src/main/assets/.godot/global_script_class_cache.cfg
 Saving project files from res://assets/atlases/app_icon.png into res://android/build/assetPacks/installTime/src/main/assets/assets/atlases/app_icon.png
 Saving project files from res://assets/atlases/app_loading.png into res://android/build/assetPacks/installTime/src/main/assets/assets/atlases/app_loading.png
@@ -2152,15 +2110,15 @@ The current default is 'false'.
 > Task :processReleaseMainManifest
 > Task :processReleaseManifest
 > Task :processApplicationManifestReleaseForBundle
-> Task :packageReleaseResources
 > Task :checkReleaseAarMetadata
-> Task :parseReleaseLocalResources
-> Task :checkReleaseDuplicateClasses
-> Task :buildKotlinToolingMetadata
-> Task :checkKotlinGradlePluginConfigurationErrors
-> Task :javaPreCompileRelease
+> Task :packageReleaseResources
 > Task :assetPackReleasePreBundleTask
+> Task :parseReleaseLocalResources
+> Task :buildKotlinToolingMetadata
 > Task :processReleaseManifestForPackage
+> Task :checkKotlinGradlePluginConfigurationErrors
+> Task :checkReleaseDuplicateClasses
+> Task :javaPreCompileRelease
 > Task :mergeReleaseShaders
 > Task :compileReleaseShaders NO-SOURCE
 > Task :generateReleaseAssets UP-TO-DATE
@@ -2169,16 +2127,16 @@ The current default is 'false'.
 > Task :mergeReleaseJniLibFolders
 > Task :writeReleaseAppMetadata
 > Task :mergeReleaseArtProfile
-> Task :collectReleaseDependencies
-> Task :configureReleaseDependencies
 > Task :processReleaseResources
-> Task :parseReleaseIntegrityConfig
+> Task :collectReleaseDependencies
 > Task :compileReleaseKotlin NO-SOURCE
 > Task :bundleReleaseResources
 > Task :mergeReleaseNativeLibs
 > Task :compileReleaseJavaWithJavac
 > Task :dexBuilderRelease
 > Task :processReleaseJavaRes
+> Task :configureReleaseDependencies
+> Task :parseReleaseIntegrityConfig
 > Task :validateSigningRelease
 > Task :desugarReleaseFileDependencies
 > Task :mergeReleaseJavaResource
@@ -2198,7 +2156,7 @@ Unable to strip the following libraries, packaging them as they are: libc++_shar
 > Task :createReleaseBundleListingFileRedirect
 > Task :bundleRelease
 
-BUILD SUCCESSFUL in 14s
+BUILD SUCCESSFUL in 17s
 50 actionable tasks: 49 executed, 1 up-to-date
 
 Copying Android binary using gradle command: 
@@ -2211,7 +2169,7 @@ The current default is 'false'.
 
 > Task :copyAndRenameReleaseAab
 
-BUILD SUCCESSFUL in 462ms
+BUILD SUCCESSFUL in 777ms
 1 actionable task: 1 executed
 
 Successfully completed Android gradle build.
@@ -2223,27 +2181,34 @@ XR: Removed interface "OpenXR"
 Orphan StringName: Node (static: 6, total: 7)
 StringName: 1 unclaimed string names at exit.
 release_aab_exit=0
-total 269032
-drwxr-xr-x  2 root root      4096 Oct 17 02:26 .
-drwxr-xr-x 11 1001 1001      4096 Oct 17 02:25 ..
--rw-r--r--  1 root root  62510476 Oct 17 02:25 M11-debug.apk
--rw-r--r--  1 root root    497075 Oct 17 02:25 M11-debug.apk.idsig
--rw-r--r--  1 root root  59830137 Oct 17 02:26 M11-release.aab
--rw-r--r--  1 root root 152634515 Oct 17 02:26 M11-release.apk
-✔ build/M11-debug.apk — 60M
-✔ build/M11-release.apk — 146M
-✔ build/M11-release.aab — 58M
---- فحص بسيط لـ build/M11-debug.apk (بلا بايثون) ---
-  6933952  2026-10-17 02:25   lib/arm64-v8a/libc++_shared.so
- 65494072  2026-10-17 02:25   lib/arm64-v8a/libgodot_android.so
-  4359916  2026-10-17 02:25   lib/armeabi-v7a/libc++_shared.so
- 71512764  2026-10-17 02:25   lib/armeabi-v7a/libgodot_android.so
-    83708  2026-10-17 02:25   assets/.godot/imported/bg_parallax_coast.png-c06c6ae647d883ed184a4088b64ae150.ctex
-0
---- فحص بسيط لـ build/M11-release.apk (بلا بايثون) ---
-     1179  1981-01-01 01:01   assets/dexopt/baseline.prof
-      147  1981-01-01 01:01   assets/dexopt/baseline.profm
-  6933952  1981-01-01 01:01   lib/arm64-v8a/libc++_shared.so
- 60050568  1981-01-01 01:01   lib/arm64-v8a/libgodot_android.so
-  4359916  1981-01-01 01:01   lib/armeabi-v7a/libc++_shared.so
-0
+total 269084
+drwxr-xr-x  2 root root      4096 Oct 17 03:47 .
+drwxr-xr-x 11 1001 1001      4096 Oct 17 03:45 ..
+-rw-r--r--  1 root root  62527272 Oct 17 03:46 M11-debug.apk
+-rw-r--r--  1 root root    497075 Oct 17 03:46 M11-debug.apk.idsig
+-rw-r--r--  1 root root  59848423 Oct 17 03:47 M11-release.aab
+-rw-r--r--  1 root root 152652219 Oct 17 03:47 M11-release.apk
+════ build/M11-debug.apk — 60M ════
+package: com.m11.localwar
+uses-permission: name='android.permission.NEARBY_WIFI_DEVICES'
+أذونات ممنوعة: 0
+Verifies
+Verified using v1 scheme (JAR signing): true
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+2
+ملفات خام داخل الحزمة: 0
+════ build/M11-release.apk — 146M ════
+package: com.m11.localwar
+uses-permission: name='android.permission.NEARBY_WIFI_DEVICES'
+أذونات ممنوعة: 0
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+2
+ملفات خام داخل الحزمة: 0
