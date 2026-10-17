@@ -40,10 +40,16 @@
 6. قيود Godot على المسار بلا Gradle (`min_sdk`/`target_sdk`/ضغط المكتبات يجب أن تكون
    فارغة/مطفأة) ← المولّد يضبطها حسب المسار.
 
-**ما تبقّى:** رسالة Godot «Cannot export project ... due to configuration errors»
-تظهر بدون أي سطر سبب، وهذا يحدث في Godot 4.3 عندما تكون المسارات (Java/Android SDK)
-غير مهيأة في إعدادات المحرّر داخل الحاوية. الإصلاح الجاري: كتابة
-`editor_settings-4.3.tres` في `$HOME` قبل التصدير + تثبيت `build-tools;34.0.0`.
+**السبب الجذري (اكتُشف أخيرًا):** رسالة Godot «Cannot export project ... due to
+configuration errors» كانت تظهر **بلا أي نص سبب** لأن المحرّك نفسه يضبط
+`valid = false` بدون إضافة نص خطأ في هذا الموضع:
+
+```cpp
+if (!ResourceImporterTextureSettings::should_import_etc2_astc()) { valid = false; }
+```
+
+**الإصلاح:** `textures/vram_compression/import_etc2_astc=true` في `project/project.godot`.
+التفاصيل الكاملة في `DECISIONS.md` القرار ٢٦.
 
 **قرار عملي:** لا نُعلّق الإصدار على هذا المسار — النسخة المغلّفة تعطي نفس اللعبة
 بنفس المحتوى وقابلة للتنزيل الآن. التفاصيل في `DECISIONS.md` القرار ٢٤.

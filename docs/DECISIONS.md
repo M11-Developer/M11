@@ -431,3 +431,38 @@ GitHub Actions، ومعه مساران:
 تُقرأ من واجهة GitHub، ومعه نشر آخر ٣٠ كيلوبايت من السجل في Issue آلي، وحفظ السجل
 كامِلًا كأرتيفاكت. بهذه القناة اكتشفنا أخطاء حقيقية في الشيفرة (`@rpc` بوسيط خطأ،
 وثابت `SAMPLES_DISABLED` غير الموجود في Godot 4.3، ونقص مفاتيح في `export_presets.cfg`).
+
+## القرار ٢٦ — سبب فشل تصدير أندرويد كان سطرًا واحدًا في إعدادات المشروع
+
+بعد محاولات كثيرة، اتضح أن رسالة Godot:
+
+```
+ERROR: Cannot export project with preset "Android APK" due to configuration errors:
+```
+
+(بلا أي سبب مكتوب بعدها) سببها سطر في مصدر المحرّك نفسه
+(`platform/android/export/export_plugin.cpp`):
+
+```cpp
+if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+    valid = false;      // ← لا يُضاف أي نص للخطأ هنا!
+}
+```
+
+أي أن التصدير يفشل بصمت إن لم يكن المشروع مفعّلًا فيه استيراد ETC2/ASTC
+(وهو مطلوب لأن أندرويد يستخدم ضغط ETC2 وأن المشروع يعمل بـ GL Compatibility).
+
+**الحل:** سطر واحد في `project/project.godot`:
+
+```ini
+[rendering]
+textures/vram_compression/import_etc2_astc=true
+```
+
+**الدرس المكتسب:** عندما يعطي Godot رسالة خطأ فارغة، ابحث في مصدر المحرّك عن
+الموضع الذي يضبط `valid = false` بدون `err +=`. هذا أسرع بكثير من التخمين،
+وقد وفّر علينا ساعات لو بدأنا منه.
+
+**ملاحظة عن الرسم البكسلي:** تفعيل ETC2 لا يغيّر شكل الصور — يغيّر طريقة ضغطها
+داخل الحزمة فقط. إعدادات «بلا تنعيم» (`default_texture_filter=0`) وسناب البكسل
+تبقى كما هي، فيبقى الشكل البكسلي حادًّا كما هو مطلوب في القسم ٣ من المواصفة.
