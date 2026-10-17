@@ -132,22 +132,25 @@ jobs:
             build/linux/**
           if-no-files-found: warn
 
-      - name: نشر نسخة الكمبيوتر في Release
+      - name: نشر نسخة الكمبيوتر في نفس Release الإصدار
         if: startsWith(github.ref, 'refs/tags/pc-v')
         run: |
           set +e
-          # نُرفق مع الوسم نفسه، وإن لم يوجد Release نُنشئه (مع إعادة محاولة لتفادي تسابق)
-          for i in 1 2 3; do
-            if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then break; fi
-            gh release create "$GITHUB_REF_NAME" --title "ميكا ١١ — نسخة الكمبيوتر" \
-              --notes "نسخة الكمبيوتر تلعب مع الجوال على نفس الواي فاي." && break
-            sleep 5
+          # وسم الكمبيوتر pc-v2.0.0 ← يُرفق ملفاته في Release الإصدار v2.0.0
+          REL="${GITHUB_REF_NAME#pc-}"
+          echo "release=$REL"
+          for i in 1 2 3 4 5; do
+            if gh release view "$REL" >/dev/null 2>&1; then break; fi
+            gh release create "$REL" --title "ميكا ١١ — الإصدار النهائي" \
+              --notes "نسخة أندرويد + نسخة كمبيوتر. كلها تعمل بلا إنترنت عبر الواي فاي المحلي." || true
+            sleep 6
           done
           shopt -s nullglob
           files=(build/M11-Windows.zip build/M11-Linux.zip)
           if [ ${#files[@]} -gt 0 ]; then
-            gh release upload "$GITHUB_REF_NAME" "${files[@]}" --clobber
+            gh release upload "$REL" "${files[@]}" --clobber || echo "upload_failed"
           fi
+          gh release view "$REL" --json assets --jq '.assets[].name' || true
           true
 
       - name: سجل البناء عند الفشل

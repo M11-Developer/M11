@@ -12,7 +12,7 @@ on:
         default: "yes"
   push:
     tags:
-      - "v1.*"    # نسخة Godot الأصلية (نسخة الويب لها وسم web-*)
+      - "v*"      # كل وسوم الإصدارات (نسخة الويب لها وسم web-*)
 
 permissions:
   contents: write   # لنشر الـRelease ورفع الأرتيفاكت
