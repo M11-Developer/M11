@@ -1,4 +1,10 @@
 === أسطر الأخطاء (مع سياق) ===
+  97:SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+  99:SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+  101:SCRIPT ERROR: Parse Error: Could not resolve class "GameWorld", because of a parser error.
+  103:ERROR: Failed to load script "res://src/ui/menu.gd" with error "Parse error".
+  105:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+  107:ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
   124:SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
   126:ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
   128:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
@@ -7,16 +13,10 @@
   138:ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
   140:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
   142:ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-  231:ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
-  234:ERROR: Project export for preset "Android APK" failed.
-  364:SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
-  366:ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
-  368:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-  370:ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-  442:ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
-  445:ERROR: Project export for preset "Android APK" failed.
-  490:ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
-  493:ERROR: Project export for preset "Android AAB" failed.
+  314:SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
+  316:ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
+  318:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+  320:ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
 === أول محاولة تصدير (من سطر 195) ===
   430:keystore/debug_user="androiddebugkey"
   431:keystore/debug_password="android"
@@ -38,27 +38,24 @@
   Loaded system CA certificates
   EditorSettings: Save OK!
 === Gradle ===
-  gradlew.bat
-  settings.gradle
+  Copying Android binary using gradle command: 
+  /__w/M11/M11/project/android/build/gradlew copyAndRenameReleaseApk -p /__w/M11/M11/project/android/build -Pexport_path=file:/__w/M11/M11/build -Pexport_filename=M11-release.apk
+  BUILD SUCCESSFUL in 824ms
+  Successfully completed Android gradle build.
   - gradle build enabled: true
   Starting gradle build...
-  ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
-  ::warning::فشل مسار Gradle — نعيد بقالب التصدير المباشر (بلا Gradle)
-  - gradle build enabled: false
-  ADDING: res/layout/downloading_expansion.xml
-  - gradle build enabled: true
-  Starting gradle build...
-  ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
-  - gradle build enabled: true
-  Starting gradle build...
-  ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
+  Build Android project using gradle command: 
+  /__w/M11/M11/project/android/build/gradlew validateJavaVersion clean bundleRelease -p /__w/M11/M11/project/android/build -Pexport_package_name=com.m11.localwar -Pexport_version_code=1 -Pexport_version_name=1.0.0 -Pexport_version_min_sdk=26 -Pexport_version_target_sdk=35 -Pexport_enabled_abis=armeabi-v7a|arm64-v8a -Pplugins_local_binaries= -Pplugins_remote_binaries= -Pplugins_maven_repos= -Pperform_zipalign=true -Pperform_signing=true -Pcompress_native_libraries=true -Pgodot_editor_version=4.3.stable
+  > Task :checkKotlinGradlePluginConfigurationErrors
+  BUILD SUCCESSFUL in 14s
+  Copying Android binary using gradle command: 
+  /__w/M11/M11/project/android/build/gradlew copyAndRenameReleaseAab -p /__w/M11/M11/project/android/build -Pexport_path=file:/__w/M11/M11/build -Pexport_filename=M11-release.aab
+  BUILD SUCCESSFUL in 462ms
+  Successfully completed Android gradle build.
 === النتائج ===
   debug_export_exit=0
-  debug_export_exit2=0
   release_apk_exit=0
   release_aab_exit=0
-  ✘ مفقود: build/M11-release.apk
-  ✘ مفقود: build/M11-release.aab
 === أدوات أندرويد ===
 /usr/lib/android-sdk/build-tools/33.0.2/apksigner
 /usr/lib/android-sdk/build-tools/34.0.0/apksigner
@@ -76,30 +73,30 @@ export/android/android_sdk_path = "/usr/lib/android-sdk"
 export/android/debug_keystore = "/root/debug.keystore"
 === أسطر المفتاح في الإعدادات ===
 === ذيل السجل ===
-  export: end
-  ERROR: Project export for preset "Android AAB" failed.
-     at: _fs_changed (editor/editor_node.cpp:1028)
-  EditorSettings: Save OK!
-  XR: Clearing primary interface
-  XR: Removed interface "Native mobile"
-  XR: Removed interface "OpenXR"
-  Orphan StringName: Node (static: 6, total: 7)
-  StringName: 1 unclaimed string names at exit.
   release_aab_exit=0
-  total 61544
-  drwxr-xr-x  2 root root     4096 Oct 17 02:21 .
-  drwxr-xr-x 11 1001 1001     4096 Oct 17 02:20 ..
-  -rw-r--r--  1 root root 62510476 Oct 17 02:21 M11-debug.apk
-  -rw-r--r--  1 root root   497075 Oct 17 02:21 M11-debug.apk.idsig
+  total 269032
+  drwxr-xr-x  2 root root      4096 Oct 17 02:26 .
+  drwxr-xr-x 11 1001 1001      4096 Oct 17 02:25 ..
+  -rw-r--r--  1 root root  62510476 Oct 17 02:25 M11-debug.apk
+  -rw-r--r--  1 root root    497075 Oct 17 02:25 M11-debug.apk.idsig
+  -rw-r--r--  1 root root  59830137 Oct 17 02:26 M11-release.aab
+  -rw-r--r--  1 root root 152634515 Oct 17 02:26 M11-release.apk
   ✔ build/M11-debug.apk — 60M
-  ✘ مفقود: build/M11-release.apk
-  ✘ مفقود: build/M11-release.aab
+  ✔ build/M11-release.apk — 146M
+  ✔ build/M11-release.aab — 58M
   --- فحص بسيط لـ build/M11-debug.apk (بلا بايثون) ---
-    6933952  2026-10-17 02:21   lib/arm64-v8a/libc++_shared.so
-   65494072  2026-10-17 02:21   lib/arm64-v8a/libgodot_android.so
-    4359916  2026-10-17 02:21   lib/armeabi-v7a/libc++_shared.so
-   71512764  2026-10-17 02:21   lib/armeabi-v7a/libgodot_android.so
-      83708  2026-10-17 02:21   assets/.godot/imported/bg_parallax_coast.png-c06c6ae647d883ed184a4088b64ae150.ctex
+    6933952  2026-10-17 02:25   lib/arm64-v8a/libc++_shared.so
+   65494072  2026-10-17 02:25   lib/arm64-v8a/libgodot_android.so
+    4359916  2026-10-17 02:25   lib/armeabi-v7a/libc++_shared.so
+   71512764  2026-10-17 02:25   lib/armeabi-v7a/libgodot_android.so
+      83708  2026-10-17 02:25   assets/.godot/imported/bg_parallax_coast.png-c06c6ae647d883ed184a4088b64ae150.ctex
+  0
+  --- فحص بسيط لـ build/M11-release.apk (بلا بايثون) ---
+       1179  1981-01-01 01:01   assets/dexopt/baseline.prof
+        147  1981-01-01 01:01   assets/dexopt/baseline.profm
+    6933952  1981-01-01 01:01   lib/arm64-v8a/libc++_shared.so
+   60050568  1981-01-01 01:01   lib/arm64-v8a/libgodot_android.so
+    4359916  1981-01-01 01:01   lib/armeabi-v7a/libc++_shared.so
   0
 === ملفات APK/AAB ===
 === ملفات editor_settings ===
@@ -119,7 +116,7 @@ export/android/debug_keystore = "/root/debug.keystore"
 export/android/debug_keystore_user = "androiddebugkey"
 export/android/debug_keystore_pass = "android"
 === ملخّص ===
-حجم السجل: 57061 بايت | أسطر: 516
+حجم السجل: 339644 بايت | أسطر: 2249
   [33] keystore
   [4] apksigner
   [5] build-tools
