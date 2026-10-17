@@ -32,6 +32,7 @@ var portraits: Dictionary = {}          # op_key -> Texture2D (بورتريه ا
 var result: Dictionary = {}             # نتيجة المباراة لشاشة النتائج
 var ip_edit: LineEdit = null            # إدخال عنوان IP يدويًا (PC ↔ جوال)
 var main_ref: Node = null               # العقدة الرئيسية (Main) — تُضبط من main.gd
+var _last_pointer_frame := -1           # لمنع تفعيل الزر مرتين من نفس اللمسة
 
 
 func _ready() -> void:
@@ -328,6 +329,12 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _pointer_down(pos: Vector2) -> void:
+	# أندرويد يحوّل اللمسة إلى حدث ماوس أيضًا (emulate_mouse_from_touch)
+	# فتصل الضغطة مرتين: نسمح بواحدة فقط لكل إطار.
+	var f := Engine.get_process_frames()
+	if f == _last_pointer_frame:
+		return
+	_last_pointer_frame = f
 	var rows := _rows()
 	var i := _row_at(pos, rows)
 	if i >= 0:
@@ -364,6 +371,8 @@ func _process(dt: float) -> void:
 	if ip_edit != null:
 		var on_lan := visible and screen == S_LAN
 		ip_edit.visible = on_lan
+		if not on_lan and ip_edit.has_focus():
+			ip_edit.release_focus()      # لا يحتجز لوحة المفاتيح بعد مغادرة شاشة الشبكة
 		if on_lan:
 			var vp := get_viewport().get_visible_rect().size
 			# يسار الشاشة حتى لا يزاحم قائمة الصفوف على اليمين
