@@ -97,8 +97,9 @@ jobs:
         if: success() && (startsWith(github.ref, 'refs/tags/web-') || inputs.makerelease == 'yes')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: web-v1.0
-          name: "ميكا ١١ — نسخة المعاينة المثبّتة (WebView)"
+          # الوسم الحقيقي عند البناء بوسم، وإلا نبقى على وسم نسخة الويب المستقر
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/web-') && github.ref_name || 'web-v1.0' }}
+          name: "ميكا ١١ — نسخة الويب المغلّفة (WebView) — APK إضافي"
           body: |
             ## ميكا ١١ — نسخة المعاينة المثبّتة
 
