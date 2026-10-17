@@ -106,4 +106,16 @@ menus.onPointerUp(sliderRow.rect.x + 8 + 48, sliderRow.rect.y + 10);
 if (sliderRow.item.get() === sv) fail('لمس السلايدر لا يغيّر القيمة');
 console.log(`  ✔ لمس السلايدر: ${sv} → ${sliderRow.item.get()}`);
 
+// ٥) التنقّل بالأسهم يصل إلى صف الرجوع الأخير وينفّذه
+menus.home();
+menus.push('credits');
+menus.update(1 / 60, null);
+const rows2 = menus.rowsFor(menus.current);
+const backIdx = rows2.length - 1;
+if (!rows2[backIdx] || rows2[backIdx].item.type !== 'back') fail('صف الرجوع غير موجود في نهاية القائمة');
+menus.current.index = backIdx;
+menus.key('Enter');
+if (menus.current.name !== 'main') fail('Enter على صف الرجوع لا يعمل');
+console.log('  ✔ لوحة المفاتيح: Enter على صف «رجوع» يرجع للرئيسية');
+
 console.log('✔ كل تفاعلات اللمس تعمل');

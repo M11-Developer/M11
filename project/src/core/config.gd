@@ -76,7 +76,7 @@ var joystick_mode := "floating"
 var left_handed := false
 var skin_index := 0
 var auto_fire := false
-var show_fps := true
+var show_fps := false
 
 
 func _ready() -> void:
@@ -144,7 +144,7 @@ func reset_defaults() -> void:
 	left_handed = false
 	skin_index = 0
 	auto_fire = false
-	show_fps = true
+	show_fps = false
 	save_settings()
 	apply_runtime()
 

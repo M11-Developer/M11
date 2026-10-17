@@ -139,12 +139,14 @@ export class MenuSystem {
   }
 
   moveCursor(delta) {
-    const items = this.cur.items().filter((i) => !i.hidden);
+    // نستخدم صفوف الشاشة الكاملة (تشمل صف الرجوع) حتى يعمل التنقّل بالأسهم
+    const items = this.rowsFor(this.current).map((r) => r.item);
     if (!items.length) return;
     let i = this.current.index;
     for (let k = 0; k < items.length; k++) {
       i = (i + delta + items.length) % items.length;
-      if (!items[i].disabled) break;
+      const it = items[i];
+      if (it && !it.disabled && it.type !== 'header' && !it.hidden) break;
     }
     this.current.index = i;
     this.ensureVisible();
@@ -206,8 +208,8 @@ export class MenuSystem {
 
   /** تُنادى من main عند ضغط مفتاح في القوائم */
   key(code, cmd) {
-    const items = this.cur.items();
-    const item = items[this.current.index];
+    const rows = this.rowsFor(this.current);
+    const item = rows[this.current.index] ? rows[this.current.index].item : null;
     switch (code) {
       case 'ArrowUp': case 'KeyW': this.moveCursor(-1); return true;
       case 'ArrowDown': case 'KeyS': this.moveCursor(1); return true;
@@ -302,8 +304,9 @@ export class MenuSystem {
       this.current.scroll = clamp(this.current.scroll - input.mouse.wheel * 14, 0, this.current.maxScroll || 0);
     }
     // تصحيح الفهرس إن تجاوز الحد
-    const items = this.cur.items();
-    if (this.current.index >= items.length) this.current.index = Math.max(0, items.length - 1);
+    const rowsNow = this.rowsFor(this.current);
+    if (this.current.index >= rowsNow.length) this.current.index = Math.max(0, rowsNow.length - 1);
+    if (this.current.index < 0) this.current.index = 0;
     this.mouse.pressed = false;
     if (input) {
       this.mouse.x = input.mouse.x * (W / this.game.canvas.width);

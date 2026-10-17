@@ -320,9 +320,18 @@ func back_to_menu() -> void:
 
 
 ## زر الرجوع في أندرويد: ترتيب منطقي بدل إغلاق اللعبة من أي شاشة.
+## بعض إصدارات Godot ترسل الإشعار مرّتين للضغطة الواحدة، لذا نُسقط التكرار
+## خلال ٣٠٠ مللي ثانية حتى لا يُنفَّذ الرجوع مرتين.
+var _last_back_ms := 0
+
+
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
 		return
+	var now := Time.get_ticks_msec()
+	if now - _last_back_ms < 300:
+		return
+	_last_back_ms = now
 	if state == "playing":
 		toggle_pause()
 	elif state == "paused":

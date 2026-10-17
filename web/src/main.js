@@ -97,6 +97,8 @@ class Game {
     // لوحتا المنظر المولّدتان (اختياريتان — لو غابت الصورة تعمل اللعبة بالطبقات البرمجية فقط)
     await loadBackdrops(Assets, (name) => console.warn('لوحة المنظر غير متوفرة:', name));
     this.charMeta = meta;
+    // الخطوط تُحمَّل قبل أول رسم — وإلا رسم canvas بخط احتياطي يشوّه العربية
+    await this.loadFonts();
     setProgress(0.8, 'تحميل الصوت…');
     // الصوت يحتاج تفاعل المستخدم — نجهّزه عند أول نقرة
     setProgress(0.95, 'الاستعداد…');
@@ -206,6 +208,16 @@ class Game {
     // تكبير الأزرار اللمسية تبعًا لحجم الشاشة
     this.rebuildTouchButtons();
     this.updateTouchVisibility();
+  }
+
+  /** يضمن جاهزية خطوط Cairo/Noto في canvas قبل أول إطار */
+  async loadFonts() {
+    if (!document.fonts || !document.fonts.load) return;
+    const wanted = ['400 16px Cairo', '700 16px Cairo', '500 16px "Noto Sans Arabic"'];
+    try {
+      await Promise.all(wanted.map((f) => document.fonts.load(f, 'ميكا 11 abc 0123')));
+      if (document.fonts.ready) await document.fonts.ready;
+    } catch (e) { /* لا نُفشل الإقلاع إن تعذّر تحميل خط */ }
   }
 
   /** يقرر إظهار طبقة اللمس: هاتف تلقائيًا، ويمكن فرضها في الإعدادات */
@@ -358,6 +370,13 @@ class Game {
   resume() {
     this.state = 'playing';
     this.menus.stack.length = 1;
+    // نُفرّغ أي ضغطة زر/لمسة عالقة أثناء الإيقاف حتى لا يستمر اللاعب بالتحرك وحده
+    if (this.input) {
+      for (const k of Object.keys(this.input.actions)) this.input.actions[k] = false;
+      this.input.touches.clear();
+      this.input.move.active = false;
+      this.input.aim.active = false;
+    }
   }
 
   onKill(attacker, victim, opts) {
