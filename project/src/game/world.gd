@@ -471,6 +471,9 @@ func _process(dt: float) -> void:
 		_check_match_end()
 	if zone["active"]:
 		_update_zone(dt)
+	# اللوحة الخلفية مرتبطة بالكاميرا ⇒ نعيد رسمها كل إطار (رسم واحد لكل نسخة)
+	if backdrop_tex != null:
+		queue_redraw()
 
 
 func _check_match_end() -> void:
@@ -654,7 +657,3 @@ func _draw() -> void:
 		x += dw
 
 
-func _process(_dt: float) -> void:
-	# اللوحة مرتبطة بالكاميرا ⇒ نحدّثها كل إطار (تكلفة draw واحد لكل نسخة)
-	if backdrop_tex != null:
-		queue_redraw()

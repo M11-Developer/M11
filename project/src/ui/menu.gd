@@ -30,6 +30,7 @@ var p_defeat: Texture2D = null          # لوحة الهزيمة
 var thumbs: Dictionary = {}             # map_id -> Texture2D (مصغّرة الخريطة الحقيقية)
 var portraits: Dictionary = {}          # op_key -> Texture2D (بورتريه المشغّل)
 var result: Dictionary = {}             # نتيجة المباراة لشاشة النتائج
+var ip_edit: LineEdit = null            # إدخال عنوان IP يدويًا (PC ↔ جوال)
 
 
 func _ready() -> void:
@@ -40,6 +41,16 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	font = ThemeDB.fallback_font
 	NetMgr.host_found.connect(_on_host_found)
+	# إدخال عنوان IP يدويًا — ضروري حين يمنع الراوتر البث (AP isolation)
+	# أو حين يمنع جدار حماية ويندوز حزم الاكتشاف.
+	ip_edit = LineEdit.new()
+	ip_edit.name = "ManualIP"
+	ip_edit.placeholder_text = "عنوان IP للمضيف (مثال 192.168.1.5) ثم Enter"
+	ip_edit.virtual_keyboard_enabled = true
+	ip_edit.size = Vector2(300, 34)
+	ip_edit.visible = false
+	ip_edit.text_submitted.connect(_on_manual_ip)
+	add_child(ip_edit)
 	# لوحتا المنظر المولّدتان (أصول التطبيق) — غيابهما لا يُفشل الإقلاع
 	for pair in [["key_art", "res://assets/atlases/backdrops/key_art_menu.png"],
 			["poster", "res://assets/atlases/backdrops/poster_loading.png"],
@@ -88,6 +99,16 @@ func show_results(data: Dictionary) -> void:
 	screen = S_RESULTS
 	index = 0
 	visible = true
+
+
+func _on_manual_ip(text: String) -> void:
+	var ip := text.strip_edges()
+	if ip.is_empty():
+		return
+	if NetMgr.join_host(ip, Config.NET_PORT):
+		toast("جارٍ الانضمام إلى %s …" % ip)
+	else:
+		toast("تعذّر الانضمام إلى %s — تحقّق من العنوان والشبكة" % ip)
 
 
 func _on_host_found(info: Dictionary) -> void:
@@ -270,6 +291,9 @@ func activate(i: int) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
+	# إذا كان اللاعب يكتب عنوان IP فلا نخطف منه المفاتيح
+	if ip_edit != null and ip_edit.visible and ip_edit.has_focus():
+		return
 	var rows := _rows()
 	if event.is_action_pressed("ui_down"):
 		index = (index + 1) % maxi(1, rows.size())
@@ -299,6 +323,13 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(dt: float) -> void:
 	t += dt
 	message_life = maxf(0.0, message_life - dt)
+	# حقل عنوان IP يظهر في شاشة الشبكة فقط ويجلس أسفل الشاشة
+	if ip_edit != null:
+		var on_lan := visible and screen == S_LAN
+		ip_edit.visible = on_lan
+		if on_lan:
+			var vp := get_viewport().get_visible_rect().size
+			ip_edit.position = Vector2(vp.x - 360, vp.y - 70)
 	queue_redraw()
 
 

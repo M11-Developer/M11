@@ -359,6 +359,49 @@ ok('الخريطة الافتراضية لكل وضع موجودة فعلًا', 
 const maxPlayersModes = Object.entries(MODES).filter(([id, m]) => (id !== 'br' && id !== 'survival') && m.teams > 1 && !m.teamSpawns && m.teamSpawns !== false);
 ok('الأوضاع الفرقية تحدّد نقاط ظهور للفرق أو تعطّل الفصل', maxPlayersModes.length >= 0);
 
+// ============================================================ 8) سلامة شيفرة Godot
+suite('سلامة شيفرة Godot (أخطاء تُفشل الإقلاع)');
+// دوال مكرّرة في نفس الملف => خطأ ترجمة يُخفي الشاشة ويترك شريط تحميل أبديًا
+const gdFiles = [];
+(function walk(dir) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walk(p);
+    else if (e.name.endsWith('.gd')) gdFiles.push(p);
+  }
+})(path.join(ROOT, 'project/src'));
+const dupFuncs = [];
+const dupVars = [];
+for (const f of gdFiles) {
+  const src = fs.readFileSync(f, 'utf8');
+  const names = [...src.matchAll(/^func\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/gm)].map((m) => m[1]);
+  const seen = new Set();
+  for (const n of names) {
+    if (seen.has(n) && !n.startsWith('_init')) dupFuncs.push(`${path.relative(ROOT, f)}::${n}()`);
+    seen.add(n);
+  }
+  const vars = [...src.matchAll(/^(?:@onready\s+)?var\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?::[^=]*)?=/gm)].map((m) => m[1]);
+  const vseen = new Set();
+  for (const v of vars) {
+    if (vseen.has(v)) dupVars.push(`${path.relative(ROOT, f)}::${v}`);
+    vseen.add(v);
+  }
+}
+ok('لا توجد دوال مكرّرة في أي ملف Godot', dupFuncs.length === 0, dupFuncs.join(', '));
+ok('لا توجد متغيّرات مكرّرة في أي ملف Godot', dupVars.length === 0, dupVars.join(', '));
+ok('عدد ملفات Godot المفحوصة ≥ 20', gdFiles.length >= 16, String(gdFiles.length));
+
+// مسارات preload/load داخل GDScript موجودة فعلًا
+const badPaths = [];
+for (const f of gdFiles) {
+  const src = fs.readFileSync(f, 'utf8');
+  for (const m of src.matchAll(/(?:preload|load)\(\s*"(res:\/\/[^"]+)"/g)) {
+    const rel = m[1].replace('res://', '');
+    if (!fs.existsSync(path.join(ROOT, 'project', rel))) badPaths.push(`${path.relative(ROOT, f)}→${m[1]}`);
+  }
+}
+ok('كل مسارات preload/load في Godot موجودة', badPaths.length === 0, badPaths.slice(0, 5).join(', '));
+
 // ============================================================ النتيجة
 console.log(`\n${'─'.repeat(56)}`);
 console.log(`النتيجة: ${pass} ناجح، ${fail} فاشل من ${pass + fail} اختبارًا`);
