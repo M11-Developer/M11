@@ -1,13 +1,42 @@
 run_exit=0
-script_errors=0
+script_errors=9
 menu_reached=1
+selftest_ok=0
 --- أول ٤٠ سطرًا ---
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 
 [M11] الإقلاع اكتمل — القائمة جاهزة
 [M11] تحسينات الكمبيوتر مفعّلة (Fullscreen + Post-FX)
+[M11-SELFTEST] بدء الاختبار
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+          at: GameWorld.pick_spawn_point (res://src/game/world.gd:543)
+SCRIPT ERROR: Invalid access to property or key 'map_id' on a base object of type 'Node2D (GameWorld)'.
+          at: _run_selftest (res://src/main.gd:153)
 WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
      at: cleanup (core/object/object.cpp:2284)
 ERROR: 2 resources still in use at exit (run with --verbose for details).
    at: clear (core/io/resource.cpp:604)
 --- كل أخطاء السكربت ---
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid cast: could not convert value to 'Vector2'.
+SCRIPT ERROR: Invalid access to property or key 'map_id' on a base object of type 'Node2D (GameWorld)'.
