@@ -240,9 +240,26 @@ jobs:
           DEBUG_KS="/root/debug.keystore"
           [ -f "$DEBUG_KS" ] || DEBUG_KS="$(find / -maxdepth 4 -name 'debug.keystore' 2>/dev/null | head -1)"
           REL_KS="$GITHUB_WORKSPACE/release.keystore"
-          [ -f "$REL_KS" ] || REL_KS="$DEBUG_KS"
-          [ -n "$REL_KS" ] && bash tools/patch_presets.sh "$REL_KS" m11 m11localwar \
-            project/export_presets.cfg "$DEBUG_KS" androiddebugkey android 2>&1 | tee -a "$BUILD_LOG"
+          KS_USER=m11; KS_PASS=m11localwar
+          # نتحقق أن المفتاح يُفتح فعلًا بكلمة السر (وإلا فشل التوقيع لاحقًا برسالة غامضة)
+          if [ -f "$REL_KS" ]; then
+            if ! "$KEYTOOL" -list -keystore "$REL_KS" -storepass "$KS_PASS" >/dev/null 2>&1; then
+              echo "::warning::مفتاح الإصدار لا يُفتح — نعيد إنشاءه"
+              rm -f "$REL_KS"
+              "$KEYTOOL" -genkeypair -v -keystore "$REL_KS" -alias m11 -keyalg RSA -keysize 2048 \
+                -validity 10000 -storepass "$KS_PASS" -keypass "$KS_PASS" \
+                -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG" 2>&1 | tee -a "$BUILD_LOG"
+            fi
+          fi
+          if [ -f "$REL_KS" ] && "$KEYTOOL" -list -keystore "$REL_KS" -storepass "$KS_PASS" 2>/dev/null | grep -q m11; then
+            echo "✔ مفتاح الإصدار سليم ويحتوي على الاسم m11" | tee -a "$BUILD_LOG"
+            bash tools/patch_presets.sh "$REL_KS" "$KS_USER" "$KS_PASS" \
+              project/export_presets.cfg "$DEBUG_KS" androiddebugkey android 2>&1 | tee -a "$BUILD_LOG"
+          else
+            echo "::warning::لا مفتاح إصدار صالح — نستخدم مفتاح التصحيح للتوقيع" | tee -a "$BUILD_LOG"
+            bash tools/patch_presets.sh "$DEBUG_KS" androiddebugkey android \
+              project/export_presets.cfg "$DEBUG_KS" androiddebugkey android 2>&1 | tee -a "$BUILD_LOG"
+          fi
           echo "--- أسطر المفتاح في الإعدادات ---" | tee -a "$BUILD_LOG"
           grep -n "keystore/" project/export_presets.cfg | tee -a "$BUILD_LOG"
 
