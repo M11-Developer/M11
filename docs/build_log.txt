@@ -1,5 +1,5 @@
 == معلومات البيئة ==
-ref=v1.4.3 run=38993776277
+ref=v1.4.4 run=38994172466
 godot=4.3.stable.official.77dcf97d8
 python3=MISSING
 curl=MISSING
@@ -129,6 +129,7 @@ SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://
           at: GDScript::reload (res://src/main.gd:8)
 ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
    at: load (modules/gdscript/gdscript.cpp:2936)
+cannot connect to daemon at tcp:5037: Connection refused
 import_exit=0
 imported=1022 fonts=2 classes=1
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
@@ -163,6 +164,8 @@ settings.gradle
 Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10,000 days
 	for: CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG
 [Storing /__w/M11/M11/release.keystore]
+=== فحص التوقيع بنفس أداة Godot: /usr/lib/jvm/java-17-openjdk-amd64/bin/keytool ===
+exit=0 | أول سطرين: m11, Oct 17, 2026, PrivateKeyEntry,  Certificate fingerprint (SHA-256): 00:DB:DF:64:53:99:ED:B4:10:9E:C9:AA:AC:59:60:72:F5:17:5A:0D:60:64:0E:A2:51:48:55:B3:76:E5:DD:EF 
 ✔ مفتاح الإصدار سليم ويحتوي على الاسم m11
 ✔ بيانات المفتاح مُدرجة في project/export_presets.cfg
 211:keystore/release="/__w/M11/M11/release.keystore"
@@ -286,8 +289,8 @@ StringName: 1 unclaimed string names at exit.
 debug_export_exit2=0
 ===== EXPORT-DEBUG2 END =====
 total 8
-drwxr-xr-x  2 root root 4096 Oct 17 02:11 .
-drwxr-xr-x 11 1001 1001 4096 Oct 17 02:11 ..
+drwxr-xr-x  2 root root 4096 Oct 17 02:17 .
+drwxr-xr-x 11 1001 1001 4096 Oct 17 02:17 ..
 ===== EXPORT-RELEASE START =====
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 TextServer: Added interface "Dummy"
@@ -311,6 +314,7 @@ Release keystore incorrectly configured in the export preset.
    at: _fs_changed (editor/editor_node.cpp:1012)
 ERROR: Project export for preset "Android APK" failed.
    at: _fs_changed (editor/editor_node.cpp:1028)
+cannot connect to daemon at tcp:5037: Connection refused
 EditorSettings: Save OK!
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
@@ -341,6 +345,7 @@ Release keystore incorrectly configured in the export preset.
    at: _fs_changed (editor/editor_node.cpp:1012)
 ERROR: Project export for preset "Android AAB" failed.
    at: _fs_changed (editor/editor_node.cpp:1028)
+cannot connect to daemon at tcp:5037: Connection refused
 EditorSettings: Save OK!
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
@@ -349,8 +354,8 @@ Orphan StringName: Node (static: 6, total: 7)
 StringName: 1 unclaimed string names at exit.
 release_aab_exit=0
 total 8
-drwxr-xr-x  2 root root 4096 Oct 17 02:11 .
-drwxr-xr-x 11 1001 1001 4096 Oct 17 02:11 ..
+drwxr-xr-x  2 root root 4096 Oct 17 02:17 .
+drwxr-xr-x 11 1001 1001 4096 Oct 17 02:17 ..
 ✘ مفقود: build/M11-debug.apk
 ✘ مفقود: build/M11-release.apk
 ✘ مفقود: build/M11-release.aab

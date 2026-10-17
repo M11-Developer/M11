@@ -5,19 +5,19 @@
   126:ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
   128:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
   130:ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-  136:SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
-  138:ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
-  140:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
-  142:ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
-  227:ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
-  230:ERROR: Project export for preset "Android APK" failed.
-  275:ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
-  278:ERROR: Project export for preset "Android APK" failed.
-  308:ERROR: Cannot export project with preset "Android APK" due to configuration errors:
-  312:ERROR: Project export for preset "Android APK" failed.
-  338:ERROR: Cannot export project with preset "Android AAB" due to configuration errors:
-  342:ERROR: Project export for preset "Android AAB" failed.
-=== سبب فشل الإعداد (سطر 338) ===
+  137:SCRIPT ERROR: Parse Error: Function "_process" has the same name as a previously declared function.
+  139:ERROR: Failed to load script "res://src/game/world.gd" with error "Parse error".
+  141:SCRIPT ERROR: Parse Error: Could not parse global class "GameWorld" from "res://src/game/world.gd".
+  143:ERROR: Failed to load script "res://src/main.gd" with error "Parse error".
+  230:ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
+  233:ERROR: Project export for preset "Android APK" failed.
+  278:ERROR: Export: Release Username and/or Password is invalid for the given Release Keystore
+  281:ERROR: Project export for preset "Android APK" failed.
+  311:ERROR: Cannot export project with preset "Android APK" due to configuration errors:
+  315:ERROR: Project export for preset "Android APK" failed.
+  342:ERROR: Cannot export project with preset "Android AAB" due to configuration errors:
+  346:ERROR: Project export for preset "Android AAB" failed.
+=== سبب فشل الإعداد (سطر 342) ===
   Loaded system CA certificates
   EditorSettings: Save OK!
   ERROR: Cannot export project with preset "Android AAB" due to configuration errors:
@@ -26,6 +26,7 @@
      at: _fs_changed (editor/editor_node.cpp:1012)
   ERROR: Project export for preset "Android AAB" failed.
      at: _fs_changed (editor/editor_node.cpp:1028)
+  cannot connect to daemon at tcp:5037: Connection refused
   EditorSettings: Save OK!
   XR: Clearing primary interface
   XR: Removed interface "Native mobile"
@@ -34,7 +35,6 @@
   StringName: 1 unclaimed string names at exit.
   release_aab_exit=0
   total 8
-  drwxr-xr-x  2 root root 4096 Oct 17 02:11 .
   --- خام (od) ---
   0000000   E   R   R   O   R   :       C   a   n   n   o   t       e   x
   0000020   p   o   r   t       p   r   o   j   e   c   t       w   i   t
@@ -44,7 +44,7 @@
   0000120   r   s   :  \n   R   e   l   e   a   s   e       k   e   y   s
   0000140   t   o   r   e       i   n   c   o   r   r   e   c   t   l   y
   0000160       c   o   n   f   i   g   u   r   e   d       i   n       t
-=== أول محاولة تصدير (من سطر 193) ===
+=== أول محاولة تصدير (من سطر 196) ===
   430:keystore/debug_user="androiddebugkey"
   431:keystore/debug_password="android"
   ===== EXPORT-DEBUG1 START =====
@@ -102,7 +102,6 @@ export/android/android_sdk_path = "/usr/lib/android-sdk"
 export/android/debug_keystore = "/root/debug.keystore"
 === أسطر المفتاح في الإعدادات ===
 === ذيل السجل ===
-  EditorTheme: Generating new theme for the config '66886095'.
   EditorTheme: Generating new icons.
   EditorTheme: Generating new fonts.
   EditorTheme: Generating new styles.
@@ -114,6 +113,7 @@ export/android/debug_keystore = "/root/debug.keystore"
      at: _fs_changed (editor/editor_node.cpp:1012)
   ERROR: Project export for preset "Android AAB" failed.
      at: _fs_changed (editor/editor_node.cpp:1028)
+  cannot connect to daemon at tcp:5037: Connection refused
   EditorSettings: Save OK!
   XR: Clearing primary interface
   XR: Removed interface "Native mobile"
@@ -122,8 +122,8 @@ export/android/debug_keystore = "/root/debug.keystore"
   StringName: 1 unclaimed string names at exit.
   release_aab_exit=0
   total 8
-  drwxr-xr-x  2 root root 4096 Oct 17 02:11 .
-  drwxr-xr-x 11 1001 1001 4096 Oct 17 02:11 ..
+  drwxr-xr-x  2 root root 4096 Oct 17 02:17 .
+  drwxr-xr-x 11 1001 1001 4096 Oct 17 02:17 ..
   ✘ مفقود: build/M11-debug.apk
   ✘ مفقود: build/M11-release.apk
   ✘ مفقود: build/M11-release.aab
@@ -145,7 +145,7 @@ export/android/debug_keystore = "/root/debug.keystore"
 export/android/debug_keystore_user = "androiddebugkey"
 export/android/debug_keystore_pass = "android"
 === ملخّص ===
-حجم السجل: 49219 بايت | أسطر: 356
+حجم السجل: 49689 بايت | أسطر: 361
   [2] configuration errors
   [34] keystore
   [1] apksigner
