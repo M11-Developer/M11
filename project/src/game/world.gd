@@ -540,7 +540,9 @@ func player_pos() -> Vector2:
 
 
 func pick_spawn_point(for_team: int) -> Vector2:
-	var best: Vector2 = (spawns[0]["x"] as Vector2) if spawns.size() > 0 else Vector2(100, 100)
+	# النقاط مخزّنة كقاموس {x: رقم, y: رقم, team: رقم} لا كـ Vector2
+	var best: Vector2 = Vector2(float(spawns[0]["x"]), float(spawns[0]["y"])) \
+		if spawns.size() > 0 else Vector2(100, 100)
 	var best_score := -1.0
 	for i in 6:
 		if spawns.is_empty():

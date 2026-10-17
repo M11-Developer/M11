@@ -150,8 +150,8 @@ func _run_selftest() -> void:
 		print("[M11-SELFTEST] FAIL: لم تبدأ المباراة (state=%s)" % state)
 		ok = false
 	else:
-		print("[M11-SELFTEST] بدأت المباراة: الوضع=%s الخريطة=%s المقاتلون=%d"
-			% [world.mode_id, world.map_id, world.actors.size()])
+		print("[M11-SELFTEST] بدأت المباراة: الوضع=%s المقاتلون=%d"
+			% [world.mode_id, world.actors.size()])
 		if world.actors.size() < 2:
 			print("[M11-SELFTEST] FAIL: عدد المقاتلين غير كافٍ")
 			ok = false
