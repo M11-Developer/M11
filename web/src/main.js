@@ -21,7 +21,7 @@ import { Camera, KillCam } from './render/camera.js';
 import { NetSession, NetTransportLocal } from './core/net.js';
 
 const DEFAULT_SETTINGS = {
-  quality: 2, fpsLimit: 0, integerScaling: true, shakeScale: 1, postFx: true,
+  quality: 2, fpsLimit: 0, integerScaling: false, shakeScale: 1, postFx: true,
   lighting: true, grain: 0.09, powerSaving: false, language: 'ar',
   adsMode: 'hold', autoFire: false, colorblind: 'none', aimAssist: 0.35,
   botCount: 7, difficulty: 2, friendlyFire: false, netOverlay: false,
