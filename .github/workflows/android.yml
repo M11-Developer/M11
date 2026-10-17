@@ -257,7 +257,13 @@ jobs:
           echo "===== EXPORT-DEBUG1 END =====" >> "$BUILD_LOG"
           if [ ! -s build/M11-debug.apk ]; then
             echo "::warning::فشل مسار Gradle — نعيد بقالب التصدير المباشر (بلا Gradle)" | tee -a "$BUILD_LOG"
-            sed -i 's|gradle_build/use_gradle_build=true|gradle_build/use_gradle_build=false|g' project/export_presets.cfg
+            # خطأ شائع: تعطيل Gradle وحده يترك minSdk/targetSdk/ضغط المكتبات
+            # مملوءة فيرفض Godot التصدير — لذلك نصفّرها جميعًا معه.
+            sed -i -e 's|gradle_build/use_gradle_build=true|gradle_build/use_gradle_build=false|g' \
+                   -e 's|gradle_build/compress_native_libraries=true|gradle_build/compress_native_libraries=false|g' \
+                   -e 's|gradle_build/min_sdk="[^"]*"|gradle_build/min_sdk=""|g' \
+                   -e 's|gradle_build/target_sdk="[^"]*"|gradle_build/target_sdk=""|g' \
+                   project/export_presets.cfg
             echo "===== EXPORT-DEBUG2 START =====" >> "$BUILD_LOG"
             timeout 2400 godot --headless --verbose --path project --export-debug "Android APK" "$GITHUB_WORKSPACE/build/M11-debug.apk" 2>&1 | tee -a "$BUILD_LOG"
             echo "debug_export_exit2=$?" | tee -a "$BUILD_LOG"

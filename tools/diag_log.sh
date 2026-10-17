@@ -26,6 +26,10 @@ if [ -n "$S" ]; then
   sed -n "$(( S > 2 ? S - 2 : 1 )),$(( S + 16 ))p" "$LOG" | sed 's/^/  /' >> "$OUT"
 fi
 
+# 2ب) أسطر Gradle المهمة (لو استُخدم مسار Gradle)
+echo "=== Gradle ===" >> "$OUT"
+grep -iE "gradle|BUILD SUCCESSFUL|BUILD FAILED|FAILURE:|What went wrong|download|SDK location|licen" "$LOG" 2>/dev/null | tail -14 | sed 's/^/  /' >> "$OUT"
+
 # 3) نتائج التصدير
 echo "=== النتائج ===" >> "$OUT"
 grep -E "debug_export_exit|debug_export_exit2|release_apk_exit|release_aab_exit|مفقود:|= OK|saving" "$LOG" 2>/dev/null | head -12 | sed 's/^/  /' >> "$OUT"
