@@ -71,7 +71,12 @@ jobs:
           git config user.name "M11 CI"
           git add -f docs/verify_log.txt
           git commit -m "سجل فحص الإقلاع — تشغيل $GITHUB_RUN_ID" || echo "لا تغييرات"
-          git push origin "HEAD:arena/3dc6c87e-m11" || echo "تعذّر الدفع"
+          for attempt in 1 2 3; do
+            git fetch origin arena/3dc6c87e-m11 >/dev/null 2>&1 || true
+            git rebase origin/arena/3dc6c87e-m11 >/dev/null 2>&1 || git rebase --abort 2>/dev/null || true
+            git push origin "HEAD:arena/3dc6c87e-m11" && break
+            sleep 4
+          done
           true
 
   export-android:
@@ -481,11 +486,17 @@ jobs:
           # GITHUB_REF_NAME في بناء الوسم يساوي اسم الوسم لا اسم الفرع — لذلك
           # ندفع دائمًا إلى فرع العمل الثابت لهذه الجلسة.
           TARGET_BRANCH="arena/3dc6c87e-m11"
-          if git push origin "HEAD:${TARGET_BRANCH}" 2>/tmp/push.err; then
-            echo "::notice title=LOG-PUSH::تم رفع السجل إلى ${TARGET_BRANCH}"
-          else
-            echo "::error title=LOG-PUSH-FAIL::$(tail -3 /tmp/push.err | tr '\n' ' ')"
-          fi
+          # نُعيد الأساس على الفرع أولًا حتى لا يفشل الدفع عند وجود التزامات جديدة عليه
+          for attempt in 1 2 3; do
+            git fetch origin "$TARGET_BRANCH" >/dev/null 2>&1 || true
+            git rebase "origin/$TARGET_BRANCH" >/dev/null 2>&1 || git rebase --abort 2>/dev/null || true
+            if git push origin "HEAD:${TARGET_BRANCH}" 2>/tmp/push.err; then
+              echo "::notice title=LOG-PUSH::تم رفع السجل إلى ${TARGET_BRANCH}"
+              break
+            fi
+            echo "محاولة $attempt فشلت: $(tail -2 /tmp/push.err | tr '\n' ' ')"
+            sleep 4
+          done
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: سجل التصدير (أهم الأسطر)
