@@ -9,8 +9,12 @@ LOG="${1:-/tmp/m11-build.log}"
 OUT=/tmp/m11-diag.txt
 : > "$OUT"
 
+# 1) كل أسطر الخطأ المهمة مع سياقها
+echo "=== أسطر الأخطاء (مع سياق) ===" >> "$OUT"
+grep -nE "ERROR:|FAILURE:|What went wrong|Exception|error:|failed|Cannot|not found|No such file" "$LOG" 2>/dev/null | grep -viE "deprecat|Node.js|migrate to Ubuntu" | tail -18 | cut -c1-230 | sed 's/^/  /' >> "$OUT"
+
 # 1) سياق سبب فشل الإعداد (السبب في الأسطر التالية للرسالة)
-LINE=$(grep -n "configuration errors" "$LOG" 2>/dev/null | head -1 | cut -d: -f1)
+LINE=$(grep -n "configuration errors" "$LOG" 2>/dev/null | tail -1 | cut -d: -f1)
 if [ -n "$LINE" ]; then
   echo "=== سبب فشل الإعداد (سطر $LINE) ===" >> "$OUT"
   sed -n "$(( LINE > 2 ? LINE - 2 : 1 )),$(( LINE + 14 ))p" "$LOG" | sed 's/^/  /' >> "$OUT"
@@ -43,6 +47,10 @@ echo "  curl=$(command -v curl || echo MISSING) wget=$(command -v wget || echo M
 grep -E "java_sdk_path|android_sdk_path|debug_keystore|JAVA_DIR" "$LOG" 2>/dev/null | head -8 >> "$OUT"
 echo "=== أسطر المفتاح في الإعدادات ===" >> "$OUT"
 grep -n "keystore/" /github/workspace/project/export_presets.cfg 2>/dev/null | head -8 >> "$OUT"
+
+# 3ج) ذيل السجل
+echo "=== ذيل السجل ===" >> "$OUT"
+tail -25 "$LOG" 2>/dev/null | cut -c1-230 | sed 's/^/  /' >> "$OUT"
 
 # 4) ملفات APK التي وُجدت في المشروع
 echo "=== ملفات APK/AAB ===" >> "$OUT"
