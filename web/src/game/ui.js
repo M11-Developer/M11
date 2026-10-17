@@ -29,6 +29,8 @@ export class MenuSystem {
     this.toast = null;
     this.mouse = { x: -100, y: -100, down: false, pressed: false };
     this.drag = null;
+    this.pendingRow = null;     // صف انتُقر ولم يُرفع الإصبع بعد
+    this.hoverIndex = -1;
     this.time = 0;
     this.screens = this.buildScreens();
     this.push('main');
@@ -69,14 +71,40 @@ export class MenuSystem {
   }
 
   // ------------------------------------------------------------- الأحداث
+  /** مستطيل زر الرجوع العلوي — يظهر في كل شاشة فرعية (كانت القوائم بلا أي رجوع للمس) */
+  backChipRect() {
+    if (!this.current || this.stack.length <= 1) return null;
+    return { x: 10, y: 8, w: 76, h: 22 };
+  }
+
+  /** رجوع موحّد: في شاشة الإيقاف يستأنف، وإلا يرجع خطوة في السجل */
+  back() {
+    const name = this.current ? this.current.name : 'main';
+    this.playUiSound('back');
+    if (name === 'pause') {
+      if (this.game.resume) this.game.resume();
+      else { this.game.state = 'playing'; this.stack.length = 1; }
+      return;
+    }
+    if (this.stack.length > 1) {
+      this.pop();
+      this.anim.fade = 1;
+    }
+  }
+
   onPointerMove(x, y) {
     this.mouse.x = x;
     this.mouse.y = y;
     if (this.drag) {
       const delta = y - this.drag.lastY;
-      this.current.scroll = clamp(this.current.scroll - delta * 0.5, 0, this.current.maxScroll || 0);
+      if (Math.abs(y - this.drag.startY) > 6) this.drag.moved = true;
+      if (this.drag.moved) {
+        this.current.scroll = clamp(this.current.scroll - delta * 0.7, 0, this.current.maxScroll || 0);
+      }
       this.drag.lastY = y;
     }
+    const hit = this.hitTest(x, y);
+    this.hoverIndex = hit ? hit.index : -1;
   }
 
   onPointerDown(x, y) {
@@ -84,17 +112,29 @@ export class MenuSystem {
     this.mouse.y = y;
     this.mouse.down = true;
     this.mouse.pressed = true;
-    const hit = this.hitTest(x, y);
-    if (hit && hit.item && !hit.item.disabled) {
-      this.current.index = hit.index;
-      this.activate(hit.item, hit.index);
-    } else if (!hit) {
-      this.drag = { lastY: y };
+    const chip = this.backChipRect();
+    if (chip && x >= chip.x && x <= chip.x + chip.w && y >= chip.y && y <= chip.y + chip.h) {
+      this.back();
+      return;
     }
+    const hit = this.hitTest(x, y);
+    this.pendingRow = null;
+    if (hit && hit.item) {
+      this.current.index = hit.index;
+      this.pendingRow = hit;
+    }
+    // السحب يبدأ من أي مكان — لتمرير الإعدادات الطويلة بالإصبع
+    this.drag = { lastY: y, startY: y, moved: false };
   }
 
-  onPointerUp() {
+  onPointerUp(x, y) {
     this.mouse.down = false;
+    const moved = this.drag && this.drag.moved;
+    if (!moved && this.pendingRow && this.pendingRow.item && !this.pendingRow.item.disabled
+        && this.pendingRow.item.type !== 'header') {
+      this.activate(this.pendingRow.item, this.pendingRow.index, x);
+    }
+    this.pendingRow = null;
     this.drag = null;
   }
 
@@ -107,18 +147,61 @@ export class MenuSystem {
       if (!items[i].disabled) break;
     }
     this.current.index = i;
+    this.ensureVisible();
     this.playUiSound('click');
   }
 
-  activate(item, index) {
+  /** يُمرّر القائمة تلقائيًا حتى يبقى الصف المختار ظاهرًا (كان الاختيار يختفي أسفل الشاشة) */
+  ensureVisible() {
+    const cur = this.current;
+    if (!cur) return;
+    const rows = this.rowsFor(cur);
+    const row = rows[Math.min(cur.index, rows.length - 1)];
+    if (!row) return;
+    cur.maxScroll = Math.max(0, rows[rows.length - 1].rect.y + 30 - (H - 30));
+    const top = row.rect.y;
+    const bottom = row.rect.y + row.rect.h;
+    if (top - cur.scroll < 58) cur.scroll = Math.max(0, top - 58);
+    else if (bottom - cur.scroll > H - 34) cur.scroll = Math.min(cur.maxScroll, bottom - (H - 34));
+  }
+
+  activate(item, index, x = null) {
     if (!item) return;
     if (item.type === 'slider') {
-      // السلايدرات تتغير بالأسهم؛ بالنقر نحرّك 10%
+      // بالنقر على شريط القيمة نضبط النسبة مباشرة (أسرع بكثير من نقرات 10%)
+      const rect = this.current && this.rowRectFor(index);
+      if (x != null && rect) {
+        const sw = 64, sx = rect.x + 8;
+        if (x >= sx - 6 && x <= sx + sw + 6) {
+          const pct = clamp((x - sx) / sw, 0, 1);
+          const step = item.step || 0.01;
+          let v = item.min + pct * (item.max - item.min);
+          v = item.min + Math.round((v - item.min) / step) * step;
+          item.onChange(clamp(v, item.min, item.max));
+          this.playUiSound('confirm');
+          return;
+        }
+      }
       item.onChange(clamp(item.get() + (item.step || 0.1), item.min, item.max));
+    } else if (item.type === 'choice' || item.type === 'sliderChoice') {
+      // لمس صف الاختيار يبدّل القيمة (كان الاختيار بالأسهم فقط — مستحيل على الهاتف)
+      if (item.type === 'choice' && item.cycle) {
+        const ids = (item.options || []).map((o) => (typeof o === 'object' ? o.id : o));
+        const cur = ids.indexOf(item.get());
+        if (ids.length) item.onChange(ids[(cur + 1) % ids.length]);
+      } else if (item.onSelect) item.onSelect(item);
     } else if (item.onSelect) {
       item.onSelect(item);
     }
     this.playUiSound(item.type === 'danger' ? 'back' : 'confirm');
+  }
+
+  /** مستطيل الصف الحالي برقمه (بعد السكرول) — لضبط السلايدرات باللمس */
+  rowRectFor(index) {
+    const rows = this.rowsFor(this.cur);
+    const r = rows[index] && rows[index].rect;
+    if (!r) return null;
+    return { ...r, y: r.y - (this.current ? this.current.scroll : 0) };
   }
 
   /** تُنادى من main عند ضغط مفتاح في القوائم */
@@ -142,8 +225,7 @@ export class MenuSystem {
         if (item) this.activate(item, this.current.index);
         return true;
       case 'Escape': case 'Backspace':
-        this.playUiSound('back');
-        if (this.stack.length > 1) this.pop();
+        if (this.stack.length > 1) this.back();
         else if (this.game.state === 'playing') this.game.pause();
         return true;
       default: return false;
@@ -163,7 +245,11 @@ export class MenuSystem {
     // يقبل إطار الشاشة (فيه screen) أو الشاشة نفسها — لأن this.cur يعيد الشاشة
     const screen = frame && frame.screen ? frame.screen : frame;
     if (!screen) return [];
-    const items = screen.items(this);
+    const items = screen.items(this).slice();
+    // زر رجوع ظاهر في كل شاشة فرعية — بديل مضمون للكيبورد على الهاتف
+    if (this.stack.length > 1) {
+      items.push({ type: 'back', label: screen.id === 'pause' ? 'استئناف اللعب' : 'رجوع', onSelect: () => this.back() });
+    }
     const rows = [];
     let y = 62;
     for (let index = 0; index < items.length; index++) {
@@ -191,10 +277,12 @@ export class MenuSystem {
 
   hitTest(x, y) {
     const rows = this.rowsFor(this.cur);
+    const scroll = this.current ? this.current.scroll : 0;
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i].rect;
-      if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
-        return { item: rows[i].item, index: rows[i].index, rect: r };
+      const ry = r.y - scroll;
+      if (x >= r.x && x <= r.x + r.w && y >= ry && y <= ry + r.h) {
+        return { item: rows[i].item, index: rows[i].index, rect: { ...r, y: ry } };
       }
     }
     return null;
@@ -235,8 +323,13 @@ export class MenuSystem {
     const title = cur.screen.title || '';
     if (title) {
       this.text(ctx, title, W - 24, 34, { size: 17, bold: true, color: '#F2C14E', shadow: true });
-      if (cur.screen.subtitle) this.text(ctx, cur.screen.subtitle, W - 24, 48, { size: 9, color: '#9BB8C4' });
+      if (cur.screen.subtitle) {
+        let ss = 9;
+        while (ss > 6 && this.measure(ctx, cur.screen.subtitle, ss) > W - 48) ss -= 0.5;
+        this.text(ctx, cur.screen.subtitle, W - 24, 48, { size: ss, color: '#9BB8C4' });
+      }
     }
+    this.drawBackChip(ctx);
     // الصفوف — ستارة داكنة خلف عمود القائمة حتى تبقى النصوص واضحة فوق أي لوحة فنية
     ctx.save();
     const scrimW = 352;
@@ -247,15 +340,22 @@ export class MenuSystem {
     ctx.fillStyle = sg;
     ctx.fillRect(W - scrimW, 50, scrimW, H - 50);
     ctx.beginPath();
-    ctx.rect(0, 56, W, H - 56);
+    ctx.rect(0, 54, W, H - 54 - 40);
     ctx.clip();
     let hovered = this.hitTest(this.mouse.x, this.mouse.y);
+    if (this.drag && this.drag.moved) hovered = null;
     for (const row of rows) {
       const y = row.rect.y - cur.scroll;
       if (y < 40 || y > H + 20) continue;
       this.drawRow(ctx, row, y, row.index === cur.index, hovered && hovered.index === row.index);
     }
     ctx.restore();
+    // تلاشٍ سفلي حتى لا تُقطع آخر صف بشكل حاد فوق التذييل
+    const fade = ctx.createLinearGradient(0, H - 58, 0, H - 40);
+    fade.addColorStop(0, 'rgba(8,11,15,0)');
+    fade.addColorStop(1, 'rgba(8,11,15,0.92)');
+    ctx.fillStyle = fade;
+    ctx.fillRect(W - 360, H - 58, 360, 18);
     // معاينة الخريطة المختارة: مصغّرة حقيقية مرسومة من أصول اللعبة نفسها
     if (cur.name === 'maps') {
       const chosen = this.selectedItem('mapId');
@@ -287,7 +387,7 @@ export class MenuSystem {
       const info = key ? meta.operators[key] : null;
       if (key && info) {
         const pw = 84, ph = 104;
-        const px = 16, py = H - ph - 40;
+        const px = 16, py = H - ph - 62;
         // أطلس البورتريهات: العشرة الأولى في portraits_orig، والعشرة الجديدة في portraits_new
         const origKeys = ['rashid', 'karim', 'yusuf', 'tariq', 'adam', 'layla', 'noor', 'hala', 'sara', 'mariam'];
         const idx = keys.indexOf(key);
@@ -328,19 +428,29 @@ export class MenuSystem {
       if (atlas) {
         const unlocked = p.achievements || [];
         const keys = Object.keys(atlas.frames).sort();
-        const y0 = H - 34;
-        let x = W - 18;
+        // شريط ميداليات أفقي فوق التذييل في الفرع الأيسر (لا يغطي القائمة)
+        const stripY = H - 62;
+        ctx.fillStyle = 'rgba(5,7,10,0.74)';
+        ctx.fillRect(10, stripY, 262, 22);
+        ctx.strokeStyle = 'rgba(242,193,78,0.22)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(10.5, stripY + 0.5, 261, 21);
+        const label = `الإنجازات ${unlocked.length}/${ACHIEVEMENTS.length}`;
+        const lw = this.measure(ctx, label, 7);
+        this.text(ctx, label, 266, stripY + 14, { size: 7, bold: true, color: '#F2C14E' });
+        const y0 = stripY + 11;
+        let x = 266 - lw - 8;
         for (let i = 0; i < Math.min(keys.length, ACHIEVEMENTS.length); i++) {
           const done = i < unlocked.length;
           const f = atlas.frame(keys[i]);
-          const s2 = 13 / Math.max(f.w, f.h);
+          const s2 = 12 / Math.max(f.w, f.h);
           ctx.save();
           ctx.imageSmoothingEnabled = false;
-          ctx.globalAlpha = done ? 1 : 0.22;
-          ctx.drawImage(atlas.image, f.x, f.y, f.w, f.h, x - 13, y0 - 13, f.w * s2, f.h * s2);
+          ctx.globalAlpha = done ? 1 : 0.2;
+          ctx.drawImage(atlas.image, f.x, f.y, f.w, f.h, x - 12, y0 - 12, f.w * s2, f.h * s2);
           ctx.restore();
-          x -= 17;
-          if (x < 14) break;
+          x -= 15;
+          if (x < 16) break;
         }
       }
     }
@@ -460,11 +570,49 @@ export class MenuSystem {
     ctx.restore();
   }
 
+  /** زر الرجوع العلوي الدائم — واضح للمس فوق أي شاشة فرعية */
+  drawBackChip(ctx) {
+    const r = this.backChipRect();
+    if (!r) return;
+    ctx.save();
+    ctx.fillStyle = 'rgba(8,11,15,0.88)';
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.strokeStyle = 'rgba(242,193,78,0.55)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
+    // سهم الرجوع (يمين في واجهة عربية)
+    const ax = r.x + r.w - 13, ay = r.y + r.h / 2;
+    ctx.strokeStyle = '#F2C14E';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(ax - 5, ay - 4); ctx.lineTo(ax + 1, ay); ctx.lineTo(ax - 5, ay + 4);
+    ctx.stroke();
+    this.text(ctx, 'رجوع', r.x + r.w - 22, ay + 4, { size: 10, bold: true, color: '#F2C14E', align: 'right' });
+    ctx.restore();
+  }
+
   drawRow(ctx, row, y, focused, hovered) {
     const item = row.item;
     const r = row.rect;
     const x = r.x, w = r.w, h = r.h;
     const isHeader = item.type === 'header';
+    if (item.type === 'back') {
+      // صف الرجوع: لون ذهبي وأسهم واضحة
+      const active2 = focused || hovered;
+      ctx.fillStyle = active2 ? 'rgba(242,193,78,0.20)' : 'rgba(12,16,21,0.62)';
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = active2 ? '#F2C14E' : 'rgba(242,193,78,0.45)';
+      ctx.fillRect(x + w - 2, y, 2, h);
+      // سهم يتجه يمينًا (اتجاه الرجوع في واجهة عربية)
+      const ax = x + w - 20, ay = y + h / 2;
+      ctx.strokeStyle = active2 ? '#F2C14E' : '#C9A44A';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(ax - 5, ay - 4); ctx.lineTo(ax + 1, ay); ctx.lineTo(ax - 5, ay + 4);
+      ctx.stroke();
+      this.text(ctx, item.label, x + w - 30, y + h / 2 + 4, { size: 10, bold: true, color: active2 ? '#F2C14E' : '#E8D9AE' });
+      return;
+    }
     if (isHeader) {
       this.text(ctx, item.label, x + w - 8, y + 14, { size: 10, bold: true, color: '#7FD2F5' });
       ctx.fillStyle = 'rgba(127,210,245,0.25)';
@@ -507,8 +655,9 @@ export class MenuSystem {
     }
     // قيمة / سلايدر / اختيار
     if (item.type === 'slider') {
-      const v = item.get();
-      const pct = (v - item.min) / (item.max - item.min);
+      const raw = Number(item.get());
+      const v = Number.isFinite(raw) ? raw : item.min;
+      const pct = clamp((v - item.min) / Math.max(1e-6, item.max - item.min), 0, 1);
       const sw = 64, sx = x + 8;
       ctx.fillStyle = 'rgba(11,13,16,0.8)';
       ctx.fillRect(sx - 1, y + h / 2 - 3, sw + 2, 7);
@@ -520,10 +669,15 @@ export class MenuSystem {
     } else if (item.type === 'choice' || item.type === 'sliderChoice') {
       const val = item.get();
       const txt = typeof item.format === 'function' ? item.format(val) : String(val);
-      this.num(ctx, txt, x + 10, y + h / 2 + 4, { size: 9, bold: true, color: active ? '#F2C14E' : '#9BB8C4' });
-      this.text(ctx, '◄ ►', x + 10 + this.measure(ctx, txt, 9) + 6, y + h / 2 + 4, { size: 8, color: '#5C6B78' });
+      const col = active ? '#F2C14E' : '#9BB8C4';
+      // القيم العربية تُرسم باتجاه RTL (كانت تُعرض معكوسة حين تُرسم LTR)
+      if (/[\u0600-\u06FF]/.test(txt)) this.text(ctx, txt, x + 10, y + h / 2 + 4, { size: 9, bold: true, color: col, align: 'left' });
+      else this.num(ctx, txt, x + 10, y + h / 2 + 4, { size: 9, bold: true, color: col });
+      this.text(ctx, '◄ ►', x + 10 + this.measure(ctx, txt, 9) + 6, y + h / 2 + 4, { size: 8, color: '#5C6B78', align: 'left' });
     } else if (item.value != null) {
-      this.num(ctx, String(item.value), x + 10, y + h / 2 + 4, { size: 9, color: active ? '#F2C14E' : '#9BB8C4' });
+      const txt = String(item.value);
+      if (/[\u0600-\u06FF]/.test(txt)) this.text(ctx, txt, x + 10, y + h / 2 + 4, { size: 9, color: active ? '#F2C14E' : '#9BB8C4', align: 'left' });
+      else this.num(ctx, txt, x + 10, y + h / 2 + 4, { size: 9, color: active ? '#F2C14E' : '#9BB8C4' });
     }
     if (item.disabled) ctx.restore();
     if (item.badge) {
@@ -535,9 +689,10 @@ export class MenuSystem {
   }
 
   drawFooter(ctx, cur) {
-    const hints = cur.screen.hints || [
-      ['▲▼', 'تنقّل'], ['Enter', 'اختيار'], ['Esc', 'رجوع'],
-    ];
+    const hints = (cur.screen.hints || [
+      ['▲▼', 'تنقّل'], ['Enter', 'اختيار'],
+    ]).slice();
+    if (this.stack.length > 1) hints.push(['Esc', 'رجوع']);
     let x = 12;
     for (const [key, label] of hints) {
       ctx.fillStyle = 'rgba(255,255,255,0.10)';
@@ -750,6 +905,7 @@ export class MenuSystem {
         header('التخطيط والأزرار'),
         choice('تخطيط Claw', [{ id: 2, label: 'إصبعان' }, { id: 3, label: 'ثلاثة أصابع' }, { id: 4, label: 'أربعة أصابع' }], () => g.controls.clawLayout, (v) => { g.controls.clawLayout = v; g.saveControls(); g.rebuildTouchButtons(); }),
         choice('الاستخدام باليد اليسرى', [{ id: false, label: 'يمين' }, { id: true, label: 'يسار' }], () => g.controls.leftHanded, (v) => { g.controls.leftHanded = v; g.saveControls(); g.rebuildTouchButtons(); }),
+        choice('إظهار أزرار اللمس', [{ id: 'auto', label: 'تلقائي' }, { id: 'always', label: 'دائمًا' }, { id: 'never', label: 'مخفي' }], () => g.settings.showTouchControls, (v) => { g.settings.showTouchControls = v; g.saveSettings(); g.updateTouchVisibility(); }),
         choice('إطلاق عند اللمس', [{ id: true, label: 'مفعّل' }, { id: false, label: 'موقوف' }], () => g.controls.tapToFire, (v) => { g.controls.tapToFire = v; g.saveControls(); }),
         choice('الاستمرار بالتصويب', [{ id: false, label: 'اضغط واحتفظ' }, { id: true, label: 'اضغط مرة' }], () => g.controls.holdToAim, (v) => { g.controls.holdToAim = v; g.saveControls(); }),
         choice('الاهتزاز (هاتف)', [{ id: true, label: 'مفعّل' }, { id: false, label: 'موقوف' }], () => g.controls.haptics, (v) => { g.controls.haptics = v; g.saveControls(); }),
@@ -849,7 +1005,7 @@ export class MenuSystem {
     S.pause = {
       id: 'pause', title: 'إيقاف مؤقت', subtitle: 'المباراة متوقفة',
       items: () => [
-        action('استئناف', () => { g.state = 'playing'; }, { icon: 'icon_star' }),
+        action('استئناف', () => { g.resume ? g.resume() : (g.state = 'playing'); }, { icon: 'icon_star' }),
         action('الإعدادات', () => this.push('settings'), { icon: 'icon_settings' }),
         action('تخصيص التحكم', () => this.push('controls'), { icon: 'icon_settings' }),
         action('إعادة المباراة', () => { g.restartMatch(); }, { icon: 'icon_map' }),

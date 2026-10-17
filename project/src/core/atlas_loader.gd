@@ -47,7 +47,8 @@ class AtlasResource:
 			canvas.draw_texture_rect_region(texture.atlas, Rect2(pos, size), region)
 
 	# يثبّت إطارًا على نقطة ارتساء (anchor في إحداثيات الإطار الأصلي)
-	func draw_pivot(canvas: CanvasItem, key: String, pivot: Vector2, anchor_pt: Vector2, flip: bool = false) -> void:
+	func draw_pivot(canvas: CanvasItem, key: String, pivot: Vector2, anchor_pt: Vector2, flip: bool = false,
+			mod: Color = Color(1, 1, 1, 1)) -> void:
 		var f: Dictionary = frames.get(key, {})
 		if f.is_empty():
 			return
@@ -60,9 +61,9 @@ class AtlasResource:
 			# قلب حول عمود نقطة الارتساء نفسها
 			var rx := pivot.x * 2.0 - dest.x - w
 			dest.x = rx
-			canvas.draw_texture_rect_region(texture.atlas, Rect2(dest, Vector2(-w, h)), region)
+			canvas.draw_texture_rect_region(texture.atlas, Rect2(dest, Vector2(-w, h)), region, mod)
 		else:
-			canvas.draw_texture_rect_region(texture.atlas, Rect2(dest, Vector2(w, h)), region)
+			canvas.draw_texture_rect_region(texture.atlas, Rect2(dest, Vector2(w, h)), region, mod)
 
 
 func _ready() -> void:

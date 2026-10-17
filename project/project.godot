@@ -13,7 +13,7 @@ config_version=5
 
 config/name="ميكا ١١"
 config/description="لعبة تصويب عربية ثنائية الأبعاد للشبكة المحلية — بلا إنترنت."
-config/version="1.0.0"
+config/version="2.1.0"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://assets/atlases/app_icon.png"

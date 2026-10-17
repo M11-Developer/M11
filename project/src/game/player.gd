@@ -80,6 +80,22 @@ var recoil_index := 0
 var spread_state := 0.0
 var spawn_protect := 1.6
 var last_damage_time := -99.0
+# --- عرض الشخصية (كانت الشخصيات غير مرئية إطلاقًا: لا يوجد _draw في هذا الملف)
+var action_anim := ""
+var action_time := 0.0
+var action_total := 0.0
+var hit_flash := 0.0
+var muzzle_flash := 0.0
+var death_timer := 0.0
+var death_variant := 0
+
+const ANIM_FOR_STATE := {
+	State.IDLE: "idle", State.WALK: "walk", State.RUN: "run", State.SPRINT: "sprint",
+	State.JUMP: "jump", State.FALL: "fall", State.JETPACK: "jetpack", State.PRONE: "prone",
+	State.CRAWL: "crawl", State.SLIDE: "slide", State.ROLL: "roll", State.CLIMB: "climb",
+	State.WALLJUMP: "walljump", State.LEDGE: "ledge", State.DBNO: "dbno", State.DEAD: "death0",
+	State.SWIM: "swim", State.DRIVE: "drive",
+}
 
 # ملاحظة: النوع غير مُصرَّح به لتجنّب دورة تحليل مع GameWorld
 var _world: Node2D
@@ -131,8 +147,16 @@ func weapon_ammo() -> int:
 func _physics_process(dt: float) -> void:
 	if _world == null:
 		return
+	# كل شخصية ترسم نفسها — الترتيب حسب العمق حتى لا تتراكب الأجسام خطأً
+	z_index = clampi(int(global_position.y / 6.0) + 10, 0, 4096)
+	hit_flash = maxf(0.0, hit_flash - dt * 3.2)
+	muzzle_flash = maxf(0.0, muzzle_flash - dt)
+	if action_time > 0.0:
+		action_time = maxf(0.0, action_time - dt)
 	if not alive:
+		death_timer += dt
 		respawn_timer += dt
+		queue_redraw()
 		return
 	var im: InputManager = _world.input_manager_get() if _world.input_manager == null else _world.input_manager
 	var cmd: Dictionary = _bot_cmd
@@ -279,10 +303,12 @@ func update_with_command(dt: float, cmd: Dictionary) -> void:
 		throw_grenade()
 	if int(cmd.get("swap", 0)) > 0:
 		slot = 1 - slot
+		_set_action("switch", 0.28)
 	# ضرر السقوط
 	if is_on_floor() and velocity.y == 0.0 and _fall_speed > 620.0:
 		take_damage((_fall_speed - 620.0) * 0.12, null, {"fall": true})
 	_fall_speed = velocity.y
+	queue_redraw()
 
 
 var _fall_speed := 0.0
@@ -293,6 +319,26 @@ func _set_state(s: int) -> void:
 		anim_state = s
 		state_timer = 0.0
 		queue_redraw()
+
+
+func _set_action(anim: String, duration: float) -> void:
+	action_anim = anim
+	action_time = duration
+	action_total = duration
+	queue_redraw()
+
+
+## قدمّا الجسم في إحداثيات العالم (نقطة الأصل هي أعلى الجسم — لا القدمين)
+func feet() -> Vector2:
+	return global_position + Vector2(0.0, body_height())
+
+
+func body_height() -> float:
+	if prone:
+		return Config.PRONE_H
+	if crouching:
+		return Config.CROUCH_H
+	return Config.PLAYER_H
 
 
 func _update_height() -> void:
@@ -327,7 +373,9 @@ func try_fire() -> void:
 	weapons[slot]["ammo"] = mag - 1
 	shots_fired += 1
 	recoil_index += 1
+	muzzle_flash = 0.06
 	shoot_projectile(w)
+	queue_redraw()
 
 
 func shoot_projectile(w: Dictionary) -> void:
@@ -356,6 +404,7 @@ func start_reload() -> void:
 		return
 	reloading = true
 	reload_timer = float(w["reload"])
+	_set_action("reload", float(w["reload"]))
 	AudioBus.play_sfx("res://assets/audio/reload/%s.ogg" % String(w.get("cls", "ar")))
 
 
@@ -366,6 +415,7 @@ func _finish_reload() -> void:
 
 
 func do_melee() -> void:
+	_set_action("melee", 0.42)
 	var mid := "shafra"
 	if weapons[slot] != null and String(weapon_def().get("cls", "")) == "melee":
 		mid = weapons[slot]["id"]
@@ -382,6 +432,7 @@ func do_melee() -> void:
 func use_heal() -> void:
 	if hp >= max_hp * 0.99:
 		return
+	_set_action("heal", 0.7)
 	if int(heals["bandage"]) > 0:
 		heals["bandage"] = int(heals["bandage"]) - 1
 		heal(18.0, 2.0)
@@ -397,6 +448,7 @@ func heal(amount: float, _time: float = 0.0) -> void:
 func throw_grenade() -> void:
 	if int(throwable["count"]) <= 0:
 		return
+	_set_action("throw", 0.5)
 	throwable["count"] = int(throwable["count"]) - 1
 	_world.spawn_projectile({
 		"owner": self, "pos": global_position, "velocity": Vector2(cos(aim_angle - 0.35), sin(aim_angle - 0.35)) * 420.0,
@@ -417,6 +469,7 @@ func take_damage(amount: float, attacker: Actor, info: Dictionary = {}) -> void:
 		armor -= taken
 		dmg -= taken
 	hp -= dmg
+	hit_flash = 0.25
 	last_damage_time = _world.match_time
 	if attacker and attacker != self:
 		if not damage_log.has(attacker):
@@ -446,6 +499,9 @@ func die(killer: Actor, info: Dictionary) -> void:
 	alive = false
 	dbno = false
 	deaths += 1
+	death_timer = 0.0
+	action_time = 0.0
+	velocity = Vector2.ZERO
 	_set_state(State.DEAD)
 	respawn_timer = 0.0
 	AudioBus.play_voice("death", "f")
@@ -469,8 +525,12 @@ func die(killer: Actor, info: Dictionary) -> void:
 
 
 func respawn_at(pos: Vector2) -> void:
-	global_position = pos
+	global_position = Vector2(pos.x, pos.y - Config.PLAYER_H)
 	hp = max_hp
+	death_timer = 0.0
+	hit_flash = 0.0
+	action_time = 0.0
+	modulate = Color(1, 1, 1, 1)
 	armor = [0.0, 40.0, 70.0, 100.0][armor_level]
 	alive = true
 	dbno = false
@@ -493,3 +553,201 @@ func maybe_respawn(dt: float) -> bool:
 		respawn_at(_world.pick_spawn_point(team))
 		return true
 	return false
+
+
+# ============================================================================
+# رسم المقاتل — كان هذا كاملًا مفقودًا في نسخة Godot: الشخصية والذراعان
+# والسلاح لم تُرسم أبدًا (Actor لا يملك _draw)، فكان اللاعب يرى شاشة فارغة
+# ومؤشر تصويب فقط. الآن الرسم يطابق نسخة الويب: إطار من أطلس المشغّل، نقطة
+# ارتساء (origin/baseline)، ذراعان بزوايا مرسومة، وسلاح مثبّت على الكف.
+# ============================================================================
+func _char_meta() -> Dictionary:
+	if _world != null and _world.get("char_meta") is Dictionary:
+		return _world.char_meta
+	return {}
+
+
+func _anim_name() -> String:
+	if not alive:
+		return "death%d" % death_variant
+	if dbno:
+		return "dbno"
+	if action_time > 0.0 and action_anim != "":
+		return action_anim
+	if in_water and not is_on_floor():
+		return "swim"
+	return String(ANIM_FOR_STATE.get(anim_state, "idle"))
+
+
+func _frame_index(anim: String, frames: int, fps: float) -> int:
+	var t := state_timer
+	if action_time > 0.0 and anim == action_anim:
+		t = action_total - action_time
+	elif not alive:
+		t = death_timer
+	var fi := 0
+	if action_time > 0.0 and anim == action_anim:
+		fi = clampi(int((t / maxf(0.08, action_total)) * float(frames)), 0, frames - 1)
+	elif not alive:
+		fi = clampi(int(t * fps), 0, frames - 1)
+	else:
+		fi = int(t * fps) % maxi(1, frames)
+	return fi
+
+
+func _draw() -> void:
+	if _world == null:
+		return
+	var meta := _char_meta()
+	var origin: Array = meta.get("origin", [40, 42])
+	var baseline := float(meta.get("baseline", 64.0))
+	var bh := body_height()
+	var feet_local := Vector2(0.0, bh)
+	var flip := facing_x < 0.0
+	# ---- الظل ----
+	_draw_ellipse(feet_local + Vector2(0, -1), 14.0, 3.6, Color(0.02, 0.03, 0.04, 0.38))
+	# ---- flame الجيت باك ----
+	if jetpack_on:
+		var fl := 6.0 + sin(Time.get_ticks_msec() * 0.03) * 3.0
+		draw_colored_polygon(PackedVector2Array([
+			feet_local + Vector2(-9, -6), feet_local + Vector2(9, -6), feet_local + Vector2(0, -6 + fl)
+		]), Color(0.95, 0.6, 0.2, 0.75))
+	# ---- إطار الشخصية ----
+	var atlas := AtlasLoader.instance.get_atlas("char_" + op_key) if AtlasLoader.instance != null else null
+	var anim := _anim_name()
+	var anims: Dictionary = meta.get("anims", {})
+	var info: Dictionary = anims.get(anim, {})
+	var frames := int(info.get("frames", 1))
+	var fps := float(info.get("fps", 12.0))
+	if atlas != null:
+		var probe := "%s/%s/0" % [op_key, anim]
+		if not atlas.has_key(probe):
+			match anim:
+				"crawl": anim = "prone"
+				"death0", "death1", "death2": anim = "death0"
+				"swim": anim = "walk"
+				_: anim = "idle"
+			info = anims.get(anim, {})
+			frames = int(info.get("frames", 1))
+			fps = float(info.get("fps", 12.0))
+			if not atlas.has_key("%s/%s/0" % [op_key, anim]):
+				return
+		var fi := _frame_index(anim, frames, fps)
+		var key := "%s/%s/%d" % [op_key, anim, clampi(fi, 0, maxi(0, frames - 1))]
+		var mod_col := Color(1, 1, 1, 1)
+		if hit_flash > 0.0:
+			mod_col = Color(1.0 + hit_flash * 2.4, 1.0 + hit_flash * 2.4, 1.0 + hit_flash * 2.4, 1.0)
+		if spawn_protect > 0.0 and int(Time.get_ticks_msec() / 90) % 2 == 0:
+			mod_col.a = 0.55
+		atlas.draw_pivot(self, key, feet_local, Vector2(float(origin[0]), baseline), flip, mod_col)
+		# ---- الذراعان + السلاح ----
+		if alive and not dbno:
+			_draw_arms_weapon(meta, feet_local, flip)
+	# ---- بطاقة الاسم والصحة ----
+	_draw_nameplate(bh)
+
+
+func _nearest_angle(list: Array, deg: float) -> float:
+	var best := float(list[0]) if not list.is_empty() else 0.0
+	var bd := 1e9
+	for a in list:
+		var ang := float(a)
+		var d: float = absf(ang - deg)
+		if d > 180.0:
+			d = 360.0 - d
+		if d < bd:
+			bd = d
+			best = ang
+	return best
+
+
+func _draw_arms_weapon(meta: Dictionary, feet_local: Vector2, flip: bool) -> void:
+	var arms := AtlasLoader.instance.get_atlas("arms") if AtlasLoader.instance != null else null
+	if arms == null:
+		return
+	var origin: Array = meta.get("origin", [40, 42])
+	var baseline := float(meta.get("baseline", 64.0))
+	var posture := "jet" if jetpack_on else ("prone" if prone else ("crouch" if crouching else "stand"))
+	var deg := rad_to_deg(aim_angle)
+	var arm_deg := deg
+	if flip:
+		arm_deg = 180.0 - deg
+		if arm_deg > 180.0:
+			arm_deg -= 360.0
+		if arm_deg < -180.0:
+			arm_deg += 360.0
+	var angles: Array = arms.meta.get("angles", [0, 15, 30, 45, 60, 90, 120, 135, 150, 165, 180, -15, -30, -45, -60, -90, -120, -135, -150, -165])
+	var key_deg := _nearest_angle(angles, arm_deg)
+	var arm_key := "%s/armframe/%s/%d" % [op_key, posture, int(key_deg)]
+	if not arms.has_key(arm_key):
+		arm_key = "%s/armframe/stand/%d" % [op_key, int(key_deg)]
+	if not arms.has_key(arm_key):
+		arm_key = "%s/armframe/stand/0" % op_key
+	if arms.has_key(arm_key):
+		arms.draw_pivot(self, arm_key, feet_local, Vector2(float(origin[0]), baseline), flip)
+	# ---- موضع الكف ----
+	var canvas_ox: float = float(origin[0]) if flip else -float(origin[0])
+	var canvas_oy: float = feet_local.y - baseline
+	var hand_anchor: Dictionary = meta.get("hand_anchor", {})
+	var ha: Array = hand_anchor.get("%s/%d" % [posture, int(key_deg)], [])
+	var hand := Vector2.ZERO
+	if ha.size() >= 2:
+		hand = Vector2(canvas_ox - float(ha[0]) if flip else canvas_ox + float(ha[0]), canvas_oy + float(ha[1]))
+	else:
+		var aa: Dictionary = meta.get("arm_anchor", {}).get(posture, {"x": 27.2, "y": 29.4, "reach": 11.4})
+		hand = Vector2(canvas_ox + (-float(aa["x"]) if flip else float(aa["x"])), canvas_oy + float(aa["y"]))
+	if weapons[slot] == null:
+		return
+	var wid := String(weapons[slot]["id"])
+	var wdef: Dictionary = M11Data.WEAPONS.get(wid, {})
+	if wdef.is_empty():
+		return
+	var wpn := AtlasLoader.instance.get_atlas("weapons") if AtlasLoader.instance != null else null
+	if wpn == null:
+		return
+	var w_deg := deg
+	var mirror := false
+	if deg > 90.0 or deg < -90.0:
+		w_deg = 180.0 - deg if deg > 90.0 else -180.0 - deg
+		mirror = true
+	var w_angles: Array = [0, 15, 30, 45, 60, 90, 135, 180, -15, -30, -45, -60, -90]
+	var best := _nearest_angle(w_angles, w_deg)
+	var wkey := "%s/%d" % [wid, int(best)]
+	if not wpn.has_key(wkey):
+		wkey = "%s/0" % wid
+	var anc: Dictionary = wpn.anchors.get(wkey, {"grip": [8, 12], "muzzle": [30, 12], "len": 16})
+	var grip: Array = anc.get("grip", [8, 12])
+	var muzzle: Array = anc.get("muzzle", [30, 12])
+	var wlen := float(anc.get("len", Vector2(float(muzzle[0]) - float(grip[0]), float(muzzle[1]) - float(grip[1])).length()))
+	wpn.draw_pivot(self, wkey, hand, Vector2(float(grip[0]), float(grip[1])), mirror)
+	# ---- وميض الفوهة ----
+	if muzzle_flash > 0.0:
+		var mdir := Vector2.RIGHT.rotated(aim_angle)
+		var mpos := hand + mdir * maxf(6.0, wlen)
+		draw_circle(mpos, 4.0, Color(1.0, 0.92, 0.55, 0.9))
+		draw_circle(mpos, 2.0, Color(1, 1, 1, 0.95))
+
+
+func _draw_nameplate(bh: float) -> void:
+	var top := bh - float(_char_meta().get("baseline", 64.0)) - 8.0
+	var team_col := M11UI.TEAL if team == 0 else M11UI.ORANGE
+	if not alive:
+		return
+	var nm := display_name
+	var fs := 8
+	var w := maxf(26.0, M11UI.width(M11UI.FONT_BOLD, nm, fs) + 6.0)
+	draw_rect(Rect2(-w * 0.5, top - 8, w, 10), Color(0.02, 0.03, 0.05, 0.55))
+	M11UI.text(self, M11UI.FONT_BOLD, nm, Vector2(w * 0.5 - 3, top), fs, team_col,
+		HORIZONTAL_ALIGNMENT_CENTER, w)
+	# شريط صحة صغير فوق الرأس
+	var pct := clampf(hp / maxf(1.0, max_hp), 0.0, 1.0)
+	draw_rect(Rect2(-15, top + 3, 30, 3), Color(0.05, 0.06, 0.08, 0.8))
+	draw_rect(Rect2(-15, top + 3, 30.0 * pct, 3), team_col if pct > 0.4 else M11UI.RED)
+
+
+func _draw_ellipse(center: Vector2, rx: float, ry: float, col: Color) -> void:
+	var pts := PackedVector2Array()
+	for i in 18:
+		var a := TAU * float(i) / 18.0
+		pts.append(center + Vector2(cos(a) * rx, sin(a) * ry))
+	draw_colored_polygon(pts, col)

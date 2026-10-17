@@ -105,6 +105,8 @@ class Game {
     this.renderer = new Renderer(this.canvas, Assets);
     this.hud = new HUD(Assets);
     this.menus = new MenuSystem(Assets, this);
+    // كانت القيمة غير مُهيّأة إطلاقًا ⇒ أزرار اللمس لا تُرسم أبدًا على الهاتف
+    this.updateTouchVisibility();
     this.applyQuality();
     this.applyColorblind();
     this.resize();
@@ -171,36 +173,48 @@ class Game {
     this.cssInfo = info;
     // تكبير الأزرار اللمسية تبعًا لحجم الشاشة
     this.rebuildTouchButtons();
+    this.updateTouchVisibility();
+  }
+
+  /** يقرر إظهار طبقة اللمس: هاتف تلقائيًا، ويمكن فرضها في الإعدادات */
+  updateTouchVisibility() {
+    const mode = this.settings ? this.settings.showTouchControls || 'auto' : 'auto';
+    const hasTouch = (typeof window !== 'undefined')
+      && (('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0);
+    this.showTouch = mode === 'always' ? true : mode === 'never' ? false : hasTouch;
   }
 
   rebuildTouchButtons() {
     if (!this.input) return;
     this.input.buttons.clear();
     const S = this.controls;
-    const R = 21;
-    const add = (name, x, y, r = R) => this.input.buttons.set(name, { x, y, r });
-    const left = S.leftHanded;
-    const mx = left ? 92 : CONFIG.internalWidth - 92;
-    const jx = left ? CONFIG.internalWidth - 76 : 76;
-    // زر الإطلاق (أيمن/أيسر حسب اليد)
-    add('fire', mx, CONFIG.internalHeight - 62, R + 4);
-    add('jump', mx - 46, CONFIG.internalHeight - 40, R - 2);
-    add('jetpack', mx + 6, CONFIG.internalHeight - 108, R - 4);
-    add('reload', mx - 52, CONFIG.internalHeight - 92, R - 5);
-    add('crouch', mx + 44, CONFIG.internalHeight - 46, R - 6);
-    add('prone', mx + 76, CONFIG.internalHeight - 70, R - 6);
-    add('melee', mx + 58, CONFIG.internalHeight - 108, R - 6);
-    add('heal', mx + 76, CONFIG.internalHeight - 20, R - 7);
-    add('grenade', mx - 76, CONFIG.internalHeight - 20, R - 7);
-    add('swap', mx - 90, CONFIG.internalHeight - 62, R - 8);
-    // تخطيط Claw: أزرار إضافية بأعلى الشاشة
+    const W = CONFIG.internalWidth, H = CONFIG.internalHeight;
+    // نَنسخ الإحداثيات مرة واحدة فقط (كانت تُعكس مرتين فلا يعمل وضع اليد اليسرى)
+    const add = (name, x, y, r, fixed = false) => this.input.buttons.set(name, {
+      x: (!fixed && S.leftHanded) ? W - x : x, y, r, fixed,
+    });
+    // عنقود اليد اليمنى: قوس مريح حول زر الإطلاق بلا تداخل
+    add('fire', W - 68, H - 58, 26);
+    add('jump', W - 128, H - 62, 16);
+    add('reload', W - 126, H - 100, 15);
+    add('melee', W - 88, H - 124, 15);
+    add('jetpack', W - 50, H - 116, 16);
+    add('crouch', W - 18, H - 56, 13);
+    add('prone', W - 16, H - 88, 13);
+    add('grenade', W - 34, H - 22, 12);
+    add('heal', W - 110, H - 24, 12);
+    add('swap', W - 138, H - 30, 12);
+    // أزرار نظام ثابتة أعلى اليمين — لا تُعكس مع اليد حتى لا تغطي الخريطة
+    add('pause', W - 14, 14, 10, true);
+    add('score', W - 38, 14, 10, true);
+    // تخطيط Claw: أزرار إضافية على الحافة اليمنى بلا تغطية سجل القتل
     if (S.clawLayout >= 3) {
-      add('fire2', mx - 10, 46, R - 3);
-      add('jump2', mx - 62, 40, R - 5);
+      add('fire2', W - 160, H - 132, 16);
+      add('jump2', W - 200, H - 100, 14);
     }
     if (S.clawLayout >= 4) {
-      add('fire3', mx + 44, 62, R - 5);
-      add('melee2', mx - 108, 46, R - 6);
+      add('fire3', W - 206, H - 64, 15);
+      add('melee2', W - 206, H - 112, 13);
     }
   }
 
@@ -342,6 +356,7 @@ class Game {
 
   onMatchEnd(results) {
     this.state = 'results';
+    this.resultsTime = 0;
     this.results = results;
     const won = !!results.won;
     audio.setMusic && audio.setMusic(won ? 'victory' : 'defeat');
@@ -451,6 +466,7 @@ class Game {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
     this.menus.update(dt, this.input);
+    this.handleMenuPointer();
     this.menus.draw(ctx, this.settings);
     // معالجة مفاتيح القوائم
     this.handleMenuInput();
@@ -478,6 +494,13 @@ class Game {
   updatePlaying(dt) {
     const world = this.world;
     if (!world) return;
+    // لمسة واحدة كافية لإظهار الأزرار حتى لو لم يتعرّف المتصفح على الجهاز
+    if (this.input._usedTouch && !this.showTouch && this.settings.showTouchControls !== 'never') {
+      this.showTouch = true;
+    }
+    // أزرار النظام اللمسية (الإيقاف/الخريطة)
+    if (this.input.actions.pause_pressed) { this.pause(); return; }
+    if (this.input.actions.score_pressed) this.hud.showBigMap = !this.hud.showBigMap;
     // وقت بطيء أثناء إعادة مشهد القتل
     let simDt = dt;
     if (this.killcam) {
@@ -618,6 +641,15 @@ class Game {
     return cmd;
   }
 
+  /** يمرّر اللمس/الفأرة إلى القوائم — كان ذلك غائبًا تمامًا فلم تكن القوائم تعمل على الهاتف */
+  handleMenuPointer() {
+    const p = this.input.pointer;
+    if (!p) return;
+    if (p.justDown) this.menus.onPointerDown(p.x, p.y);
+    else if (p.down) this.menus.onPointerMove(p.x, p.y);
+    if (p.justUp) this.menus.onPointerUp(p.x, p.y);
+  }
+
   handleMenuInput() {
     const pressed = [...this.input.pressed];
     for (const code of pressed) {
@@ -667,30 +699,48 @@ class Game {
     const inp = this.input;
     ctx.save();
     ctx.globalAlpha = S.buttonAlpha;
-    // عصا الحركة
+    // العصوان (تظهران عند اللمس فقط)
     this.drawStick(ctx, inp.move, S.stickAlpha);
-    // عصا التصويب
     this.drawStick(ctx, inp.aim, S.stickAlpha * 0.9);
-    // أزرار
+    // أزرار — الإحداثيات النهائية محفوظة أصلًا (مرآة اليد اليسرى تُطبّق عند البناء)
     for (const [name, b] of inp.buttons) {
       const active = !!inp.actions[name];
+      const glyph = {
+        fire: '◎', jump: '↥', jetpack: '↟', reload: '⟳', crouch: '⌄', prone: '⌄⌄',
+        melee: '✕', heal: '＋', grenade: '●', swap: '⇄', fire2: '◎', jump2: '↥',
+        fire3: '◎', melee2: '✕', pause: '❚❚', score: '▣',
+      }[name] || '';
       const label = {
         fire: 'إطلاق', jump: 'قفز', jetpack: 'جيت', reload: 'تعبئة', crouch: 'انخفاض',
-        prone: 'انبطاح', melee: 'مشاجرة', heal: 'علاج', grenade: 'قنبلة', swap: 'سلاح',
-        fire2: 'إطلاق', jump2: 'قفز', fire3: 'إطلاق', melee2: 'مشاجرة',
-      }[name] || name;
-      const r = b.r;
-      const x = S.leftHanded ? CONFIG.internalWidth - b.x : b.x;
+        prone: 'انبطاح', melee: 'مشاجرة', heal: 'علاج', grenade: 'قنبلة', swap: 'بديل',
+        pause: 'إيقاف', score: 'خريطة',
+      }[name] || '';
+      const x = b.x, y = b.y, r = b.r;
+      const big = name === 'fire' || name === 'fire2' || name === 'fire3';
       ctx.beginPath();
-      ctx.arc(x, b.y, r, 0, TAU);
-      ctx.fillStyle = active ? 'rgba(242,193,78,0.42)' : 'rgba(16,20,26,0.55)';
+      ctx.arc(x, y, r, 0, TAU);
+      ctx.fillStyle = active ? 'rgba(242,193,78,0.46)' : (big ? 'rgba(22,28,36,0.62)' : 'rgba(16,20,26,0.52)');
       ctx.fill();
-      ctx.strokeStyle = active ? '#F2C14E' : 'rgba(234,242,246,0.4)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = active ? '#F2C14E' : (big ? 'rgba(242,193,78,0.55)' : 'rgba(234,242,246,0.38)');
+      ctx.lineWidth = big ? 2 : 1.4;
       ctx.stroke();
       ctx.save();
-      ctx.globalAlpha = 1;
-      this.hud.text(ctx, label, x + 0, b.y + 3, { size: 8, bold: true, color: active ? '#F2C14E' : '#EAF2F6', align: 'center' });
+      ctx.globalAlpha = Math.min(1, S.buttonAlpha + 0.35);
+      const col = active ? '#FFE9A8' : '#EAF2F6';
+      // رمز كبير داخل الزر، وتحته كلمة عربية صغيرة (أوضح من نص واحد طويل)
+      if (glyph && r >= 14) {
+        this.hud.num(ctx, glyph, x, y + 1, { size: Math.round(r * 0.8), bold: true, color: col, align: 'center' });
+      }
+      if (label) {
+        const fs = Math.max(6, Math.min(8, Math.round(r * 0.5)));
+        const lw = this.hud.measure(ctx, label, fs);
+        // نُبعد التسمية عن حواف الشاشة حتى لا تُقصّ
+        const lx = clamp(x, lw / 2 + 2, W - lw / 2 - 2);
+        const ly = y + r * 0.72 + fs * 0.5;
+        // إن خرجت تحت الشاشة نرسمها أعلى الزر
+        this.hud.text(ctx, label, lx, ly > H - 5 ? y - r - 1 : ly,
+          { size: fs, color: col, align: 'center', shadow: true });
+      }
       ctx.restore();
     }
     ctx.restore();
@@ -723,12 +773,14 @@ class Game {
     ctx.fillStyle = 'rgba(5,7,10,0.6)';
     ctx.fillRect(0, 0, CONFIG.internalWidth, CONFIG.internalHeight);
     this.menus.update(dt, this.input);
+    this.handleMenuPointer();
     this.menus.draw(ctx, this.settings);
     this.handleMenuInput();
     if (this.state === 'playing') this.menus.stack.length = 1;
   }
 
   updateResults(dt) {
+    this.resultsTime = (this.resultsTime || 0) + dt;
     const ctx = this.renderer.main;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this.world) this.renderer.draw(this.world, this.camera, this.player, dt * 0.2);
@@ -739,7 +791,10 @@ class Game {
       achievements: this.achievementsGained || [],
     });
     this.hud.update(dt);
-    if (this.input.pressed.has('Enter') || this.input.pressed.has('Space') || this.input.pressed.has('Escape')) {
+    // على الهاتف لا توجد لوحة مفاتيح: لمسة واحدة (أو Enter/مسافة) تكمل للقائمة
+    const tapped = this.resultsTime > 0.6 && this.input.pointer && this.input.pointer.justDown;
+    if (tapped || this.input.pressed.has('Enter') || this.input.pressed.has('Space') || this.input.pressed.has('Escape')) {
+      this.resultsTime = 0;
       this.state = 'menu';
       this.menus.home();
     }

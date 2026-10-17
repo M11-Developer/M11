@@ -58,6 +58,15 @@ var map_w := 0
 var map_h := 0
 var tiles: PackedByteArray = PackedByteArray()
 var heights: PackedInt32Array = PackedInt32Array()
+# الخريطة الفعلية لهذه المباراة (كان الرسم يقرأ Config.map_id ⇒ ثيم خاطئ)
+var map_id := "oasis"
+var map_def: Dictionary = {}
+var char_meta: Dictionary = {}          # characters_meta.json (كانفس/مبدأ/مقاطع)
+var kill_feed: Array = []               # آخر عمليات القتل لعرضها في الواجهة
+var last_standings: Array = []
+var _minimap_tex: ImageTexture = null
+var _last_cam := Vector2(-99999, -99999)
+var ambient := Color(1, 1, 1)
 
 # الديكور حسب الثيم — نفس الجدول في نسخة الويب (web/src/game/world.js).
 # الصيغة "p:<atlas>/<name>" تعني: ارسم العنصر من أطلس الذكاء الاصطناعي هذا.
@@ -168,14 +177,42 @@ const MAPS := {
 func _ready() -> void:
 	add_to_group("world")
 	input_manager = get_node_or_null("/root/Main/InputManager")
+	char_meta = _read_json("res://assets/atlases/characters_meta.json")
 
 
-func setup(mode: String, map_id: String, seed_v: int) -> void:
-	mode_id = mode
+func _read_json(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return {}
+	var txt := f.get_as_text()
+	f.close()
+	var data: Variant = JSON.parse_string(txt)
+	return data if typeof(data) == TYPE_DICTIONARY else {}
+
+
+func setup(new_mode: String, new_map: String, seed_v: int) -> void:
+	mode_id = new_mode
+	map_id = new_map
+	map_def = MAPS.get(map_id, MAPS["oasis"])
 	seed_value = seed_v
 	seed(seed_v)
+	# إعادة تصفير كاملة — كانت المصفوفات تلتصق بالعالم عند إعادة الاستخدام
+	props.clear()
+	spawns.clear()
+	loot_nodes.clear()
+	actors.clear()
+	pickups.clear()
+	kill_feed.clear()
+	var mdef := mode_def()
+	score_limit = int(mdef.get("score_limit", 40))
+	time_limit = float(mdef.get("time", 480))
+	zone = {"active": false, "center": Vector2.ZERO, "radius": 0.0, "target": 0.0, "state": "idle", "timer": 45.0}
 	_generate(map_id)
 	_build_visuals()
+	_build_minimap()
+	_apply_ambient()
 	match_state = "warmup"
 	match_time = 0.0
 	winner_team = -1
@@ -370,8 +407,8 @@ func _rebuild_dirty(_a: Vector2i, _b: Vector2i) -> void:
 # ---------------------------------------------------------------- الرسم
 func _load_backdrop() -> void:
 	# لوحة منظر بيئية من رصيد الصور المولّدة (القسم 15.2) — غيابها لا يُفشل شيء
-	var def: Dictionary = MAPS.get(Config.map_id, MAPS["oasis"])
-	var theme: String = def["theme"]
+	var def: Dictionary = map_def
+	var theme: String = String(def.get("theme", "desert"))
 	# الأولوية: لوحة صريحة في تعريف الخريطة ← الطقس ← الثيم (نفس الترتيب في نسخة الويب)
 	var spec := String(def.get("backdrop", ""))
 	if spec == "":
@@ -398,25 +435,34 @@ func _build_visuals() -> void:
 
 
 func _draw_terrain() -> void:
-	var atlas: AtlasLoader.AtlasResource = AtlasLoader.instance.get_atlas("world")
-	var theme: String = MAPS.get(Config.map_id, MAPS["oasis"])["theme"]
-	var cam_rect := get_viewport().get_visible_rect()
-	var x0 := maxi(0, int((cam_rect.position.x) / Config.TILE) - 1)
-	var x1 := mini(map_w - 1, int((cam_rect.end.x) / Config.TILE) + 1)
-	var y0 := maxi(0, int((cam_rect.position.y) / Config.TILE) - 1)
-	var y1 := mini(map_h - 1, int((cam_rect.end.y) / Config.TILE) + 1)
+	var theme: String = String(map_def.get("theme", "desert"))
+	var atlas := AtlasLoader.instance.get_atlas("world")
+	# المستطيل المرئي بالإحداثيات العالمية — كان الكود يستخدم get_visible_rect()
+	# وهي إحداثيات القماش (٠..٦٤٠) فلا يرسم إلا بلاطات قرب أصل الخريطة!
+	# النتيجة كانت شاشة سوداء فارغة بعد مغادرة نقطة البداية.
+	var vp_rect := get_viewport().get_visible_rect()
+	var inv := get_viewport().get_canvas_transform().affine_inverse()
+	var top_left: Vector2 = inv * vp_rect.position
+	var bottom_right: Vector2 = inv * vp_rect.end
+	var x0 := maxi(0, int(floor(top_left.x / Config.TILE)) - 1)
+	var x1 := mini(map_w - 1, int(ceil(bottom_right.x / Config.TILE)) + 1)
+	var y0 := maxi(0, int(floor(top_left.y / Config.TILE)) - 1)
+	var y1 := mini(map_h - 1, int(ceil(bottom_right.y / Config.TILE)) + 1)
 	for ty in range(y0, y1 + 1):
 		for tx in range(x0, x1 + 1):
 			var t := get_tile(tx, ty)
 			if t == TILE_EMPTY:
 				continue
-			var key := "tile/%s/solid" % theme
+			var above := get_tile(tx, ty - 1)
+			var key := ""
 			match t:
+				TILE_SOLID:
+					key = _tile_key(theme, "solid", tx, ty)
 				TILE_TOP:
-					key = "tile/%s/top" % theme
+					key = _tile_key(theme, "top", tx, ty) if above != TILE_SOLID and above != TILE_TOP else _tile_key(theme, "solid", tx, ty)
 				TILE_BACK:
-					key = "tile/%s/back" % theme
-				TILE_PLATFORM:
+					key = _tile_key(theme, "back", tx, ty)
+				TILE_PLATFORM, TILE_GIRDER:
 					key = "tile/%s/platform" % theme
 				TILE_WATER:
 					key = "prop/water"
@@ -428,32 +474,130 @@ func _draw_terrain() -> void:
 					key = "prop/glass"
 				TILE_LADDER:
 					key = "prop/ladder"
-			if atlas:
-				atlas.draw(terrain, key, Vector2(tx * Config.TILE, ty * Config.TILE))
-	# الكائنات
+				TILE_HAZARD:
+					key = "prop/pipe"
+			if key == "":
+				continue
+			var pos := Vector2(tx * Config.TILE, ty * Config.TILE)
+			if atlas != null and atlas.has_key(key):
+				atlas.draw(terrain, key, pos)
+			elif atlas != null:
+				# بديل مضمون: بلاطة الثيم الأساسية — لا ثقوب سوداء أبدًا
+				atlas.draw(terrain, "tile/%s/solid" % theme, pos)
+			# حافة ضوء علوية للسطح (نفس لمسة نسخة الويب)
+			if t == TILE_TOP and (above == TILE_EMPTY or above == TILE_BACK):
+				terrain.draw_rect(Rect2(pos, Vector2(Config.TILE, 1)), Color(1.0, 0.85, 0.6, 0.22))
+				terrain.draw_rect(Rect2(pos + Vector2(0, Config.TILE - 1), Vector2(Config.TILE, 1)), Color(0.04, 0.05, 0.06, 0.35))
+	# الكائنات والديكور
 	for p in props:
-		if not atlas:
-			continue
 		var ptype := String(p["type"])
 		if ptype.begins_with("p:"):
-			# عنصر من أطالس الذكاء الاصطناعي: يُثبَّت من قاعدته على الأرض
 			var parts := ptype.substr(2).split("/")
-			if parts.size() == 2:
-				var res: AtlasLoader.AtlasResource = AtlasLoader.instance.get_atlas(parts[0])
-				if res:
-					var fkey := parts[0] + "/" + parts[1]
-					if not res.frames.has(fkey) and parts[0].begins_with("tiles_"):
-						fkey = "tile/" + parts[0].substr(6) + "/" + parts[1]
-					var fr: Dictionary = res.frames.get(fkey, {})
-					if not fr.is_empty():
-						var pos: Vector2 = p["pos"]
-						var sc := float(p.get("sc", 1))
-						var stack: int = mini(int(p.get("stack", 1)), 4)
-						for i in stack:
-							res.draw(terrain, fkey,
-								Vector2(pos.x, pos.y - float(fr["h"]) * sc - i * float(fr["h"]) * sc), false, sc)
+			if parts.size() != 2:
+				continue
+			var res := AtlasLoader.instance.get_atlas(parts[0])
+			if res == null:
+				continue
+			var fkey := parts[0] + "/" + parts[1]
+			if not res.has_key(fkey) and String(parts[0]).begins_with("tiles_"):
+				fkey = "tile/" + String(parts[0]).substr(6) + "/" + String(parts[1])
+			var fr: Dictionary = res.frames.get(fkey, {})
+			if fr.is_empty():
+				continue
+			var pos2: Vector2 = p["pos"]
+			var sc := float(p.get("sc", 1))
+			var stack: int = mini(int(p.get("stack", 1)), 4)
+			for i in stack:
+				res.draw(terrain, fkey, Vector2(pos2.x, pos2.y - float(fr["h"]) * sc - i * float(fr["h"]) * sc), false, sc)
 			continue
-		atlas.draw(terrain, "prop/%s" % p["type"], p["pos"])
+		if atlas != null:
+			atlas.draw(terrain, "prop/%s" % ptype, p["pos"])
+
+
+## يختار بلاطة من متغيّرات الثيم (solid / solid_1 / solid_2) بشكل ثابت حسب
+## الموقع — يكسر تكرار النسيج نفسه ويعطي الخريطة ثراءً بصريًا بلا أي تكلفة.
+func _tile_key(theme: String, base: String, tx: int, ty: int) -> String:
+	var h: int = absi((tx * 73856093) ^ (ty * 19349663))
+	var v := h % 3
+	var k := "tile/%s/%s" % [theme, base]
+	if v > 0:
+		var k2 := "tile/%s/%s_%d" % [theme, base, v]
+		var atlas := AtlasLoader.instance.get_atlas("world")
+		if atlas != null and atlas.has_key(k2):
+			return k2
+	return k
+
+
+func mode_def() -> Dictionary:
+	return M11Data.MODES.get(mode_id, {})
+
+
+## هل a و b عدوّان؟ في الأوضاع الفردية (DM) الجميع أعداء بعضهم — كانت البوتات
+## كلها في فريق 0 فلم يكن أحد يهاجم أحدًا في «الكل ضد الكل» إطلاقًا.
+func are_hostile(a, b) -> bool:
+	if a == null or b == null or a == b or not b.alive:
+		return false
+	if int(mode_def().get("teams", 1)) <= 1:
+		return true
+	if int(a.team) == int(b.team):
+		return Config.friendly_fire
+	return true
+
+
+func _build_minimap() -> void:
+	# خريطة مصغّرة حقيقية: بكسل لكل بلاطة بألوان الثيم (كانت مستطيلًا رماديًا فارغًا)
+	if map_w <= 0 or map_h <= 0:
+		return
+	var img := Image.create(map_w, map_h, false, Image.FORMAT_RGBA8)
+	var cols := {
+		"desert": [Color(0.55, 0.38, 0.22), Color(0.74, 0.55, 0.32)],
+		"city": [Color(0.24, 0.26, 0.28), Color(0.42, 0.45, 0.47)],
+		"forest": [Color(0.13, 0.24, 0.15), Color(0.25, 0.38, 0.22)],
+		"village": [Color(0.36, 0.29, 0.2), Color(0.55, 0.45, 0.3)],
+		"port": [Color(0.2, 0.28, 0.34), Color(0.36, 0.46, 0.52)],
+		"snow": [Color(0.62, 0.7, 0.78), Color(0.86, 0.92, 0.97)],
+		"space": [Color(0.14, 0.18, 0.3), Color(0.3, 0.36, 0.5)],
+		"oil": [Color(0.15, 0.2, 0.26), Color(0.28, 0.36, 0.42)],
+		"cave": [Color(0.1, 0.12, 0.16), Color(0.24, 0.28, 0.36)],
+	}
+	var theme := String(map_def.get("theme", "desert"))
+	var pair: Array = cols.get(theme, [Color(0.3, 0.3, 0.3), Color(0.5, 0.5, 0.5)])
+	var deep: Color = pair[0]
+	var top: Color = pair[1]
+	for ty in map_h:
+		for tx in map_w:
+			var t := get_tile(tx, ty)
+			var c := Color(0.06, 0.08, 0.1, 0.0)
+			if t == TILE_TOP:
+				c = top
+			elif t == TILE_SOLID:
+				c = deep
+			elif t == TILE_BACK:
+				c = deep.darkened(0.25)
+			elif t == TILE_WATER:
+				c = Color(0.16, 0.36, 0.52)
+			elif t == TILE_LADDER:
+				c = Color(0.5, 0.42, 0.2)
+			elif t == TILE_CRATE:
+				c = Color(0.5, 0.38, 0.2)
+			img.set_pixel(tx, ty, c)
+	_minimap_tex = ImageTexture.create_from_image(img)
+
+
+func minimap_texture() -> Texture2D:
+	return _minimap_tex
+
+
+func _apply_ambient() -> void:
+	# تدرّج جوّي حسب وقت اليوم — يعطي كل خريطة مزاجها بلا أي تكلفة رسم
+	var tod := float(map_def.get("time_of_day", 0.4))
+	if tod < 0.18 or tod > 0.7:
+		ambient = Color(0.62, 0.68, 0.86)
+	elif tod < 0.3:
+		ambient = Color(0.86, 0.8, 0.78)
+	else:
+		ambient = Color(1, 1, 1)
+	canvas_modulate.color = ambient
 
 
 func set_quality(q: int) -> void:
@@ -470,44 +614,118 @@ func _process(dt: float) -> void:
 			match_state = "playing"
 	if match_state == "playing":
 		_check_match_end()
-	if zone["active"]:
+	if zone["active"] and match_state == "playing":
 		_update_zone(dt)
-	# اللوحة الخلفية مرتبطة بالكاميرا ⇒ نعيد رسمها كل إطار (رسم واحد لكل نسخة)
+	# رسم التضاريس يتبع الكاميرا — كان الرسم يحدث مرة واحدة عند البناء فقط
+	var cam := get_viewport().get_camera_2d()
+	var cam_pos: Vector2 = cam.global_position if cam != null else Vector2.ZERO
+	if cam_pos.distance_to(_last_cam) > 6.0:
+		_last_cam = cam_pos
+		terrain.queue_redraw()
+	# إعادة الإحياء: كانت maybe_respawn موجودة ولا تُستدعى أبدًا ⇒ تبقى ميتًا للأبد
+	for a in actors:
+		if not a.alive and bool(mode_def().get("respawn", true)):
+			if a.has_method("maybe_respawn"):
+				a.maybe_respawn(dt)
+	# سجل القتل يتلاشى تدريجيًا
+	for i in range(kill_feed.size() - 1, -1, -1):
+		kill_feed[i]["life"] = float(kill_feed[i]["life"]) - dt
+		if float(kill_feed[i]["life"]) <= 0.0:
+			kill_feed.remove_at(i)
 	if backdrop_tex != null:
 		queue_redraw()
 
 
 func _check_match_end() -> void:
-	# شروط النهاية: بلوغ حدّ النقاط، أو انتهاء الوقت، أو مقتل الصامد الأخير في القتال الحر
-	var top: int = maxi(int(team_scores[0]), int(team_scores[1]))
+	# شروط النهاية: بلوغ حدّ النقاط، أو انتهاء الوقت، أو بقاء لاعب واحد
+	last_standings = _compute_standings()
+	var ffa := int(mode_def().get("teams", 1)) <= 1
+	var top_team: int = maxi(int(team_scores[0]), int(team_scores[1])) if team_scores.size() >= 2 else 0
+	var top_kills: int = int(last_standings[0].get("kills", 0)) if not last_standings.is_empty() else 0
 	var done := false
-	if top >= score_limit:
+	if ffa:
+		if top_kills >= score_limit:
+			done = true
+			winner_team = 0 if int(team_scores[0]) >= int(team_scores[1]) else 1
+	elif top_team >= score_limit:
 		done = true
 		winner_team = 0 if int(team_scores[0]) >= int(team_scores[1]) else 1
-	elif match_time >= time_limit:
+	if match_time >= time_limit:
 		done = true
-		winner_team = -1 if int(team_scores[0]) == int(team_scores[1]) else (0 if int(team_scores[0]) > int(team_scores[1]) else 1)
+		if ffa:
+			var me := _player_standing(last_standings)
+			winner_team = 0 if me >= 0 and me == 0 else 1
+		else:
+			winner_team = -1 if int(team_scores[0]) == int(team_scores[1]) else (0 if int(team_scores[0]) > int(team_scores[1]) else 1)
 	var alive := 0
 	for a in actors:
 		if a.alive:
 			alive += 1
-	if mode_id == "survival" or mode_id == "infection":
-		if alive <= 1 and actors.size() > 1:
-			done = true
-			winner_team = 0
+	if (mode_id == "survival" or mode_id == "infection") and alive <= 1 and actors.size() > 1:
+		done = true
+		winner_team = 0 if alive > 0 else 1
 	if not done:
 		return
 	match_state = "over"
-	var stats := {"kills": 0, "deaths": 0}
+	var player_kills := 0
+	var player_deaths := 0
 	for a in actors:
 		if not a.is_bot:
-			stats["kills"] = int(a.kills)
-			stats["deaths"] = int(a.deaths)
+			player_kills = int(a.kills)
+			player_deaths = int(a.deaths)
+	var scores: Array = [int(team_scores[0]), int(team_scores[1])]
+	if ffa:
+		scores = [int(last_standings[0].get("kills", 0)) if last_standings.size() > 0 else 0,
+			int(last_standings[1].get("kills", 0)) if last_standings.size() > 1 else 0]
 	match_finished.emit({
-		"winner_team": winner_team, "scores": team_scores.duplicate(),
-		"time": match_time, "mode": mode_id, "map": Config.map_id,
-		"player_kills": int(stats["kills"]), "player_deaths": int(stats["deaths"]),
+		"winner_team": winner_team, "scores": scores, "time": match_time,
+		"mode": mode_id, "map": map_id,
+		"mode_name": String(mode_def().get("name_ar", mode_id)),
+		"map_name": String(map_def.get("name_ar", map_id)),
+		"player_kills": player_kills, "player_deaths": player_deaths,
+		"standings": last_standings.duplicate(true),
 	})
+
+
+func _compute_standings() -> Array:
+	var list: Array = []
+	for a in actors:
+		list.append({
+			"name": String(a.display_name), "kills": int(a.kills), "deaths": int(a.deaths),
+			"assists": int(a.assists), "team": int(a.team), "is_bot": bool(a.is_bot),
+			"is_player": not bool(a.is_bot), "score": int(a.kills) * 100 - int(a.deaths) * 25,
+		})
+	list.sort_custom(func(x, y): return int(x["kills"]) > int(y["kills"]))
+	return list
+
+
+func _player_standing(list: Array) -> int:
+	for i in list.size():
+		if bool(list[i].get("is_player", false)):
+			return i
+	return -1
+
+
+func _on_actor_died(victim, killer, info: Dictionary) -> void:
+	var weapon := String(info.get("weapon_id", ""))
+	var wname := "بيئة"
+	if weapon != "" and M11Data.WEAPONS.has(weapon):
+		wname = String(M11Data.WEAPONS[weapon].get("name_ar", weapon))
+	elif info.has("zone"):
+		wname = "المنطقة"
+	elif info.has("fall"):
+		wname = "سقوط"
+	kill_feed.push_front({
+		"killer": String(killer.display_name) if killer != null else "",
+		"victim": String(victim.display_name),
+		"weapon": wname,
+		"head": bool(info.get("headshot", false)),
+		"killer_team": int(killer.team) if killer != null else -1,
+		"victim_team": int(victim.team),
+		"life": 6.5, "max": 6.5,
+	})
+	if kill_feed.size() > 6:
+		kill_feed.pop_back()
 
 
 func _update_zone(dt: float) -> void:
@@ -566,8 +784,10 @@ func add_actor(is_bot: bool, data: Dictionary) -> Node2D:
 	a.is_bot = is_bot
 	entities.add_child(a)
 	a.setup(self, data)
-	a.global_position = pick_spawn_point(int(data.get("team", 0)))
+	# نقطة الظهور هي سطح الأرض ⇒ نرفع الجسم بطوله كي لا يُولد مدفونًا في التراب
+	a.global_position = pick_spawn_point(int(data.get("team", 0))) - Vector2(0.0, Config.PLAYER_H)
 	a.damaged.connect(_on_actor_damaged)
+	a.died.connect(_on_actor_died)
 	actors.append(a)
 	return a
 
@@ -644,19 +864,23 @@ func _draw() -> void:
 	if backdrop_tex == null:
 		return
 	var cam := get_viewport().get_camera_2d()
-	var cam_x := cam.global_position.x if cam else global_position.x
+	var cam_x := cam.global_position.x if cam != null else global_position.x
+	var cam_y := cam.global_position.y if cam != null else 0.0
+	var vp := get_viewport().get_visible_rect().size
 	# نرسم أعلى 78% من اللوحة فقط: الجزء السفلي (أرضية اللوحة) يُقصّ حتى لا
-	# يتصادم بصريًا مع تضاريس اللعبة الفعلية — نفس حلّ نسخة الويب (تلاشٍ سفلي).
+	# يتصادم بصريًا مع تضاريس اللعبة الفعلية.
 	var src := Rect2(Vector2.ZERO, Vector2(backdrop_tex.get_width(), backdrop_tex.get_height() * 0.78))
-	var sc := 0.5                          # 1280×720 → 640×360 = نصف، تكبير صحيح
+	var sc: float = maxf(0.45, vp.x / src.size.x)
+	# التغطية الرأسية أيضًا — وإلا ظهر شريط سماء مسطّح أعلى الشاشات الطويلة
+	sc = maxf(sc, (vp.y * 0.92) / src.size.y)
 	var dw := src.size.x * sc
 	var dh := src.size.y * sc
-	backdrop_offset = fposmod(cam_x * 0.02, dw)
-	var cam_y := cam.position.y if cam else 0.0
-	var y := cam_y - dh * 0.5
-	var x := cam_x - dw * 0.5 - backdrop_offset
+	var y := cam_y - vp.y * 0.5 + 4.0
+	var start := cam_x - dw * 0.5 - fposmod(cam_x * 0.05, dw)
+	var x := start
 	while x < cam_x + dw * 1.5:
 		draw_texture_rect_region(backdrop_tex, Rect2(x, y, dw, dh), src)
 		x += dw
-
-
+	# تعتيم سفلي يدمج اللوحة مع أرض اللعب
+	draw_rect(Rect2(cam_x - vp.x, cam_y, vp.x * 2.0, vp.y * 0.6),
+		Color(0.03, 0.04, 0.06, 0.25))

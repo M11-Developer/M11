@@ -30,7 +30,7 @@ func _process(dt: float) -> void:
 
 func _draw() -> void:
 	var vp := get_viewport().get_visible_rect().size
-	var font := ThemeDB.fallback_font
+	# خط Cairo المرفق بدل خط المحرّك الاحتياطي (كان خط المحرّك يشوّه العربية)
 	draw_rect(Rect2(Vector2.ZERO, vp), Color(0.043, 0.051, 0.063))
 	if art != null:
 		# «تغطية» كاملة للشاشة: نكبّر اللوحة حتى تغطي العرض والارتفاع معًا
@@ -43,14 +43,10 @@ func _draw() -> void:
 			draw_texture_rect(art, dst, false, Color(1, 1, 1, 0.95))
 		# ستارة داكنة أسفل النصف حتى يُقرأ الشعار والشريط
 		draw_rect(Rect2(0, vp.y * 0.42, vp.x, vp.y * 0.58), Color(0.04, 0.05, 0.07, 0.55))
-	var title := "ميكا ١١"
-	var title_size := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
-	draw_string(font, Vector2(vp.x * 0.5 - title_size * 0.5, vp.y * 0.5), title,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 40, Color(0.95, 0.76, 0.31))
-	var sub := "ساحة النار المحلية — بلا إنترنت"
-	var sub_size := font.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
-	draw_string(font, Vector2(vp.x * 0.5 - sub_size * 0.5, vp.y * 0.5 + 26), sub,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.62, 0.72, 0.78))
+	M11UI.text(self, M11UI.FONT_BOLD, "ميكا ١١", Vector2(vp.x * 0.5, vp.y * 0.5), 40,
+		Color(0.95, 0.76, 0.31), HORIZONTAL_ALIGNMENT_CENTER)
+	M11UI.text(self, M11UI.FONT_REG, "ساحة النار المحلية — بلا إنترنت", Vector2(vp.x * 0.5, vp.y * 0.5 + 26), 14,
+		Color(0.62, 0.72, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
 	# شريط تقدّم حقيقي — يتوقف عند 100% ولا يعيد نفسه
 	var bar := Rect2(vp.x * 0.5 - 120, vp.y * 0.5 + 50, 240, 8)
 	draw_rect(bar, Color(0.11, 0.13, 0.15))

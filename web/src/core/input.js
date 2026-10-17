@@ -39,6 +39,9 @@ export class Input {
     this.actions = {};            // حالة الأزرار المنطقية
     this.touches = new Map();
     this.mouse = { x: 0, y: 0, down: false, rightDown: false, dx: 0, dy: 0, wheel: 0 };
+    // مؤشر موحّد للفأرة واللمس — تستخدمه القوائم وشاشة النتائج (كانت القوائم
+    // تعمل بالكيبورد فقط، فيصبح من المستحيل التنقّل على الهاتف بلا لوحة مفاتيح)
+    this.pointer = { x: 0, y: 0, down: false, justDown: false, justUp: false, touch: false };
     this.gamepad = null;
     this.gyro = { x: 0, y: 0, enabled: false };
     this.hapticsEnabled = true;
@@ -76,16 +79,24 @@ export class Input {
     // فأرة (سطح المكتب للتجربة)
     c.addEventListener('mousemove', (e) => {
       this._usedMouse = true;
-      const r = c.getBoundingClientRect();
-      this.mouse.x = ((e.clientX - r.left) / r.width) * c.width;
-      this.mouse.y = ((e.clientY - r.top) / r.height) * c.height;
+      this._setPointerFromMouse(e);
     });
     c.addEventListener('mousedown', (e) => {
-      if (e.button === 0) this.mouse.down = true;
+      if (e.button === 0) {
+        this.mouse.down = true;
+        this._setPointerFromMouse(e);
+        this.pointer.touch = false;
+        this.pointer.down = true;
+        this.pointer.justDown = true;
+      }
       if (e.button === 2) this.mouse.rightDown = true;
     });
     addEventListener('mouseup', (e) => {
-      if (e.button === 0) this.mouse.down = false;
+      if (e.button === 0) {
+        this.mouse.down = false;
+        this.pointer.down = false;
+        this.pointer.justUp = true;
+      }
       if (e.button === 2) this.mouse.rightDown = false;
     });
     c.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -117,6 +128,14 @@ export class Input {
     return this.gyro.enabled;
   }
 
+  _setPointerFromMouse(e) {
+    const r = this.canvas.getBoundingClientRect();
+    this.mouse.x = ((e.clientX - r.left) / r.width) * this.canvas.width;
+    this.mouse.y = ((e.clientY - r.top) / r.height) * this.canvas.height;
+    this.pointer.x = this.mouse.x;
+    this.pointer.y = this.mouse.y;
+  }
+
   _touchHandler(ev) {
     ev.preventDefault();
     this._usedTouch = true;
@@ -127,6 +146,22 @@ export class Input {
       x: (t.clientX - rect.left) * sx,
       y: (t.clientY - rect.top) * sy,
     });
+    // مؤشر القوائم/اللمس: أوّل لمسة تحدد الموضع، وآخر رفع ينهي الضغطة
+    if (ev.touches && ev.touches.length) {
+      const p0 = toLocal(ev.touches[0]);
+      this.pointer.x = p0.x;
+      this.pointer.y = p0.y;
+      this.pointer.touch = true;
+      if (ev.type === 'touchstart' && !this.pointer.down) {
+        this.pointer.down = true;
+        this.pointer.justDown = true;
+      }
+    } else if (ev.type === 'touchend' || ev.type === 'touchcancel') {
+      if (this.pointer.down) {
+        this.pointer.down = false;
+        this.pointer.justUp = true;
+      }
+    }
     const live = new Set();
     for (const t of ev.touches) {
       const p = toLocal(t);
@@ -154,7 +189,10 @@ export class Input {
         this.touches.set(t.identifier, { button: st.button, ...p });
         continue;
       }
-      const left = p.x < this.canvas.width * 0.45;
+      // في وضع اليد اليسرى ينعكس دور العصوين: الحركة يمينًا والتصويب يسارًا
+      const left = this.controls.leftHanded
+        ? p.x > this.canvas.width * 0.55
+        : p.x < this.canvas.width * 0.45;
       const stick = left ? this.move : this.aim;
       if (st && st.stick === (left ? 'move' : 'aim')) {
         this._updateStick(stick, p.x, p.y);
@@ -335,6 +373,8 @@ export class Input {
   endFrame() {
     this.pressed.clear();
     this.released.clear();
+    this.pointer.justDown = false;
+    this.pointer.justUp = false;
     for (const key of Object.keys(this.actions)) {
       if (key.endsWith('_pressed')) delete this.actions[key];
     }

@@ -113,10 +113,10 @@ export class HUD {
     this.drawCrosshair(ctx, view, world, opts);
     this.drawHitMarker(ctx);
     this.drawVitals(ctx, view, world, opts);
-    this.drawWeaponPanel(ctx, view);
+    this.drawWeaponPanel(ctx, view, opts);
     this.drawMinimap(ctx, world, view, opts);
-    this.drawTopBar(ctx, world, view);
-    this.drawKillFeed(ctx, world);
+    this.drawTopBar(ctx, world, view, opts);
+    this.drawKillFeed(ctx, world, opts);
     this.drawDamageDirs(ctx, view);
     this.drawToasts(ctx);
     this.drawChat(ctx);
@@ -181,6 +181,15 @@ export class HUD {
     ctx.fillStyle = opts.color || '#EAF2F6';
     ctx.fillText(str, x, y);
     ctx.restore();
+  }
+
+  /** قياس عرض نص بخط الواجهة — لتفادي القصّ وحساب الأعمدة */
+  measure(ctx, str, size = 9, bold = true) {
+    ctx.save();
+    ctx.font = `${bold ? '700 ' : ''}${size}px ${this.fontStack}`;
+    const w = ctx.measureText(str).width;
+    ctx.restore();
+    return w;
   }
 
   bar(ctx, x, y, w, h, pct, color, bg = 'rgba(11,13,16,0.8)', border = '#0B0D10') {
@@ -279,87 +288,92 @@ export class HUD {
 
   drawVitals(ctx, view, world, opts) {
     if (!view) return;
-    const x = 10, y = H - 46;
-    // الصحة
-    const hp = clamp(view.hp / view.maxHp, 0, 1);
+    const touch = !!(opts && opts.showTouchControls);
+    // على الهاتف ننقل الصحة أعلى اليسار (تحت الخريطة) حتى لا يغطيها الإبهام
+    const mmH = Math.round(((opts && opts.settings && opts.settings.bigMinimap) ? 150 : 104) * 0.62);
+    const x = 10;
+    const y = touch ? 8 + mmH + 28 : H - 62;
+    const hp = clamp(view.hp / Math.max(1, view.maxHp), 0, 1);
     const hpCol = hp > 0.6 ? '#5ED67B' : hp > 0.3 ? '#F2C14E' : '#E8523F';
-    this.panel(ctx, x - 2, y - 2, 178, 40, true);
-    this.bar(ctx, x + 4, y + 6, 130, 9, hp, hpCol);
-    this.num(ctx, `${Math.ceil(view.hp)}`, x + 138, y + 15, { size: 10, bold: true, color: hpCol });
-    this.icon(ctx, 'icon_medkit', x + 158, y + 3);
-    // الدرع (+ الخوذة)
-    if (view.armorLevel > 0) {
-      this.bar(ctx, x + 4, y + 18, 90, 5, view.armor / 100, '#7FD2F5');
-      this.icon(ctx, 'icon_armor', x + 96, y + 14);
-    }
-    if (view.helmetLevel > 0) this.icon(ctx, 'icon_helmet', x + 112, y + 14);
-    if (view.backpackLevel > 0) this.icon(ctx, 'icon_backpack', x + 128, y + 14);
+    this.panel(ctx, x - 2, y - 2, 186, 58, true);
+    // الصحة
+    this.bar(ctx, x + 6, y + 6, 138, 10, hp, hpCol);
+    this.num(ctx, `${Math.ceil(view.hp)}`, x + 148, y + 15, { size: 11, bold: true, color: hpCol });
+    this.icon(ctx, 'icon_medkit', x + 168, y + 2);
+    // الدرع
+    if (view.armorLevel > 0) this.bar(ctx, x + 6, y + 21, 104, 5, view.armor / 100, '#7FD2F5');
+    else this.bar(ctx, x + 6, y + 21, 104, 5, 0, '#7FD2F5');
     // وقود الجيت باك
     const fuel = clamp(view.jetFuel / CONFIG.jetpackFuel, 0, 1);
-    this.bar(ctx, x + 4, y + 26, 130, 5, fuel, fuel > 0.25 ? '#F2A03E' : '#E8523F');
-    this.icon(ctx, 'icon_jetpack', x + 138, y + 22);
-    // عدّاد الجيت باك المشحون
-    if (this.time % 1 < 0.5 && fuel > 0.99) this.text(ctx, 'ممتلئ', x + 170, y + 31, { size: 7, color: '#F2A03E' });
-    // الأدوية
-    let hx = W - 14;
+    this.bar(ctx, x + 6, y + 31, 104, 5, fuel, fuel > 0.25 ? '#F2A03E' : '#E8523F');
+    // العتاد: خوذة/درع/حقيبة + عدّاد الوقود
+    let gx = x + 116;
+    if (view.helmetLevel > 0) { this.icon(ctx, 'icon_helmet', gx, y + 18); gx += 17; }
+    if (view.armorLevel > 0) { this.icon(ctx, 'icon_armor', gx, y + 18); gx += 17; }
+    if (view.backpackLevel > 0) { this.icon(ctx, 'icon_backpack', gx, y + 18); gx += 17; }
+    this.icon(ctx, 'icon_jetpack', x + 154, y + 29);
+    // الأدوية — على اللمس تُصفّ أسفل لوحة الصحة (كانت تحت أزرار الإطلاق مباشرة)
     const healRow = [['bandage', view.heals ? view.heals.bandage : 0, 'icon_medkit'], ['medkit', view.heals ? view.heals.medkit : 0, 'icon_medkit'], ['adrenaline', view.heals ? view.heals.adrenaline : 0, 'icon_star']];
+    let hx = touch ? x : W - 14;
+    const hy = touch ? y + 62 : H - 44;
+    const step = touch ? 24 : 22;
     for (const [k, count, icon] of healRow) {
       if (!count) continue;
-      hx -= 22;
-      this.panel(ctx, hx, H - 44, 20, 18, true);
-      this.icon(ctx, icon, hx + 3, H - 42);
-      this.num(ctx, `${count}`, hx + 13, H - 30, { size: 8, bold: true });
+      if (!touch) hx -= step;
+      this.panel(ctx, hx, hy, 20, 18, true);
+      this.icon(ctx, icon, hx + 3, hy + 2);
+      this.num(ctx, `${count}`, hx + 13, hy + 14, { size: 8, bold: true });
+      if (touch) hx += step;
     }
     if (view.throwable && view.throwable.count) {
-      hx -= 22;
-      this.panel(ctx, hx, H - 44, 20, 18, true);
-      this.icon(ctx, 'icon_grenade', hx + 3, H - 42);
-      this.num(ctx, `${view.throwable.count}`, hx + 13, H - 30, { size: 8, bold: true });
+      if (!touch) hx -= step;
+      this.panel(ctx, hx, hy, 20, 18, true);
+      this.icon(ctx, 'icon_grenade', hx + 3, hy + 2);
+      this.num(ctx, `${view.throwable.count}`, hx + 13, hy + 14, { size: 8, bold: true });
     }
   }
 
-  drawWeaponPanel(ctx, view) {
+  drawWeaponPanel(ctx, view, opts = {}) {
     if (!view || !view.weaponId) return;
     const w = WEAPONS[view.weaponId];
     if (!w) return;
     const st = view.weaponStats ? view.weaponStats() : resolveStats(view.weaponId, view.weaponAttachments || []);
     const slot = view.weapons[view.slot];
-    const x = W - 186, y = H - 92;
-    this.panel(ctx, x, y, 176, 42, true);
-    // أيقونة الفئة
+    // على الهاتف نرفع لوحة السلاح فوق عنقود أزرار الإطلاق (كانت فوقها تمامًا)
+    const x = W - 196;
+    const y = (opts.showTouchControls ? H - 206 : H - 96);
+    const pw = 188, ph = 54;
+    this.panel(ctx, x, y, pw, ph, true);
+    // أيقونة الفئة أعلى اليسار (طرف الشاشة)
     const iconName = { pistol: 'icon_pistol', smg: 'icon_smg', ar: 'icon_rifle', sr: 'icon_sniper', shotgun: 'icon_shotgun', lmg: 'icon_lmg', energy: 'icon_rifle', launcher: 'icon_grenade', melee: 'icon_melee' }[w.cls] || 'icon_rifle';
-    this.icon(ctx, iconName, x + 152, y + 6);
-    // اسم السلاح (عربي) + الإضافات
-    this.text(ctx, w.nameAr, x + 146, y + 20, { size: 10, bold: true, color: RARITY_COLOR[w.rarity] || '#EAF2F6', align: 'right' });
-    this.text(ctx, WEAPON_CLASS_AR[w.cls] || '', x + 146, y + 32, { size: 7, color: '#9BB8C4' });
-    // الذخيرة
+    this.icon(ctx, iconName, x + 8, y + 6);
+    // اسم السلاح (عربي) في سطر مستقل + الفئة تحته
+    const nameW = pw - 44;
+    this.text(ctx, w.nameAr, x + pw - 8, y + 16, { size: 11, bold: true, color: RARITY_COLOR[w.rarity] || '#EAF2F6', align: 'right', shadow: false });
+    this.text(ctx, `${WEAPON_CLASS_AR[w.cls] || ''} · ${w.fireMode === 'auto' ? 'آلي' : w.fireMode === 'burst' ? 'رشقة' : 'فردي'}`,
+      x + pw - 8 - Math.min(nameW, this.measure(ctx, w.nameAr, 11) + 6), y + 16, { size: 7, color: '#9BB8C4', align: 'right', shadow: false });
+    // الذخيرة: رقم كبير + الاحتياطي
     const inMag = slot ? slot.ammo : 0;
-    const reserve = view.ammo[w.cls] || 0;
-    this.num(ctx, `${inMag}`, x + 14, y + 26, { size: 16, bold: true, color: inMag === 0 ? '#E8523F' : '#EAF2F6' });
-    this.num(ctx, `/ ${reserve}`, x + 44, y + 26, { size: 9, color: '#9BB8C4' });
-    this.text(ctx, 'الذخيرة', x + 100, y + 33, { size: 7, color: '#9BB8C4' });
-    // وضع الإطلاق
-    const mode = w.fireMode === 'auto' ? 'آلي' : w.fireMode === 'burst' ? 'رشقة' : 'فردي';
-    this.text(ctx, mode, x + 100, y + 41, { size: 7, color: '#F2C14E' });
-    // مؤشر تبديل الأسلحة (سلوتان)
+    const reserve = view.ammo && view.ammo[w.cls] != null ? view.ammo[w.cls] : null;
+    this.num(ctx, `${inMag}`, x + 10, y + 40, { size: 17, bold: true, color: inMag === 0 ? '#E8523F' : '#EAF2F6' });
+    this.num(ctx, reserve == null ? '/ ∞' : `/ ${reserve}`, x + 10 + this.measure(ctx, `${inMag}`, 17) + 5, y + 40, { size: 9, color: '#9BB8C4' });
+    // شريط الإعادة / التبديل فوق الأرقام
+    if (view.reloading) {
+      const p = view.reloadProgress ? view.reloadProgress() : 0;
+      this.bar(ctx, x + 8, y + 25, 76, 4, p, '#F2C14E');
+      this.text(ctx, 'إعادة تعبئة', x + 88, y + 29, { size: 7, color: '#F2C14E', shadow: false });
+    } else if (view.switchTimer > 0) {
+      this.bar(ctx, x + 8, y + 25, 76, 4, 1 - clamp(view.switchTimer / 0.5, 0, 1), '#7FD2F5');
+    }
+    // مؤشرا الخانتين أسفل يمين
     for (let i = 0; i < 2; i++) {
-      const wx = x + 156 + i * 12;
+      const wx = x + pw - 44 + i * 14;
       const has = !!view.weapons[i];
       const active = view.slot === i;
       ctx.fillStyle = active ? '#F2C14E' : has ? 'rgba(234,242,246,0.55)' : 'rgba(234,242,246,0.18)';
-      ctx.fillRect(wx, y + 36 - 2, 8, 2);
-      if (i === 1 && view.weapons[1]) ctx.fillRect(wx, y + 34, 8, 1);
+      ctx.fillRect(wx, y + ph - 12, 10, 3);
     }
-    // شريط الإعادة/التصويب
-    if (view.reloading) {
-      const p = view.reloadProgress ? view.reloadProgress() : 0;
-      this.bar(ctx, x + 4, y + 36, 70, 4, p, '#F2C14E');
-      this.text(ctx, 'إعادة تعبئة', x + 76, y + 40, { size: 7, color: '#F2C14E' });
-    }
-    // مؤشر تبديل السلاح/الاستخدام
-    if (view.switchTimer > 0) {
-      this.bar(ctx, x + 4, y + 36, 70, 4, 1 - clamp(view.switchTimer / 0.5, 0, 1), '#7FD2F5');
-    }
+    this.text(ctx, view.slot === 0 ? '١' : '٢', x + pw - 10, y + ph - 12, { size: 7, color: '#7E8C99', shadow: false });
   }
 
   drawMinimap(ctx, world, view, opts) {
@@ -372,9 +386,13 @@ export class HUD {
     }
     // إطار الخريطة المصغّرة
     this.icon(ctx, 'ui/minimap_frame', x - 1, y - 1);
-    // اسم الخريطة والوضع
-    this.text(ctx, world.mode.nameAr, x + size - 2, y + h + 11, { size: 8, bold: true, color: '#F2C14E' });
-    this.text(ctx, world.level.def.nameAr, x + size - 2, y + h + 20, { size: 7, color: '#9BB8C4' });
+    // اسم الوضع والخريطة: نُصغّر الخط تلقائيًا إن طال الاسم حتى لا يُقصّ
+    const modeW = this.measure(ctx, world.mode.nameAr, 8);
+    this.text(ctx, world.mode.nameAr, x + size - 2, y + h + 11,
+      { size: modeW > size - 6 ? 7 : 8, bold: true, color: '#F2C14E' });
+    const mapW = this.measure(ctx, world.level.def.nameAr, 7);
+    this.text(ctx, world.level.def.nameAr, x + size - 2, y + h + 20,
+      { size: mapW > size - 6 ? 6 : 7, color: '#9BB8C4' });
     if (this.showBigMap) {
       const bw = 380, bh = 232, bx = (W - bw) / 2, by = (H - bh) / 2;
       ctx.save();
@@ -387,44 +405,58 @@ export class HUD {
     }
   }
 
-  drawTopBar(ctx, world, view) {
+  drawTopBar(ctx, world, view, opts = {}) {
     const cx = W / 2;
+    const touch = !!opts.showTouchControls;
     const mins = Math.max(0, Math.floor(world.matchTimer / 60));
     const secs = Math.max(0, Math.floor(world.matchTimer % 60));
     const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-    this.panel(ctx, cx - 62, 6, 124, 22, true);
-    this.num(ctx, timeStr, cx - 52, 21, { size: 13, bold: true, align: 'left' });
-    // نقاط الفرق أو ترتيب اللاعب
+    // مؤقت مركزي واضح — كان نص النقاط يُرسم فوق أرقام المؤقت فيظهر مشوّهًا
+    this.panel(ctx, cx - 37, 5, 74, 23, true);
+    this.num(ctx, timeStr, cx, 21, { size: 13, bold: true, align: 'center' });
+    // نقاط الوضع: يمين المؤقت
     if (world.mode.teams > 1) {
-      this.text(ctx, `ف١ ${world.teamScores[0] || 0}`, cx + 2, 21, { size: 10, bold: true, color: '#4FD1C5' });
-      this.text(ctx, `ف٢ ${world.teamScores[1] || 0}`, cx + 56, 21, { size: 10, bold: true, color: '#E8734A' });
-    } else if (world.mode.scoreLimit) {
-      const target = world.mode.scoreLimit;
+      this.panel(ctx, cx + 42, 5, 82, 23, true);
+      this.num(ctx, `${world.teamScores[0] || 0}`, cx + 58, 21, { size: 12, bold: true, color: '#4FD1C5', align: 'center' });
+      this.num(ctx, `:`, cx + 83, 21, { size: 11, color: '#7E8C99', align: 'center' });
+      this.num(ctx, `${world.teamScores[1] || 0}`, cx + 108, 21, { size: 12, bold: true, color: '#E8734A', align: 'center' });
+    } else {
+      const target = world.mode.scoreLimit || 0;
       const best = view ? view.kills : 0;
-      this.text(ctx, `${best} / ${target}`, cx + 56, 21, { size: 10, bold: true, color: '#F2C14E' });
+      this.panel(ctx, cx + 42, 5, 82, 23, true);
+      this.num(ctx, `${best}${target ? ' / ' + target : ''}`, cx + 83, 21, { size: 11, bold: true, color: '#F2C14E', align: 'center' });
     }
-    // عدد الأحياء
+    // عدد الأحياء: يسار المؤقت
     const alive = world.getAliveCount();
-    this.panel(ctx, cx + 66, 6, 54, 22, true);
-    this.icon(ctx, 'icon_skull', cx + 106, 10);
-    this.num(ctx, `${alive}`, cx + 72, 21, { size: 11, bold: true });
-    // حالة الوضع الخاص
-    if (world.modeId === 'snd' && world.snd) {
-      this.text(ctx, `الجولة ${world.snd.round}`, cx + 124, 21, { size: 9, bold: true, color: '#F2C14E' });
-    } else if (world.modeId === 'kotc' && world.kotc) {
-      this.text(ctx, world.kotc.owner >= 0 ? `التل: فريق ${world.kotc.owner + 1}` : 'التل محايد', cx + 124, 21, { size: 9, bold: true, color: '#F2C14E' });
-    } else if (world.modeId === 'goldenCard' && world.golden) {
-      this.text(ctx, world.golden.holder ? `الكرت: ${world.golden.holder.name}` : 'الكرت حر', cx + 124, 21, { size: 9, bold: true, color: '#F2C14E' });
-    } else if (world.modeId === 'infection' && world.infection) {
-      const z = world.actors.filter((x) => x.isZombie && x.alive).length;
-      this.text(ctx, `مصابون ${z}`, cx + 124, 21, { size: 9, bold: true, color: '#E85D9B' });
-    } else if (world.matchState === 'warmup') {
-      this.text(ctx, `تبدأ خلال ${Math.ceil(world.warmupTimer)}`, cx + 124, 21, { size: 9, bold: true, color: '#5ED67B' });
+    this.panel(ctx, cx - 108, 5, 66, 23, true);
+    this.icon(ctx, 'icon_skull', cx - 102, 8);
+    this.num(ctx, `${alive}`, cx - 66, 21, { size: 11, bold: true, align: 'center' });
+    // اسم الوضع في سطر مستقل أسفل المؤقت — لا يزاحم الأرقام ولا يُقصّ
+    const modeName = world.mode && world.mode.nameAr ? world.mode.nameAr : '';
+    if (modeName) {
+      const tw = Math.min(240, this.measure(ctx, modeName, 8) + 16);
+      ctx.fillStyle = 'rgba(8,11,15,0.88)';
+      ctx.fillRect(cx - tw / 2, 31, tw, 13);
+      ctx.strokeStyle = 'rgba(242,193,78,0.22)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - tw / 2 + 0.5, 31.5, tw - 1, 12);
+      this.text(ctx, modeName, cx + tw / 2 - 8, 40, { size: 8, bold: true, color: '#F2C14E', align: 'right' });
+    }
+    // حالة الوضع الخاص أسفل الشريط
+    let extra = '';
+    if (world.modeId === 'snd' && world.snd) extra = `الجولة ${world.snd.round}`;
+    else if (world.modeId === 'kotc' && world.kotc) extra = world.kotc.owner >= 0 ? `التل: فريق ${world.kotc.owner + 1}` : 'التل محايد';
+    else if (world.modeId === 'goldenCard' && world.golden) extra = world.golden.holder ? `الكرت: ${world.golden.holder.name}` : 'الكرت حر';
+    else if (world.modeId === 'infection' && world.infection) extra = `مصابون ${world.actors.filter((x) => x.isZombie && x.alive).length}`;
+    else if (world.matchState === 'warmup') extra = `تبدأ خلال ${Math.ceil(world.warmupTimer)}`;
+    if (extra && !touch) {
+      this.text(ctx, extra, cx, 54, { size: 8, color: '#9BB8C4', align: 'center' });
     }
   }
 
-  drawKillFeed(ctx, world) {
-    let y = 22;
+  drawKillFeed(ctx, world, opts = {}) {
+    // على اللمس توجد أزرار إيقاف/خريطة أعلى اليمين، فنبدأ السجل أسفل منها
+    let y = opts.showTouchControls ? 34 : 22;
     const x = W - 10;
     for (let i = world.killFeed.length - 1; i >= 0 && i >= world.killFeed.length - 5; i--) {
       const k = world.killFeed[i];
@@ -689,22 +721,29 @@ export class HUD {
     const title = wonFinal ? 'فوز' : 'هزيمة';
     this.text(ctx, title, W / 2, 30, { size: 18, bold: true, color: wonFinal ? '#5ED67B' : '#E8523F', align: 'center', shadow: true });
     this.text(ctx, wonFinal ? 'أحسنت — ساحة النار لك' : 'خسارة… حاول مرة أخرى', W / 2, 44, { size: 9, color: '#EAF2F6', align: 'center', shadow: true });
-    this.text(ctx, 'نتائج المباراة', W / 2, bannerH + 8, { size: 11, bold: true, color: '#F2C14E', align: 'center' });
+    // كان عنوان «نتائج المباراة» يُرسم فوق سطر الفائز تمامًا فيتراكبان
+    this.text(ctx, 'نتائج المباراة', W / 2, bannerH + 10, { size: 11, bold: true, color: '#F2C14E', align: 'center' });
     const winner = results.standings[0];
     if (winner) {
-      this.text(ctx, `الأول: ${winner.name}`, W / 2, bannerH, { size: 10, color: '#EAF2F6', align: 'center' });
+      this.text(ctx, `الأول: ${winner.name}`, W - 74, bannerH + 10, { size: 9, color: '#EAF2F6', align: 'right' });
     }
     // رؤوس الأعمدة
+    // أعمدة الجدول: مصدر واحد للعناوين والقيم حتى لا يتراكب أي عمودين
     const cols = [
-      ['#', 74], ['اللاعب', 92], ['قتل', 250], ['موت', 282], ['مساعدة', 312], ['رأس', 348],
-      ['دقة', 380], ['ضرر', 414], ['أطول', 460],
+      { key: 'placement', label: '#', x: 104, head: 104 },
+      { key: 'name', label: 'اللاعب', x: 214, head: 214, text: true },
+      { key: 'kills', label: 'قتل', x: 268, head: 268 },
+      { key: 'deaths', label: 'موت', x: 306, head: 306 },
+      { key: 'assists', label: 'مساعدة', x: 350, head: 350 },
+      { key: 'headshots', label: 'رأس', x: 388, head: 388 },
+      { key: 'accuracy', label: 'دقّة', x: 428, head: 428 },
+      { key: 'damage', label: 'ضرر', x: 470, head: 470 },
+      { key: 'longestKill', label: 'أطول', x: 514, head: 514 },
     ];
-    const headerY = bannerH + 22;
-    ctx.save();
-    ctx.font = `700 8px ${this.fontStack}`;
-    ctx.fillStyle = '#9BB8C4';
-    for (const [label, x] of cols) this.text(ctx, label, x + 26, headerY, { size: 8, bold: true, color: '#9BB8C4', align: 'right' });
-    ctx.restore();
+    const headerY = bannerH + 28;
+    for (const c of cols) {
+      this.text(ctx, c.label, c.head, headerY, { size: 8, bold: true, color: '#9BB8C4', align: 'right', shadow: false });
+    }
     let y = headerY + 14;
     results.standings.forEach((s, i) => {
       if (i % 2 === 0) {
@@ -712,15 +751,18 @@ export class HUD {
         ctx.fillRect(66, y - 9, W - 132, 13);
       }
       const col = s.team === 0 ? '#4FD1C5' : s.team === 1 ? '#E8734A' : '#EAF2F6';
-      this.num(ctx, `${s.placement}`, 100, y, { size: 9, bold: true, color: i === 0 ? '#F2C14E' : '#9BB8C4', align: 'right' });
-      this.text(ctx, s.name, 118 + 26, y, { size: 9, bold: s.isBot === false, color: col });
-      this.num(ctx, `${s.kills}`, 276, y, { size: 9 });
-      this.num(ctx, `${s.deaths}`, 306, y, { size: 9 });
-      this.num(ctx, `${s.assists}`, 338, y, { size: 9 });
-      this.num(ctx, `${s.headshots}`, 370, y, { size: 9 });
-      this.num(ctx, `${s.accuracy}%`, 404, y, { size: 9 });
-      this.num(ctx, `${s.damage}`, 446, y, { size: 9 });
-      this.num(ctx, `${s.longestKill}`, 486, y, { size: 9 });
+      for (const c of cols) {
+        if (c.key === 'name') {
+          this.text(ctx, String(s.name || ''), c.x, y, { size: 9, bold: s.isBot === false, color: col, align: 'right' });
+        } else if (c.key === 'accuracy') {
+          this.num(ctx, `${s.accuracy}%`, c.x, y, { size: 9, align: 'right' });
+        } else {
+          this.num(ctx, `${s[c.key]}`, c.x, y, {
+            size: 9, align: 'right',
+            color: c.key === 'placement' && i === 0 ? '#F2C14E' : '#EAF2F6',
+          });
+        }
+      }
       y += 13;
       if (y > H - 60) return;
     });
@@ -728,11 +770,14 @@ export class HUD {
     const mapName = (MAPS.find((m) => m.id === opts.map) || {}).nameAr || opts.map || '';
     const mins = Math.floor((results.duration || 0) / 60), secs = Math.floor((results.duration || 0) % 60);
     const summary = `الوضع: ${MODES[opts.mode] ? MODES[opts.mode].nameAr : (opts.mode || '')} | الخريطة: ${mapName} | المدة: ${mins}:${String(secs).padStart(2, '0')}`;
-    this.text(ctx, summary, W / 2, H - 52, { size: 9, color: '#EAF2F6', align: 'center' });
+    // مركز النصوص أسفل الجدول: يمين مصغّرة الخريطة حتى لا تتراكب معها (كانت فوقها)
+    const boxL = 196, boxR = W - 16;
+    const tcx = (boxL + boxR) / 2;
+    this.text(ctx, summary, tcx, H - 64, { size: 8.5, color: '#EAF2F6', align: 'center' });
     if (opts.xp && (opts.xp.xp != null)) {
       const lv = opts.xp.level != null ? ` — المستوى ${opts.xp.level}` : '';
       const up = opts.xp.leveled ? '  ⬆ ترقية!' : '';
-      this.text(ctx, `خبرة: +${opts.xp.xp}${lv}${up}`, W / 2, H - 42, { size: 9, bold: true, color: '#5ED67B', align: 'center' });
+      this.text(ctx, `خبرة: +${opts.xp.xp}${lv}${up}`, tcx, H - 52, { size: 9, bold: true, color: '#5ED67B', align: 'center' });
     }
     // مصغّرة الخريطة التي لُعبت (صورة حقيقية مولّدة من أصول اللعبة) — تملأ الفراغ ذا معنى
     const thumb = this.uiImage ? this.uiImage(`thumb_${opts.map}.png`) : null;
@@ -752,8 +797,15 @@ export class HUD {
     }
     if (opts.achievements && opts.achievements.length) {
       const names = opts.achievements.map((a) => a.nameAr).join(' • ');
-      this.text(ctx, `إنجازات جديدة: ${names}`, W / 2, H - 32, { size: 8, color: '#F2C14E', align: 'center' });
+      this.text(ctx, `إنجازات جديدة: ${names}`, tcx, H - 42, { size: 8, color: '#F2C14E', align: 'center' });
     }
-    this.text(ctx, 'اضغط Enter للمتابعة', W / 2, H - 18, { size: 9, color: '#9BB8C4', align: 'center' });
+    // على الهاتف لا لوحة مفاتيح: اللمس في أي مكان يكمل (main يقرأ المؤشر)
+    const bw = 170, bx = tcx - bw / 2, by = H - 32;
+    ctx.fillStyle = 'rgba(242,193,78,0.16)';
+    ctx.fillRect(bx, by, bw, 16);
+    ctx.strokeStyle = 'rgba(242,193,78,0.6)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 15);
+    this.text(ctx, 'اضغط للمتابعة', W / 2, by + 11, { size: 9, bold: true, color: '#F2C14E', align: 'center' });
   }
 }

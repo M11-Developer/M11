@@ -61,6 +61,22 @@ func save_profile() -> void:
 
 
 # --- التقدّم ---
+## الإنجازات — كانت غير موجودة في نسخة Godot إطلاقًا (شاشة «الإحصاءات»
+## كانت ستُسقط القائمة بخطأ «Save.ACHIEVEMENTS غير معروف»). الآن مصدر واحد.
+const ACHIEVEMENTS: Array = [
+	{"id": "first_blood", "name_ar": "أول دم", "desc_ar": "أول قتلة في مسيرتك", "check": "kills", "goal": 1},
+	{"id": "kills_50", "name_ar": "محترف ميدان", "desc_ar": "50 قتلة", "check": "kills", "goal": 50},
+	{"id": "kills_250", "name_ar": "أسطورة الحرب", "desc_ar": "250 قتلة", "check": "kills", "goal": 250},
+	{"id": "matches_10", "name_ar": "مثابر", "desc_ar": "10 مباريات", "check": "matches", "goal": 10},
+	{"id": "wins_5", "name_ar": "منتصر", "desc_ar": "5 انتصارات", "check": "wins", "goal": 5},
+	{"id": "wins_25", "name_ar": "قائد الفريق", "desc_ar": "25 انتصارًا", "check": "wins", "goal": 25},
+	{"id": "headshots_25", "name_ar": "قنّاص الرؤوس", "desc_ar": "25 إصابة رأس", "check": "headshots", "goal": 25},
+	{"id": "revives_10", "name_ar": "أخ في السلاح", "desc_ar": "10 إحياءات لزملاء", "check": "revives", "goal": 10},
+	{"id": "longest_100", "name_ar": "طلقة بعيدة", "desc_ar": "قتلة من 100 متر", "check": "longest_kill", "goal": 100},
+	{"id": "level_10", "name_ar": "ضابط صف", "desc_ar": "الوصول للمستوى 10", "check": "level", "goal": 10},
+]
+
+
 const RANKS: Array = [
 	{"name_ar": "مجنّد", "xp": 0}, {"name_ar": "عريف", "xp": 800}, {"name_ar": "رقيب", "xp": 2400},
 	{"name_ar": "رقيب أول", "xp": 5200}, {"name_ar": "مساعد", "xp": 9600}, {"name_ar": "ملازم", "xp": 16000},
@@ -84,6 +100,34 @@ func add_xp(amount: int) -> Dictionary:
 	return {"leveled": leveled, "level": level, "rank": RANKS[rank]["name_ar"]}
 
 
+## يفتح الإنجازات المستحقة ويعيد أسماءها العربية لعرضها كإشعارات.
+## اسم الرتبة الحالية — يُستخدم في شاشة النتائج والقائمة بلا حسابات مكرّرة.
+func rank_name() -> String:
+	var ri := clampi(int(profile.get("rank", 0)), 0, RANKS.size() - 1)
+	return String(RANKS[ri]["name_ar"])
+
+
+func check_achievements() -> Array:
+	var unlocked: Array = []
+	var stats: Dictionary = profile["stats"]
+	var have: Array = profile["achievements"]
+	for a in ACHIEVEMENTS:
+		if have.has(String(a["id"])):
+			continue
+		var value := 0.0
+		var key := String(a["check"])
+		if key == "level":
+			value = float(profile["level"])
+		else:
+			value = float(stats.get(key, 0))
+		if value >= float(a["goal"]):
+			have.append(String(a["id"]))
+			unlocked.append(a)
+	if not unlocked.is_empty():
+		save_profile()
+	return unlocked
+
+
 func record_match(result: Dictionary) -> Dictionary:
 	var s: Dictionary = profile["stats"]
 	s["kills"] = int(s["kills"]) + int(result.get("kills", 0))
@@ -100,5 +144,7 @@ func record_match(result: Dictionary) -> Dictionary:
 		+ int(result.get("revives", 0)) * 40 + int(result.get("damage", 0)) / 10
 		+ (200 if result.get("won", false) else 0))
 	var r := add_xp(xp)
+	var unlocked := check_achievements()
 	save_profile()
-	return {"xp": xp, "level": r["level"], "rank": r["rank"], "leveled": r["leveled"]}
+	return {"xp": xp, "level": r["level"], "rank": r["rank"], "leveled": r["leveled"],
+		"unlocked": unlocked}

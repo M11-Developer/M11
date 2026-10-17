@@ -87,6 +87,8 @@ const canvas = createCanvas(CONFIG.internalWidth, CONFIG.internalHeight);
 const ctx = canvas.getContext('2d');
 const menus = new MenuSystem(Assets, game);
 menus.stack.length = 0;
+// الرئيسية أولًا (السياق الحقيقي: شاشة رئيسية ثم شاشة فرعية)
+menus.push('main');
 if (winMode || loseMode) {
   // شاشة النتائج الحقيقية تأتي من HUD: نرسمها مع لوحة النصر/الهزيمة
   const { HUD } = await import(path.join(WEB, 'src/game/hud.js'));
@@ -109,7 +111,8 @@ if (winMode || loseMode) {
     achievements: [{ nameAr: 'أول دم' }, { nameAr: 'قنّاص' }],
   });
 } else {
-  menus.push(screenName);
+  // نبدأ من الرئيسية ثم ندفع الشاشة المطلوبة حتى تظهر عناصر الرجوع كما في اللعب الحقيقي
+  if (screenName !== 'main') menus.push(screenName);
   menus.current.index = index;
 }
 

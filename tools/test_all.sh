@@ -58,6 +58,8 @@ for pair in $SCREENS; do
   if node tools/menu_shot.mjs "$s" "$i" "/tmp/test_${s}.png" >/dev/null 2>&1; then OK=$((OK+1)); else fail "menu $s"; fi
 done
 node tools/menu_shot.mjs x 0 /tmp/test_win.png --results-win >/dev/null 2>&1 && OK=$((OK+1)) || fail "results win"
+# تفاعل اللمس: زر الرجوع، الاستئناف، تبديل الاختيار، ضبط السلايدر
+if node tools/menu_interact.mjs >/dev/null 2>&1; then echo "  ✔ تفاعلات اللمس (رجوع/استئناف/اختيار/سلايدر)"; else fail "menu interact"; fi
 node tools/menu_shot.mjs x 0 /tmp/test_lose.png --results-lose >/dev/null 2>&1 && OK=$((OK+1)) || fail "results lose"
 echo "  ✔ $OK شاشة رُسمت بنجاح"
 

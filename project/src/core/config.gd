@@ -74,6 +74,9 @@ var button_alpha := 0.6
 var claw_layout := 2
 var joystick_mode := "floating"
 var left_handed := false
+var skin_index := 0
+var auto_fire := false
+var show_fps := true
 
 
 func _ready() -> void:
@@ -102,12 +105,48 @@ func save_settings() -> void:
 			"voice_volume", "vibration", "colorblind", "gyro_aim", "aim_assist", "bot_count",
 			"difficulty", "friendly_fire", "map_id", "mode_id", "op_key", "player_name", "loadout",
 			"throwable", "stick_size", "stick_alpha", "button_alpha", "claw_layout",
-			"joystick_mode", "left_handed", "desktop_fullscreen", "pc_post_fx"]:
+			"joystick_mode", "left_handed", "desktop_fullscreen", "pc_post_fx",
+			"skin_index", "auto_fire", "show_fps"]:
 		data[k] = get(k)
 	var f := FileAccess.open(PATH, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify(data, "  "))
 		f.close()
+
+
+## تستعيد كل القيم الافتراضية (نفس نسخة الويب تمامًا).
+func reset_defaults() -> void:
+	quality = 2
+	fps_limit = 0
+	language = "ar"
+	master_volume = 0.9
+	music_volume = 0.55
+	sfx_volume = 0.9
+	voice_volume = 0.8
+	vibration = true
+	colorblind = "none"
+	gyro_aim = false
+	aim_assist = 0.35
+	bot_count = 7
+	difficulty = 2
+	friendly_fire = false
+	map_id = "oasis"
+	mode_id = "dm"
+	op_key = "rashid"
+	player_name = "مقاتل"
+	loadout = ["jabha", "n9"]
+	throwable = "grenade"
+	stick_size = 62.0
+	stick_alpha = 0.55
+	button_alpha = 0.6
+	claw_layout = 2
+	joystick_mode = "floating"
+	left_handed = false
+	skin_index = 0
+	auto_fire = false
+	show_fps = true
+	save_settings()
+	apply_runtime()
 
 
 func apply_runtime() -> void:

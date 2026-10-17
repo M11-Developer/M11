@@ -82,10 +82,16 @@ func _physics_process(dt: float) -> void:
 		for a in world.actors:
 			if a == owner_actor or not a.alive:
 				continue
-			if a.team == team and not Config.friendly_fire:
+			# العداوة تأتي من العالم: في «الكل ضد الكل» الجميع أعداء حتى لو تشابهت الفرق
+			if world.has_method("are_hostile") and not world.are_hostile(owner_actor, a):
 				continue
-			var body_rect := Rect2(a.global_position + Vector2(-8, -30), Vector2(16, 30))
-			var head_rect := Rect2(a.global_position + Vector2(-6, -60), Vector2(12, 12))
+			if not world.has_method("are_hostile") and a.team == team and not Config.friendly_fire:
+				continue
+			# نقطة الأصل = أعلى الجسم (صندوق التصادم يبدأ من 0) — كانت الصناديق تحسب
+			# الجسم أسفل النقطة فتمرّ الرصاصات عبر المقاتلين بلا إصابة.
+			var bh: float = a.body_height() if a.has_method("body_height") else Config.PLAYER_H
+			var body_rect := Rect2(a.global_position + Vector2(-8, 14), Vector2(16, bh - 14))
+			var head_rect := Rect2(a.global_position + Vector2(-6, 0), Vector2(12, 14))
 			if body_rect.has_point(global_position) or head_rect.has_point(global_position):
 				var head := head_rect.has_point(global_position)
 				var dealt := damage_head if head else damage

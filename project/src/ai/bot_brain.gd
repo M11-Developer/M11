@@ -85,7 +85,7 @@ func _find_enemy(w: GameWorld) -> Actor:
 	for a in w.actors:
 		if a == actor or not a.alive:
 			continue
-		if a.team == actor.team and not Config.friendly_fire:
+		if not w.are_hostile(actor, a):
 			continue
 		var d := actor.global_position.distance_to(a.global_position)
 		if d > max_d:
@@ -97,10 +97,10 @@ func _find_enemy(w: GameWorld) -> Actor:
 
 
 func _has_los(w: GameWorld, to: Vector2) -> bool:
-	var from := actor.global_position + Vector2(0, -20)
+	var from := actor.global_position + Vector2(0, 24)
 	var steps := int(from.distance_to(to) / 10.0)
 	for i in steps:
-		var p := from.lerp(to + Vector2(0, -20), float(i) / maxf(1.0, steps))
+		var p := from.lerp(to + Vector2(0, 24), float(i) / maxf(1.0, steps))
 		if w.is_solid_at(p):
 			return false
 	return true

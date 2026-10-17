@@ -21,6 +21,8 @@ var state := "boot"          # boot | menu | playing | paused | results
 
 
 func _ready() -> void:
+	# نقطة الدخول تعمل دائمًا حتى أثناء الإيقاف المؤقت (وإلا لا يمكن الاستئناف)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	# حارس أمان: إن فشل أي شيء في الإقلاع، تظهر القائمة على كل حال بعد ٨ ثوانٍ
 	# بدل أن يظل شريط التحميل يدور إلى الأبد.
 	var guard := get_tree().create_timer(8.0)
@@ -121,6 +123,7 @@ func _ensure_menu() -> void:
 	if "main_ref" in menu:
 		menu.main_ref = self
 	hud_layer.add_child(menu)
+	menu.move_to_front()
 	state = "menu"
 	loading = false
 	AudioBus.play_music("menu_theme")
@@ -196,8 +199,11 @@ func start_match(opts: Dictionary = {}) -> void:
 	}
 	var player = world.add_actor(false, data)
 	var cam := Camera2D.new()
+	# نقطة أصل الجسم أعلى الرأس؛ نرفع الكاميرا لمنتصف الصدر حتى يكون
+	# اللاعب في منتصف الشاشة عموديًا (كانت الكاميرا عند قدمي/رأس الجسم تمامًا)
+	cam.position = Vector2(0, 31)
 	cam.position_smoothing_enabled = true
-	cam.position_smoothing_speed = 8.0
+	cam.position_smoothing_speed = 9.0
 	cam.zoom = Vector2(1, 1)
 	cam.limit_left = 0
 	cam.limit_top = -400
@@ -221,6 +227,8 @@ func start_match(opts: Dictionary = {}) -> void:
 	hud = preload("res://src/ui/hud.gd").new()
 	hud_layer.add_child(hud)
 	hud.setup(world, player)
+	if menu:
+		menu.move_to_front()
 	# طبقة أزرار اللمس — بدونها لا يستطيع اللاعب التحكم على الهاتف
 	if touch_ui:
 		touch_ui.queue_free()
@@ -232,7 +240,15 @@ func start_match(opts: Dictionary = {}) -> void:
 	if input_manager != null:
 		input_manager.player_ref = player
 	state = "playing"
+	get_tree().paused = false
+	Config.apply_runtime()
 	AudioBus.play_music("dm_fast")
+	if menu:
+		menu.visible = false
+	# رسالة ترحيب مفيدة بدل بدء صامت
+	if hud and hud.has_method("toast"):
+		hud.toast("%s — %s" % [String(M11Data.MODES.get(mode_id, {}).get("name_ar", mode_id)),
+			String(world.map_def.get("name_ar", map_id))], M11UI.GOLD, 3.0)
 	# إعادة بناء أزرار اللمس حسب التخطيط والحجم المختارَين في الإعدادات
 	var im := get_node_or_null("InputManager")
 	if im and im.has_method("rebuild_buttons"):
@@ -247,20 +263,32 @@ func _on_match_finished(res: Dictionary) -> void:
 		hud.visible = false
 	# 2) حفظ الإحصاءات والخبرة محليًا (تشفير بسيط، بلا أي اتصال بالإنترنت)
 	var won: bool = int(res.get("winner_team", -1)) == 0
+	var me: Dictionary = {}
+	for a in (world.actors if world != null else []):
+		if not a.is_bot:
+			me = {
+				"kills": int(a.kills), "deaths": int(a.deaths), "assists": int(a.assists),
+				"headshots": int(a.headshots), "damage": int(a.damage_dealt),
+				"longest_kill": float(a.longest_kill), "revives": int(a.revives),
+			}
+			break
 	var saved := Save.record_match({
-		"kills": int(res.get("player_kills", 0)), "deaths": int(res.get("player_deaths", 0)),
-		"won": won,
+		"kills": int(me.get("kills", res.get("player_kills", 0))),
+		"deaths": int(me.get("deaths", res.get("player_deaths", 0))),
+		"assists": int(me.get("assists", 0)), "headshots": int(me.get("headshots", 0)),
+		"damage": int(me.get("damage", 0)), "longest_kill": float(me.get("longest_kill", 0.0)),
+		"revives": int(me.get("revives", 0)), "won": won,
 	})
 	# 3) شاشة النتائج — لوحة النصر أو الهزيمة المولّدة
 	if menu:
 		var payload := res.duplicate()
 		payload["xp"] = saved["xp"]
 		payload["level"] = saved["level"]
+		payload["unlocked"] = saved.get("unlocked", [])
 		menu.show_results(payload)
 		menu.visible = true
+		menu.move_to_front()
 	# 4) ننبّه المشاهد ليتوقف عن التحديث
-	if world and world.has_method("set_process"):
-		world.set_process(false)
 	AudioBus.play_music("menu_theme")
 
 
@@ -277,10 +305,17 @@ func back_to_menu() -> void:
 		touch_ui.queue_free()
 		touch_ui = null
 	if menu:
-		menu.screen = 0
-		menu.index = 0
+		menu.show_screen(0, false)
+		menu.history.clear()
 		menu.visible = true
+		menu.move_to_front()
+	if input_manager != null:
+		input_manager.button_state.clear()
+		input_manager.just_pressed.clear()
+		input_manager.move_stick["active"] = false
+		input_manager.aim_stick["active"] = false
 	state = "menu"
+	get_tree().paused = false
 	AudioBus.play_music("menu_theme")
 
 
@@ -289,13 +324,55 @@ func _unhandled_input(event: InputEvent) -> void:
 		if pc != null:
 			pc.toggle_fullscreen()
 		return
-	if state == "results" and menu and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")):
-		back_to_menu()
+	# Esc / زر الرجوع في أندرويد: أثناء اللعب نفتح شاشة الإيقاف، وفي القوائم
+	# تتولّى القائمة نفسها الرجوع خطوة (حتى لا يُنفَّذ الرجوع مرتين).
+	if state == "playing" and (event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel")):
+		toggle_pause()
+		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed("pause"):
-		if state == "playing":
-			state = "paused"
-			get_tree().paused = true
-		elif state == "paused":
-			state = "playing"
-			get_tree().paused = false
+	# اختصارات اللعب (لا تعمل أثناء الإيقاف)
+	if state != "playing":
+		return
+	if event.is_action_pressed("scoreboard"):
+		if hud != null:
+			hud.show_scoreboard = not hud.show_scoreboard
+	if event.is_action_pressed("map_big"):
+		if hud != null:
+			hud.big_map = not hud.big_map
+
+
+func _process(dt: float) -> void:
+	if hud != null:
+		hud.set("fps", float(Engine.get_frames_per_second()))
+	if input_manager != null:
+		if input_manager.consume("pause"):
+			if state == "playing" or state == "paused":
+				toggle_pause()
+		if input_manager.consume("score"):
+			if hud != null and state == "playing":
+				hud.show_scoreboard = not hud.show_scoreboard
+
+
+## إيقاف/استئناف حقيقي مع شاشة قابلة للمس — كان Esc يجمّد الشجرة بلا أي واجهة
+func toggle_pause() -> void:
+	if state == "playing":
+		state = "paused"
+		get_tree().paused = true
+		if touch_ui != null:
+			touch_ui.visible = false
+		if menu != null:
+			menu.show_pause()
+			menu.visible = true
+			menu.move_to_front()
+	elif state == "paused":
+		state = "playing"
+		get_tree().paused = false
+		if menu != null:
+			menu.visible = false
+		if touch_ui != null:
+			touch_ui.visible = true
+
+
+func apply_graphics() -> void:
+	if pc != null:
+		pc.set_quality(Config.quality)
