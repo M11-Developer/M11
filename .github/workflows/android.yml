@@ -19,7 +19,63 @@ permissions:
   issues: write     # لقناة التشخيص
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # وظيفة تحقّق سريعة (٤–٦ دقائق): تشغّل اللعبة فعليًا بلا شاشة.
+  # إن لم تُقلع اللعبة وتصل للقائمة، لا يبدأ التصدير إطلاقًا — فلا تُنتج نسخة
+  # معطوبة مرة أخرى (هذا بالضبط ما حدث مع v1.0.0 وحصل عليه المستخدم).
+  # ---------------------------------------------------------------------------
+  verify-boot:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 20
+    steps:
+      - name: جلب الشيفرة
+        uses: actions/checkout@v4
+
+      - name: استيراد المشروع
+        run: |
+          set +e
+          godot --headless --path project --import 2>&1 | tail -20
+          echo "import_exit=$?"
+
+      - name: "تشغيل حقيقي: هل تُقلع اللعبة وتصل للقائمة؟"
+        run: |
+          set +e
+          : > /tmp/run.log
+          timeout 240 godot --headless --path project --quit-after 300 2>&1 | tee /tmp/run.log
+          RUN_EXIT=$?
+          ERRS=$(grep -cE "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log || true)
+          MENU=$(grep -c "الإقلاع اكتمل" /tmp/run.log || true)
+          {
+            echo "run_exit=$RUN_EXIT"
+            echo "script_errors=$ERRS"
+            echo "menu_reached=$MENU"
+            echo "--- أول ٤٠ سطرًا ---"
+            head -40 /tmp/run.log
+            echo "--- كل أخطاء السكربت ---"
+            grep -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent|at: GDScript::reload" /tmp/run.log | head -60
+          } > docs/verify_log.txt
+          cat docs/verify_log.txt
+          if [ "${ERRS:-0}" -ne 0 ] || [ "${MENU:-0}" -eq 0 ]; then
+            echo "::error::فشل الإقلاع (أخطاء=$ERRS، قائمة=$MENU) — لن يُبنى APK"
+            exit 1
+          fi
+
+      - name: حفظ سجل الفحص في الفرع
+        if: always()
+        run: |
+          set +e
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config user.email "ci@m11.local"
+          git config user.name "M11 CI"
+          git add -f docs/verify_log.txt
+          git commit -m "سجل فحص الإقلاع — تشغيل $GITHUB_RUN_ID" || echo "لا تغييرات"
+          git push origin "HEAD:arena/3dc6c87e-m11" || echo "تعذّر الدفع"
+          true
+
   export-android:
+    needs: verify-boot
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
