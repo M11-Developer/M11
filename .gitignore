@@ -1,0 +1,38 @@
+# ============================================================================
+# ملفات لا تُرفع إلى Git
+# ============================================================================
+
+# حِزم أدوات التطوير (تُثبَّت بالأمر: npm i --no-save @napi-rs/canvas)
+node_modules/
+web/node_modules/
+package-lock.json
+
+# مخلفات بايثون
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# مخرجات Godot (تُعاد توليدها بالبناء)
+project/.godot/
+project/android/build/
+project/export_presets.cfg.bak
+android/build/*.apk
+android/build/*.aab
+android/build/*.idsig
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# لقطات واختبارات مؤقتة
+/tmp_*
+*.log
+dbg_tmp.mjs
+
+# النسخ الخام الضخمة لصور التوليد تُحفظ محليًا (القسم 17.9)
+# ملاحظة: `project/assets/raw/` مطلوب داخل المستودع لكن بحجم صغير؛
+# إن تجاوز 50 ميجابايت فاحفظه خارج Git.
+
+# لقطات شاشة المستخدم (مرجع محلي فقط)
+/docs/reports/screens_in/

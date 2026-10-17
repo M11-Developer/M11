@@ -1,0 +1,152 @@
+[
+ {
+  "atlas": "props_road",
+  "source": "sheet_road_props",
+  "frames": 11
+ },
+ {
+  "atlas": "props_nature",
+  "source": "sheet_props_nature",
+  "frames": 12
+ },
+ {
+  "atlas": "props_indoor",
+  "source": "sheet_props_indoor",
+  "frames": 14
+ },
+ {
+  "atlas": "badges_team",
+  "source": "sheet_team_badges",
+  "frames": 12
+ },
+ {
+  "atlas": "props_lab",
+  "source": "sheet_corp_lab",
+  "frames": 18
+ },
+ {
+  "atlas": "vehicles_land",
+  "source": "sheet_vehicles_land",
+  "frames": 8
+ },
+ {
+  "atlas": "ui_touch",
+  "source": "sheet_ui_touch",
+  "frames": 14
+ },
+ {
+  "atlas": "build_floors",
+  "source": "sheet_building_floors",
+  "frames": 12
+ },
+ {
+  "atlas": "props_towers",
+  "source": "sheet_watchtowers",
+  "frames": 4
+ },
+ {
+  "atlas": "props_tanks",
+  "source": "sheet_water_tanks",
+  "frames": 8
+ },
+ {
+  "atlas": "props_roof",
+  "source": "sheet_roof_details",
+  "frames": 12
+ },
+ {
+  "atlas": "props_gates",
+  "source": "sheet_gates_fences",
+  "frames": 13
+ },
+ {
+  "atlas": "props_bridge",
+  "source": "sheet_bridge_broken",
+  "frames": 6
+ },
+ {
+  "atlas": "props_lift",
+  "source": "sheet_elevator",
+  "frames": 8
+ },
+ {
+  "atlas": "props_aa",
+  "source": "sheet_aa_gun",
+  "frames": 4
+ },
+ {
+  "atlas": "props_power",
+  "source": "sheet_generator_unit",
+  "frames": 7
+ },
+ {
+  "atlas": "props_naval",
+  "source": "sheet_naval_gear",
+  "frames": 11
+ },
+ {
+  "atlas": "props_cranes",
+  "source": "sheet_dock_cranes",
+  "frames": 6
+ },
+ {
+  "atlas": "props_hulls",
+  "source": "sheet_ship_hull",
+  "frames": 8
+ },
+ {
+  "atlas": "props_water",
+  "source": "sheet_underwater",
+  "frames": 14
+ },
+ {
+  "atlas": "vehicles_naval",
+  "source": "sheet_naval_vehicles",
+  "frames": 9
+ },
+ {
+  "atlas": "water_surface",
+  "source": "sheet_water_surface",
+  "frames": 8
+ },
+ {
+  "atlas": "portraits_new",
+  "source": "sheet_operators_new",
+  "frames": 10
+ },
+ {
+  "atlas": "map_thumbs_a",
+  "source": "sheet_map_thumbs_a",
+  "frames": 12
+ },
+ {
+  "atlas": "map_thumbs_b",
+  "source": "sheet_map_thumbs_b",
+  "frames": 8
+ },
+ {
+  "atlas": "medals_2",
+  "source": "sheet_achievements_2",
+  "frames": 24
+ },
+ {
+  "atlas": "portraits_orig",
+  "source": "sheet_operators_1_10",
+  "frames": 10
+ },
+ {
+  "atlas": "props_supply",
+  "source": "sheet_supply_crates",
+  "frames": 12
+ },
+ {
+  "atlas": "props_debris",
+  "source": "sheet_debris_rubble",
+  "frames": 15
+ },
+ {
+  "atlas": "props_trees",
+  "source": "sheet_trees_big",
+  "frames": 6
+ }
+]

@@ -1,0 +1,118 @@
+# بناء APK «ميكا ١١» بدون Godot — يغلّف نسخة الويب القابلة للعب داخل WebView.
+# هذا المسار مضمون (بلا قوالب تصدير ولا حزمة أدوات NDK) وينتج ملفًا يُثبّت مباشرة.
+# التفاصيل: docs/DECISIONS.md — القرار ٢٤.
+name: بناء أندرويد (نسخة الويب المغلّفة)
+
+on:
+  workflow_dispatch:
+    inputs:
+      makerelease:
+        description: "إنشاء Release؟ (yes/no)"
+        required: false
+        default: "yes"
+  push:
+    tags:
+      - "web-*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-webview-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: تجهيز جافا ١٧
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: تجهيز منصّة أندرويد ٣٥ وأدوات البناء
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "SDK=$SDK"
+          SDKM="$(ls -1 "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)"
+          if [ -n "$SDKM" ]; then
+            yes | "$SDKM" --sdk_root="$SDK" --licenses >/dev/null 2>&1 || true
+            yes | "$SDKM" --sdk_root="$SDK" "platforms;android-35" "build-tools;35.0.0" "platform-tools" | tail -4
+          fi
+          ls -1 "$SDK/platforms" "$SDK/build-tools"
+
+      - name: تنزيل Gradle ٨٫٧
+        run: |
+          curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          /tmp/gradle-8.7/bin/gradle --version | head -6
+
+      - name: نسخ ملفات اللعبة (نسخة الويب) إلى أصول التطبيق
+        run: |
+          set -e
+          mkdir -p webview-apk/app/src/main/assets
+          cp -r web/. webview-apk/app/src/main/assets/
+          echo "حجم الأصول: $(du -sh webview-apk/app/src/main/assets | cut -f1)"
+          ls webview-apk/app/src/main/assets | head
+
+      - name: توليد مفتاح التوقيع
+        run: |
+          keytool -genkeypair -v -keystore "$GITHUB_WORKSPACE/release.keystore" \
+            -alias m11 -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass m11localwar -keypass m11localwar \
+            -dname "CN=M11 Local War, OU=Games, O=M11-Developer, L=Cairo, C=EG"
+          echo "M11_KEYSTORE=$GITHUB_WORKSPACE/release.keystore" >> "$GITHUB_ENV"
+
+      - name: بناء APK (تصحيح + إصدار موقّع)
+        run: |
+          set -o pipefail
+          cd webview-apk
+          /tmp/gradle-8.7/bin/gradle --no-daemon --console=plain \
+            :app:assembleDebug :app:assembleRelease 2>&1 | tail -40
+
+      - name: جمع الملفات الناتجة وفحصها
+        run: |
+          set -e
+          mkdir -p build
+          find webview-apk/app/build/outputs/apk -name "*.apk" -exec cp -v {} build/ \;
+          ls -la build
+          : > /tmp/check.log
+          for f in build/*.apk; do
+            echo "--- $f ---" >> /tmp/check.log
+            python3 tools/check_apk.py "$f" >> /tmp/check.log 2>&1 || true
+            unzip -l "$f" | grep -cE "assets/" >> /tmp/check.log || true
+          done
+          cat /tmp/check.log
+          bash tools/emit_annotations.sh /tmp/check.log "." notice 9
+
+      - name: رفع الأرتيفاكت
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M11-webview-apk
+          if-no-files-found: error
+          path: build/*.apk
+
+      - name: إنشاء Release
+        if: success() && (startsWith(github.ref, 'refs/tags/web-') || inputs.makerelease == 'yes')
+        uses: softprops/action-gh-release@v2
+        with:
+          # الوسم الحقيقي عند البناء بوسم، وإلا نبقى على وسم نسخة الويب المستقر
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/web-') && github.ref_name || 'web-v1.0' }}
+          name: "ميكا ١١ — نسخة الويب المغلّفة (WebView) — APK إضافي"
+          body: |
+            ## ميكا ١١ — نسخة المعاينة المثبّتة
+
+            هذه حزمة أندرويد جاهزة للتثبيت مباشرة على الجوال (أندرويد ٨ وأحدث، مساحة فارغة تقريبًا،
+            لا تتصل بأي خادم خارجي). تعمل بنفس اللعبة والخرائط والأسلحة والبوتات — نسخة الويب الكاملة
+            داخل تطبيق أندرويد أصلي.
+
+            **ملفات التنزيل:**
+            - `app-debug.apk` — موقّع بمفتاح التصحيح، يُثبّت فورًا (الأسهل).
+            - `app-release.apk` — موقّع بمفتاح إصدار، حجمه أصغر.
+
+            طريقة التثبيت: انقل الملف إلى الجوال ← افتحه ← اسمح بـ«تثبيت من مصادر غير معروفة».
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+          files: build/*.apk

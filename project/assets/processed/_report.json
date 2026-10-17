@@ -1,0 +1,1906 @@
+{
+ "key_art_menu": {
+  "name": "key_art_menu",
+  "desc": "لوحة القائمة الرئيسية (Key Art)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1603.4,
+  "kb_out": 198.2
+ },
+ "poster_loading": {
+  "name": "poster_loading",
+  "desc": "بوستر شاشة التحميل",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1016.1,
+  "kb_out": 97.6
+ },
+ "sheet_char_male": {
+  "name": "sheet_char_male",
+  "desc": "ورقة وضعيات — مقاتل (8 وضعيات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 78.8,
+  "kb_raw": 1199.9,
+  "kb_out": 774.5
+ },
+ "sheet_char_female": {
+  "name": "sheet_char_female",
+  "desc": "ورقة وضعيات — مقاتلة (8 وضعيات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 79.9,
+  "kb_raw": 1312.1,
+  "kb_out": 876.6
+ },
+ "sheet_weapons": {
+  "name": "sheet_weapons",
+  "desc": "ورقة أسلحة (8 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 76.2,
+  "kb_raw": 1175.3,
+  "kb_out": 722.3
+ },
+ "sheet_vfx": {
+  "name": "sheet_vfx",
+  "desc": "ورقة مؤثرات (انفجار 8 إطارات + وميض + دخان)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 76.2,
+  "kb_raw": 1400.8,
+  "kb_out": 871.6
+ },
+ "tileset_military": {
+  "name": "tileset_military",
+  "desc": "مجموعة تايلات — عسكري/صناعي",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 26.3,
+  "kb_raw": 2247.8,
+  "kb_out": 736.6
+ },
+ "tileset_desert": {
+  "name": "tileset_desert",
+  "desc": "مجموعة تايلات — صحراوي/قرية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 23.1,
+  "kb_raw": 2331.8,
+  "kb_out": 738.1
+ },
+ "ui_kit": {
+  "name": "ui_kit",
+  "desc": "مجموعة واجهة (HUD Kit): إطارات وأزرار ومؤشرات",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 69.4,
+  "kb_raw": 1352.3,
+  "kb_out": 780.0
+ },
+ "app_icon_art": {
+  "name": "app_icon_art",
+  "desc": "أيقونة التطبيق (لوحة فنية مربعة)",
+  "status": "ok",
+  "raw_size": [
+   1024,
+   1024
+  ],
+  "out_size": [
+   512,
+   512
+  ],
+  "scale": 2,
+  "transparent_pct": 0.0,
+  "kb_raw": 1422.3,
+  "kb_out": 40.8
+ },
+ "sheet_char_urban": {
+  "name": "sheet_char_urban",
+  "desc": "ورقة وضعيات — مقاتل عمليات ليلية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 77.3,
+  "kb_raw": 1345.2,
+  "kb_out": 860.8
+ },
+ "sheet_char_desert": {
+  "name": "sheet_char_desert",
+  "desc": "ورقة وضعيات — مقاتلة استطلاع صحراوي",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 76.3,
+  "kb_raw": 1438.5,
+  "kb_out": 993.2
+ },
+ "sheet_attachments": {
+  "name": "sheet_attachments",
+  "desc": "ورقة ملحقات الأسلحة (11 ملحقًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 72.5,
+  "kb_raw": 1259.5,
+  "kb_out": 758.3
+ },
+ "sheet_weapons_heavy": {
+  "name": "sheet_weapons_heavy",
+  "desc": "ورقة أسلحة ثقيلة ومتفجرات (8 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 69.5,
+  "kb_raw": 1249.5,
+  "kb_out": 715.2
+ },
+ "sheet_vehicles": {
+  "name": "sheet_vehicles",
+  "desc": "ورقة مركبات وعتاد ميداني (8 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.0,
+  "kb_raw": 1013.0,
+  "kb_out": 644.4
+ },
+ "sheet_icons_rank": {
+  "name": "sheet_icons_rank",
+  "desc": "مجموعة أوسمة ورتب (12 أيقونة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 67.8,
+  "kb_raw": 1438.1,
+  "kb_out": 818.0
+ },
+ "tileset_snow": {
+  "name": "tileset_snow",
+  "desc": "مجموعة تايلات — ثلج/جبل",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 36.7,
+  "kb_raw": 1806.5,
+  "kb_out": 544.8
+ },
+ "tileset_scifi": {
+  "name": "tileset_scifi",
+  "desc": "مجموعة تايلات — محطة فضائية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 25.0,
+  "kb_raw": 2106.7,
+  "kb_out": 678.4
+ },
+ "bg_parallax_desert": {
+  "name": "bg_parallax_desert",
+  "desc": "طبقة منظر — واحة صحراوية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1196.1,
+  "kb_out": 89.3
+ },
+ "bg_parallax_forest_night": {
+  "name": "bg_parallax_forest_night",
+  "desc": "طبقة منظر — غابة ليلية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1396.6,
+  "kb_out": 181.1
+ },
+ "bg_parallax_factory": {
+  "name": "bg_parallax_factory",
+  "desc": "طبقة منظر — مصنع (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1404.3,
+  "kb_out": 156.3
+ },
+ "bg_parallax_snow": {
+  "name": "bg_parallax_snow",
+  "desc": "طبقة منظر — جبال ثلجية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1701.1,
+  "kb_out": 198.0
+ },
+ "bg_parallax_space": {
+  "name": "bg_parallax_space",
+  "desc": "طبقة منظر — محطة فضائية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1230.4,
+  "kb_out": 165.6
+ },
+ "sheet_loot_icons": {
+  "name": "sheet_loot_icons",
+  "desc": "أيقونات غنائم (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 58.3,
+  "kb_raw": 1536.1,
+  "kb_out": 703.2
+ },
+ "sheet_operator_portraits": {
+  "name": "sheet_operator_portraits",
+  "desc": "بورتريهات المشغلين (8 وجوه)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 49.7,
+  "kb_raw": 1641.2,
+  "kb_out": 666.0
+ },
+ "sheet_vehicles_air": {
+  "name": "sheet_vehicles_air",
+  "desc": "مركبات جوية ومائية (6 مركبات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 71.7,
+  "kb_raw": 1409.6,
+  "kb_out": 877.9
+ },
+ "ui_scoreboard": {
+  "name": "ui_scoreboard",
+  "desc": "واجهة لوحة النتائج والأوامر السريعة",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 39.2,
+  "kb_raw": 1299.8,
+  "kb_out": 469.2
+ },
+ "sheet_props_nature": {
+  "name": "sheet_props_nature",
+  "desc": "عناصر طبيعية إضافية (12 عنصرًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 70.8,
+  "kb_raw": 1680.7,
+  "kb_out": 1102.4
+ },
+ "sheet_props_indoor": {
+  "name": "sheet_props_indoor",
+  "desc": "عناصر داخلية/صناعية (12 عنصرًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 73.3,
+  "kb_raw": 1342.7,
+  "kb_out": 173.0
+ },
+ "sheet_weather_effects": {
+  "name": "sheet_weather_effects",
+  "desc": "طبقات طقس (مطر/ثلج/ضباب/رمال/شرر)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 43.3,
+  "kb_raw": 1704.3,
+  "kb_out": 681.0
+ },
+ "sheet_impact_decals": {
+  "name": "sheet_impact_decals",
+  "desc": "آثار الطلقات والانفجارات (16 أثرًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 69.6,
+  "kb_raw": 1507.5,
+  "kb_out": 857.4
+ },
+ "tileset_urban": {
+  "name": "tileset_urban",
+  "desc": "مجموعة تايلات — مدينة حديثة",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 29.5,
+  "kb_raw": 1693.5,
+  "kb_out": 457.5
+ },
+ "tileset_cave": {
+  "name": "tileset_cave",
+  "desc": "مجموعة تايلات — كهف/منجم",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 23.0,
+  "kb_raw": 2125.6,
+  "kb_out": 548.0
+ },
+ "sheet_achievement_icons": {
+  "name": "sheet_achievement_icons",
+  "desc": "أوسمة الإنجازات (16 شارة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 56.2,
+  "kb_raw": 1464.8,
+  "kb_out": 674.9
+ },
+ "sheet_gadgets": {
+  "name": "sheet_gadgets",
+  "desc": "أدوات ميدانية (10 أدوات)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 76.5,
+  "kb_raw": 1321.5,
+  "kb_out": 849.8
+ },
+ "sheet_melee_armor": {
+  "name": "sheet_melee_armor",
+  "desc": "مشاجرة ودروع وخوذ وحقائب (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 64.2,
+  "kb_raw": 1340.7,
+  "kb_out": 725.2
+ },
+ "ui_results_panels": {
+  "name": "ui_results_panels",
+  "desc": "واجهة نتائج المباراة",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 50.3,
+  "kb_raw": 1302.7,
+  "kb_out": 598.9
+ },
+ "bg_parallax_city_dusk": {
+  "name": "bg_parallax_city_dusk",
+  "desc": "طبقة منظر — مدينة الغسق (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1534.2,
+  "kb_out": 113.5
+ },
+ "bg_parallax_coast": {
+  "name": "bg_parallax_coast",
+  "desc": "طبقة منظر — ساحل وميناء (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1497.9,
+  "kb_out": 180.3
+ },
+ "bg_parallax_oasis_night": {
+  "name": "bg_parallax_oasis_night",
+  "desc": "طبقة منظر — واحة ليلية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1094.1,
+  "kb_out": 85.8
+ },
+ "tileset_port": {
+  "name": "tileset_port",
+  "desc": "مجموعة تايلات — ميناء وحاويات",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 37.3,
+  "kb_raw": 2045.6,
+  "kb_out": 769.4
+ },
+ "tileset_swamp": {
+  "name": "tileset_swamp",
+  "desc": "مجموعة تايلات — مستنقع/أدغال",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 31.5,
+  "kb_raw": 2210.6,
+  "kb_out": 819.8
+ },
+ "sheet_trees_big": {
+  "name": "sheet_trees_big",
+  "desc": "أشجار ضخمة (5 أشجار، ارتفاع 110 بكسل)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.5,
+  "kb_raw": 1632.9,
+  "kb_out": 907.8
+ },
+ "sheet_debris_rubble": {
+  "name": "sheet_debris_rubble",
+  "desc": "أنقاض ودمار (14 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.4,
+  "kb_raw": 1681.4,
+  "kb_out": 964.5
+ },
+ "sheet_cars_wrecked": {
+  "name": "sheet_cars_wrecked",
+  "desc": "سيارات مدنية محطمة (8 مركبات)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.7,
+  "kb_raw": 1553.0,
+  "kb_out": 256.3
+ },
+ "sheet_platforms_industrial": {
+  "name": "sheet_platforms_industrial",
+  "desc": "منصات وجسور صناعية (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 72.2,
+  "kb_raw": 1414.3,
+  "kb_out": 830.1
+ },
+ "sheet_flags": {
+  "name": "sheet_flags",
+  "desc": "رايات وأعلام بلا شعارات (10 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 63.4,
+  "kb_raw": 1215.6,
+  "kb_out": 635.1
+ },
+ "sheet_signs": {
+  "name": "sheet_signs",
+  "desc": "لافتات ولوحات فارغة بلا نص (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.4,
+  "kb_raw": 1395.3,
+  "kb_out": 769.0
+ },
+ "bg_parallax_sea_storm": {
+  "name": "bg_parallax_sea_storm",
+  "desc": "طبقة منظر — بحر عاصف (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1830.7,
+  "kb_out": 323.6
+ },
+ "bg_parallax_naval_base": {
+  "name": "bg_parallax_naval_base",
+  "desc": "طبقة منظر — قاعدة بحرية عند الفجر (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1442.6,
+  "kb_out": 180.5
+ },
+ "sheet_boats": {
+  "name": "sheet_boats",
+  "desc": "زوارق وقوارب بحرية (8 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 68.5,
+  "kb_raw": 1348.7,
+  "kb_out": 760.5
+ },
+ "sheet_ships_big": {
+  "name": "sheet_ships_big",
+  "desc": "سفن كبيرة (5 سفن، هياكل بلا شعارات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 72.3,
+  "kb_raw": 1224.0,
+  "kb_out": 774.3
+ },
+ "tileset_ship_interior": {
+  "name": "tileset_ship_interior",
+  "desc": "مجموعة تايلات — داخل سفينة/مركبة",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 20.2,
+  "kb_raw": 2142.0,
+  "kb_out": 636.1
+ },
+ "sheet_explosion_big": {
+  "name": "sheet_explosion_big",
+  "desc": "انفجار كبير (12 إطارًا 128×128)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.0,
+  "kb_raw": 1439.0,
+  "kb_out": 715.1
+ },
+ "sheet_gas_smoke_fx": {
+  "name": "sheet_gas_smoke_fx",
+  "desc": "غازات ودخان (10 عناصر مؤثرات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 62.9,
+  "kb_raw": 1294.9,
+  "kb_out": 632.2
+ },
+ "sheet_mode_icons": {
+  "name": "sheet_mode_icons",
+  "desc": "أيقونات أوضاع اللعب (16 أيقونة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 35.6,
+  "kb_raw": 1602.6,
+  "kb_out": 519.8
+ },
+ "sheet_buildings_large": {
+  "name": "sheet_buildings_large",
+  "desc": "مبانٍ كبيرة معيارية (8 مبانٍ)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 58.0,
+  "kb_raw": 1487.6,
+  "kb_out": 678.3
+ },
+ "tileset_space": {
+  "name": "tileset_space",
+  "desc": "مجموعة تايلات — محطة فضائية بسقف وأرضية",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 15.9,
+  "kb_raw": 1724.2,
+  "kb_out": 277.4
+ },
+ "tileset_deck_naval": {
+  "name": "tileset_deck_naval",
+  "desc": "مجموعة تايلات — سطح سفينة حربية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 17.2,
+  "kb_raw": 1763.3,
+  "kb_out": 422.0
+ },
+ "tileset_village_clay": {
+  "name": "tileset_village_clay",
+  "desc": "مجموعة تايلات — قرية طينية صحراوية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 37.2,
+  "kb_raw": 1870.9,
+  "kb_out": 321.1
+ },
+ "sheet_vehicles_land": {
+  "name": "sheet_vehicles_land",
+  "desc": "مركبات أرضية (8 مركبات)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 70.2,
+  "kb_raw": 1335.8,
+  "kb_out": 801.6
+ },
+ "sheet_road_props": {
+  "name": "sheet_road_props",
+  "desc": "ديكور شوارع ومرور (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.6,
+  "kb_raw": 1576.0,
+  "kb_out": 869.3
+ },
+ "sheet_ui_touch": {
+  "name": "sheet_ui_touch",
+  "desc": "عناصر واجهة لمس كبيرة (16 عنصرًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 69.6,
+  "kb_raw": 1285.6,
+  "kb_out": 102.4
+ },
+ "sheet_team_badges": {
+  "name": "sheet_team_badges",
+  "desc": "شعارات فرق وأوسمة (12 شعارًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 55.0,
+  "kb_raw": 1607.5,
+  "kb_out": 206.8
+ },
+ "sheet_corp_lab": {
+  "name": "sheet_corp_lab",
+  "desc": "عتاد مختبر وشركة (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 61.1,
+  "kb_raw": 1685.9,
+  "kb_out": 350.4
+ },
+ "sheet_building_floors": {
+  "name": "sheet_building_floors",
+  "desc": "مقاطع مبنى متعدد الطوابق (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 46.7,
+  "kb_raw": 1541.2,
+  "kb_out": 198.9
+ },
+ "sheet_watchtowers": {
+  "name": "sheet_watchtowers",
+  "desc": "أبراج مراقبة (4 أبراج)",
+  "status": "ok",
+  "raw_size": [
+   1024,
+   1024
+  ],
+  "out_size": [
+   1024,
+   1024
+  ],
+  "scale": 1,
+  "transparent_pct": 67.4,
+  "kb_raw": 1455.7,
+  "kb_out": 259.5
+ },
+ "sheet_water_tanks": {
+  "name": "sheet_water_tanks",
+  "desc": "خزانات وصوامع صناعية (6 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 57.6,
+  "kb_raw": 1715.1,
+  "kb_out": 272.6
+ },
+ "sheet_roof_details": {
+  "name": "sheet_roof_details",
+  "desc": "تفاصيل سطوح (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 78.0,
+  "kb_raw": 1365.5,
+  "kb_out": 237.3
+ },
+ "sheet_gates_fences": {
+  "name": "sheet_gates_fences",
+  "desc": "بوابات وأسوار (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 54.2,
+  "kb_raw": 1948.1,
+  "kb_out": 1075.2
+ },
+ "sheet_bridge_broken": {
+  "name": "sheet_bridge_broken",
+  "desc": "مقاطع جسر خشبي مكسور (6 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 68.5,
+  "kb_raw": 1441.2,
+  "kb_out": 305.3
+ },
+ "sheet_elevator": {
+  "name": "sheet_elevator",
+  "desc": "مصاعد ومنصات صناعية (8 قطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 60.4,
+  "kb_raw": 1583.8,
+  "kb_out": 249.3
+ },
+ "sheet_aa_gun": {
+  "name": "sheet_aa_gun",
+  "desc": "مدافع مضادة للطائرات (4 مدافع)",
+  "status": "ok",
+  "raw_size": [
+   1200,
+   896
+  ],
+  "out_size": [
+   1200,
+   896
+  ],
+  "scale": 1,
+  "transparent_pct": 74.7,
+  "kb_raw": 1288.7,
+  "kb_out": 210.7
+ },
+ "sheet_generator_unit": {
+  "name": "sheet_generator_unit",
+  "desc": "وحدات توليد ومحطات كهرباء (6 وحدات)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 66.4,
+  "kb_raw": 1445.1,
+  "kb_out": 157.7
+ },
+ "sheet_wall_modular": {
+  "name": "sheet_wall_modular",
+  "desc": "تايلات تحصينات معيارية (16 بلاطة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 20.1,
+  "kb_raw": 1969.6,
+  "kb_out": 499.2
+ },
+ "bg_sky_storm": {
+  "name": "bg_sky_storm",
+  "desc": "طبقة سماء — عاصفة رعدية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1768.0,
+  "kb_out": 261.2
+ },
+ "bg_sky_dust": {
+  "name": "bg_sky_dust",
+  "desc": "طبقة سماء — عاصفة غبار صحراوية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1412.2,
+  "kb_out": 167.4
+ },
+ "bg_sky_snowfall": {
+  "name": "bg_sky_snowfall",
+  "desc": "طبقة سماء — تساقط ثلج (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1887.8,
+  "kb_out": 342.0
+ },
+ "bg_sky_dawn": {
+  "name": "bg_sky_dawn",
+  "desc": "طبقة سماء — فجر بتدرّج دافئ (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1372.5,
+  "kb_out": 122.9
+ },
+ "bg_sky_galaxy": {
+  "name": "bg_sky_galaxy",
+  "desc": "طبقة سماء — ليل بمجرة ونجوم (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1922.9,
+  "kb_out": 308.8
+ },
+ "bg_sky_war_red": {
+  "name": "bg_sky_war_red",
+  "desc": "طبقة سماء — حرب حمراء ودخان (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1388.5,
+  "kb_out": 113.1
+ },
+ "bg_sky_station": {
+  "name": "bg_sky_station",
+  "desc": "طبقة سماء — داخل محطة فضائية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1772.9,
+  "kb_out": 218.2
+ },
+ "bg_sky_cave_glow": {
+  "name": "bg_sky_cave_glow",
+  "desc": "طبقة سماء — كهف مضيء بالبلورات (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1643.0,
+  "kb_out": 241.6
+ },
+ "bg_sky_swamp": {
+  "name": "bg_sky_swamp",
+  "desc": "طبقة سماء — مستنقع ضبابي (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1458.5,
+  "kb_out": 151.5
+ },
+ "bg_sky_port_fog": {
+  "name": "bg_sky_port_fog",
+  "desc": "طبقة سماء — ميناء ضبابي ليلًا (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1640.1,
+  "kb_out": 246.4
+ },
+ "sheet_naval_gear": {
+  "name": "sheet_naval_gear",
+  "desc": "عتاد بحري (12 قطعة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 68.2,
+  "kb_raw": 1583.6,
+  "kb_out": 347.2
+ },
+ "sheet_dock_cranes": {
+  "name": "sheet_dock_cranes",
+  "desc": "أوناش ميناء (6 أوناش)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 77.2,
+  "kb_raw": 1509.6,
+  "kb_out": 1099.7
+ },
+ "tileset_oil_rig": {
+  "name": "tileset_oil_rig",
+  "desc": "مجموعة تايلات — منصة حفر بحرية",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 33.9,
+  "kb_raw": 1889.3,
+  "kb_out": 313.0
+ },
+ "sheet_ship_hull": {
+  "name": "sheet_ship_hull",
+  "desc": "مقاطع هياكل سفن (8 مقاطع)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 34.0,
+  "kb_raw": 1605.7,
+  "kb_out": 274.0
+ },
+ "sheet_underwater": {
+  "name": "sheet_underwater",
+  "desc": "عناصر تحت الماء (12 عنصرًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 70.3,
+  "kb_raw": 1417.1,
+  "kb_out": 174.6
+ },
+ "sheet_naval_vehicles": {
+  "name": "sheet_naval_vehicles",
+  "desc": "مراكب قابلة للاستعمال (6 مراكب)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 69.5,
+  "kb_raw": 1326.5,
+  "kb_out": 187.9
+ },
+ "sheet_water_surface": {
+  "name": "sheet_water_surface",
+  "desc": "أشرطة سطح الماء المتغيّرة (8 أشرطة)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 24.3,
+  "kb_raw": 1899.1,
+  "kb_out": 238.2
+ },
+ "sheet_operators_new": {
+  "name": "sheet_operators_new",
+  "desc": "بورتريهات 10 مشغّلين جدد",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 39.8,
+  "kb_raw": 1908.1,
+  "kb_out": 405.1
+ },
+ "bg_parallax_oil_rig": {
+  "name": "bg_parallax_oil_rig",
+  "desc": "طبقة منظر — منصة نفط عند الغروب (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1463.5,
+  "kb_out": 107.0
+ },
+ "bg_sky_harbor_dawn": {
+  "name": "bg_sky_harbor_dawn",
+  "desc": "طبقة سماء — ميناء عند الفجر (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1314.4,
+  "kb_out": 122.9
+ },
+ "sheet_map_thumbs_a": {
+  "name": "sheet_map_thumbs_a",
+  "desc": "مصغّرات خرائط — الجزء الأول (12 خريطة)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 26.4,
+  "kb_raw": 2045.5,
+  "kb_out": 466.1
+ },
+ "sheet_map_thumbs_b": {
+  "name": "sheet_map_thumbs_b",
+  "desc": "مصغّرات خرائط — الجزء الثاني (8 خرائط)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1376,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 21.9,
+  "kb_raw": 2128.2,
+  "kb_out": 693.5
+ },
+ "key_art_main": {
+  "name": "key_art_main",
+  "desc": "الفن الرئيسي — الفريق في الميناء (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 2240.8,
+  "kb_out": 551.4
+ },
+ "key_art_naval": {
+  "name": "key_art_naval",
+  "desc": "ملصق — هجوم بحري ليلي (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1882.6,
+  "kb_out": 241.1
+ },
+ "poster_victory": {
+  "name": "poster_victory",
+  "desc": "شاشة النصر — الفريق على الأنقاض (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1944.7,
+  "kb_out": 303.8
+ },
+ "poster_defeat": {
+  "name": "poster_defeat",
+  "desc": "شاشة الهزيمة — خوذة وبندقية في المطر (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1896.8,
+  "kb_out": 264.4
+ },
+ "sheet_achievements_2": {
+  "name": "sheet_achievements_2",
+  "desc": "أوسمة إنجازات (12 وسامًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 56.4,
+  "kb_raw": 1702.6,
+  "kb_out": 237.6
+ },
+ "sheet_operators_1_10": {
+  "name": "sheet_operators_1_10",
+  "desc": "بورتريهات المشغّلين الأصليين (10 وجوه)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 41.0,
+  "kb_raw": 1634.8,
+  "kb_out": 188.6
+ },
+ "sheet_supply_crates": {
+  "name": "sheet_supply_crates",
+  "desc": "صناديق عتاد وذخيرة (12 صندوقًا)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1408,
+   768
+  ],
+  "scale": 1,
+  "transparent_pct": 55.1,
+  "kb_raw": 1585.3,
+  "kb_out": 282.6
+ },
+ "promo_hero_squad": {
+  "name": "promo_hero_squad",
+  "desc": "فن ترويجي — الفرقة في بلدة محترقة (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2359.7,
+  "kb_out": 435.5
+ },
+ "poster_br_drop": {
+  "name": "poster_br_drop",
+  "desc": "ملصق رأسي — إنزال مظلي فوق الوادي",
+  "status": "ok",
+  "raw_size": [
+   768,
+   1376
+  ],
+  "out_size": [
+   768,
+   1376
+  ],
+  "scale": 1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2149.2,
+  "kb_out": 536.0
+ },
+ "promo_naval_assault": {
+  "name": "promo_naval_assault",
+  "desc": "فن ترويجي — إنزال بحري على الأرصفة (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 2351.6,
+  "kb_out": 478.4
+ },
+ "poster_cqb_duel": {
+  "name": "poster_cqb_duel",
+  "desc": "ملصق رأسي — اشتباك داخل مخزن",
+  "status": "ok",
+  "raw_size": [
+   848,
+   1264
+  ],
+  "out_size": [
+   848,
+   1264
+  ],
+  "scale": 1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2351.2,
+  "kb_out": 425.6
+ },
+ "splash_boot_helmet": {
+  "name": "splash_boot_helmet",
+  "desc": "شاشة إقلاع — خوذة على أكياس رمل عند الفجر (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 1814.5,
+  "kb_out": 320.7
+ },
+ "promo_night_ops": {
+  "name": "promo_night_ops",
+  "desc": "فن ترويجي — غارة ليلية بمناظير رؤية ليلية (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1408,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.1,
+  "transparent_pct": 0.0,
+  "kb_raw": 2272.0,
+  "kb_out": 403.2
+ },
+ "promo_lan_squad": {
+  "name": "promo_lan_squad",
+  "desc": "فن ترويجي — الفرقة على السطح عند الغروب (16:9)",
+  "status": "ok",
+  "raw_size": [
+   1376,
+   768
+  ],
+  "out_size": [
+   1280,
+   720
+  ],
+  "scale": 1.07,
+  "transparent_pct": 0.0,
+  "kb_raw": 2278.8,
+  "kb_out": 435.5
+ },
+ "store_feature_banner": {
+  "name": "store_feature_banner",
+  "desc": "بانر المتجر العريض — بانوراما ساحة القتال",
+  "status": "ok",
+  "raw_size": [
+   2064,
+   512
+  ],
+  "out_size": [
+   2064,
+   512
+  ],
+  "scale": 1,
+  "transparent_pct": 0.0,
+  "kb_raw": 1899.4,
+  "kb_out": 390.6
+ }
+}

@@ -1,0 +1,47 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.m11.localwar'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.m11.localwar"
+        minSdk 26            // أندرويد 8.0 كما في المواصفة (القسم ٢)
+        targetSdk 35
+        versionCode 211
+        versionName "2.1.1"
+    }
+
+    // نوقّع نسخة الإصدار بمفتاح نتولّده في السحابة (لا أسرار في الشيفرة)
+    signingConfigs {
+        release {
+            def ksPath = System.getenv("M11_KEYSTORE")
+            if (ksPath != null) {
+                storeFile file(ksPath)
+                storePassword "m11localwar"
+                keyAlias "m11"
+                keyPassword "m11localwar"
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"   // يسمح بتثبيت النسختين معًا
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            if (System.getenv("M11_KEYSTORE") != null) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // لا مكتبات خارجية إطلاقًا — واجهات أندرويد فقط (بلا AndroidX)
+    packagingOptions { jniLibs { useLegacyPackaging = true } }
+}

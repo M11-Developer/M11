@@ -1,0 +1,4 @@
+// مشروع الجذر — لا شيء سوى وصف الإضافات
+plugins {
+    id 'com.android.application' version '8.5.2' apply false
+}

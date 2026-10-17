@@ -1,0 +1,26 @@
+{
+ "app_icon": {
+  "path": "project/assets/atlases/app_icon.png",
+  "size": [
+   512,
+   512
+  ],
+  "kb": 9.3
+ },
+ "app_icon_bg": {
+  "path": "project/assets/atlases/app_icon_bg.png",
+  "size": [
+   1024,
+   576
+  ],
+  "kb": 13.9
+ },
+ "app_loading": {
+  "path": "project/assets/atlases/app_loading.png",
+  "size": [
+   640,
+   360
+  ],
+  "kb": 12.3
+ }
+}

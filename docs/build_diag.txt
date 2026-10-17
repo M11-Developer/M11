@@ -1,0 +1,114 @@
+=== أسطر الأخطاء (مع سياق) ===
+  30:ERROR: No loader found for resource: res://assets/fonts/cairo_400.ttf (expected type: FontFile)
+  32:ERROR: No loader found for resource: res://assets/fonts/cairo_700.ttf (expected type: FontFile)
+  34:ERROR: No loader found for resource: res://assets/fonts/noto_ar_500.ttf (expected type: FontFile)
+  36:ERROR: res://assets/fonts/theme_m11.tres:10 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/fonts/cairo_400.ttf
+  38:ERROR: res://assets/fonts/theme_m11.tres:10 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/fonts/cairo_400.ttf
+  40:ERROR: Failed loading resource: res://assets/fonts/theme_m11.tres. Make sure resources have been imported by opening the project in the editor at least once.
+  42:ERROR: Error loading custom project theme 'res://assets/fonts/theme_m11.tres'
+  68:ERROR: 2 resources still in use at exit (run with --verbose for details).
+=== أول محاولة تصدير (من سطر 151) ===
+  528:keystore/debug_user="androiddebugkey"
+  529:keystore/debug_password="android"
+  ===== EXPORT-DEBUG1 START =====
+  Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+  TextServer: Added interface "Dummy"
+  TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+  JoypadLinux: udev enabled and loaded successfully.
+  Using "default" pen tablet driver...
+  
+  TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+  CORE API HASH: 966092234
+  EDITOR API HASH: 444927587
+  EditorSettings: Load OK!
+  EditorTheme: Generating new theme for the config '66886095'.
+  EditorTheme: Generating new icons.
+  EditorTheme: Generating new fonts.
+  EditorTheme: Generating new styles.
+  Loaded system CA certificates
+  EditorSettings: Save OK!
+=== Gradle ===
+  Copying Android binary using gradle command: 
+  /__w/M11/M11/project/android/build/gradlew copyAndRenameReleaseApk -p /__w/M11/M11/project/android/build -Pexport_path=file:/__w/M11/M11/build -Pexport_filename=M11-release.apk
+  BUILD SUCCESSFUL in 961ms
+  Successfully completed Android gradle build.
+  - gradle build enabled: true
+  Starting gradle build...
+  Build Android project using gradle command: 
+  /__w/M11/M11/project/android/build/gradlew validateJavaVersion clean bundleRelease -p /__w/M11/M11/project/android/build -Pexport_package_name=com.m11.localwar -Pexport_version_code=1 -Pexport_version_name=1.0.0 -Pexport_version_min_sdk=26 -Pexport_version_target_sdk=35 -Pexport_enabled_abis=armeabi-v7a|arm64-v8a -Pplugins_local_binaries= -Pplugins_remote_binaries= -Pplugins_maven_repos= -Pperform_zipalign=true -Pperform_signing=true -Pcompress_native_libraries=true -Pgodot_editor_version=4.3.stable
+  > Task :checkKotlinGradlePluginConfigurationErrors
+  BUILD SUCCESSFUL in 17s
+  Copying Android binary using gradle command: 
+  /__w/M11/M11/project/android/build/gradlew copyAndRenameReleaseAab -p /__w/M11/M11/project/android/build -Pexport_path=file:/__w/M11/M11/build -Pexport_filename=M11-release.aab
+  BUILD SUCCESSFUL in 777ms
+  Successfully completed Android gradle build.
+=== النتائج ===
+  debug_export_exit=0
+  release_apk_exit=0
+  release_aab_exit=0
+=== أدوات أندرويد ===
+/usr/lib/android-sdk/build-tools/33.0.2/apksigner
+/usr/lib/android-sdk/build-tools/34.0.0/apksigner
+/usr/lib/android-sdk/build-tools/35.0.0/apksigner
+33.0.2 34.0.0 35.0.0 
+=== أدوات متاحة ===
+  curl=MISSING wget=/usr/bin/wget python3=MISSING unzip=/usr/bin/unzip
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/debug_keystore = "/root/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/debug_keystore = "/root/debug.keystore"
+=== أسطر المفتاح في الإعدادات ===
+=== ذيل السجل ===
+  -rw-r--r--  1 root root 152652219 Oct 17 03:47 M11-release.apk
+  ════ build/M11-debug.apk — 60M ════
+  package: com.m11.localwar
+  uses-permission: name='android.permission.NEARBY_WIFI_DEVICES'
+  أذونات ممنوعة: 0
+  Verifies
+  Verified using v1 scheme (JAR signing): true
+  Verified using v2 scheme (APK Signature Scheme v2): true
+  Verified using v3 scheme (APK Signature Scheme v3): true
+  Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+  Verified using v4 scheme (APK Signature Scheme v4): false
+  2
+  ملفات خام داخل الحزمة: 0
+  ════ build/M11-release.apk — 146M ════
+  package: com.m11.localwar
+  uses-permission: name='android.permission.NEARBY_WIFI_DEVICES'
+  أذونات ممنوعة: 0
+  Verifies
+  Verified using v1 scheme (JAR signing): false
+  Verified using v2 scheme (APK Signature Scheme v2): true
+  Verified using v3 scheme (APK Signature Scheme v3): false
+  Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+  Verified using v4 scheme (APK Signature Scheme v4): false
+  2
+  ملفات خام داخل الحزمة: 0
+=== ملفات APK/AAB ===
+=== ملفات editor_settings ===
+/root/.config/godot/editor_settings-4.3.tres
+/github/home/.config/godot/editor_settings-4.3.tres
+/__w/_temp/_github_home/.config/godot/editor_settings-4.3.tres
+--- /root/.config/godot/editor_settings-4.3.tres ---
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/debug_keystore = "/root/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+--- /github/home/.config/godot/editor_settings-4.3.tres ---
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/debug_keystore = "/root/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+=== ملخّص ===
+حجم السجل: 336194 بايت | أسطر: 2214
+  [57] keystore
+  [4] apksigner
+  [5] build-tools
+  [1] Target SDK
+  [2] Parse Error

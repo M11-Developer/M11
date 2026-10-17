@@ -1,0 +1,14 @@
+run_exit=0
+script_errors=0
+menu_reached=1
+selftest_ok=1
+--- أول ٤٠ سطرًا ---
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+[M11] الإقلاع اكتمل — القائمة جاهزة
+[M11] تحسينات الكمبيوتر مفعّلة (Fullscreen + Post-FX)
+[M11-SELFTEST] بدء الاختبار
+[M11-SELFTEST] بدأت المباراة: الوضع=dm المقاتلون=8
+[M11-SELFTEST] الرجوع للقائمة ناجح
+[M11-SELFTEST] OK
+--- كل أخطاء السكربت ---

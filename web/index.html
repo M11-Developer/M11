@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0B0D10">
+<meta name="description" content="ميكا 11 — لعبة تصويب عربية ثنائية الأبعاد للشبكة المحلية، تعمل بلا إنترنت">
+<title>ميكا ١١ — ساحة النار المحلية</title>
+<link rel="icon" type="image/png" href="assets/app_icon.png">
+<link rel="apple-touch-icon" href="assets/app_icon.png">
+<meta name="theme-color" content="#0B0D10">
+<style>
+  /* خطوط عربية متجهة (مقلمة — Cairo / Noto Sans Arabic) + خط بكسل للأرقام */
+  @font-face {
+    font-family: 'Cairo';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url('fonts/cairo_400.woff2') format('woff2');
+    unicode-range: U+0600-06FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+0020-007E, U+00A0-00FF;
+  }
+  @font-face {
+    font-family: 'Cairo';
+    font-style: normal; font-weight: 700; font-display: swap;
+    src: url('fonts/cairo_700.woff2') format('woff2');
+    unicode-range: U+0600-06FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F;
+  }
+  @font-face {
+    font-family: 'Cairo';
+    font-style: normal; font-weight: 700; font-display: swap;
+    src: url('fonts/cairo_latin_700.woff2') format('woff2');
+    unicode-range: U+0020-007E, U+00A0-00FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans Arabic';
+    font-style: normal; font-weight: 500; font-display: swap;
+    src: url('fonts/noto_ar_500.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Press Start 2P';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url('fonts/pixel_400.woff2') format('woff2');
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden; background: #05070A;
+    font-family: 'Cairo', 'Noto Sans Arabic', Tahoma, system-ui, sans-serif;
+    color: #EAF2F6; -webkit-tap-highlight-color: transparent;
+    user-select: none; -webkit-user-select: none; touch-action: none;
+  }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  /* النسبة الداخلية الثابتة 640×360 تُكبَّر بعدد صحيح ومحاذاة مركزية */
+  canvas#game {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    display: block;
+    background: #0B0D10;
+    box-shadow: 0 0 0 1px #1B2026, 0 12px 40px rgba(0,0,0,.6);
+  }
+  #loading {
+    position: fixed; inset: 0;
+    background: #0B0D10 url('assets/backdrops/splash_boot_helmet.png') center/cover no-repeat;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; z-index: 20; transition: opacity .35s ease;
+  }
+  #loading.hidden { opacity: 0; pointer-events: none; }
+  /* ستارة داكنة فوق الصورة حتى يبقى الشعار والشريط مقروءين */
+  #loading::before { content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(5,7,10,.78) 0%, rgba(5,7,10,.35) 45%, rgba(5,7,10,.86) 100%); }
+  #loading > * { position: relative; z-index: 1; }
+  #loading h1 { font-size: 30px; color: #F2C14E; letter-spacing: 1px; font-weight: 700;
+    text-shadow: 0 2px 0 #0B0D10, 0 0 18px rgba(0,0,0,.9); }
+  #loading p { color: #7E8C99; font-size: 13px; }
+  #progress { width: min(340px, 70vw); height: 8px; background: #1B2026; border: 1px solid #2A313A; }
+  #progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #4FD1C5, #F2C14E); transition: width .2s ease; }
+  #tips { position: fixed; bottom: 14px; text-align: center; width: 100%; color: #5C6B78; font-size: 11px; }
+  kbd { background: #1B2026; border: 1px solid #2A313A; border-radius: 3px; padding: 0 4px; font-size: 10px; }
+  #rotate { display: none; position: fixed; inset: 0; background: #0B0D10; z-index: 30;
+            align-items: center; justify-content: center; flex-direction: column; gap: 10px; text-align: center; }
+  @media (orientation: portrait) and (pointer: coarse) {
+    #rotate { display: flex; }
+  }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="game" width="640" height="360"></canvas></div>
+
+<div id="loading">
+  <h1>ميكا ١١</h1>
+  <p>ساحة النار المحلية — بلا إنترنت، بلا حسابات</p>
+  <div id="progress"><div id="progress-bar"></div></div>
+  <p id="progress-label">تجهيز…</p>
+</div>
+
+<div id="rotate">
+  <h1 style="color:#F2C14E">أدر الجهاز أفقيًا 📱</h1>
+  <p style="color:#7E8C99">اللعبة مصمّمة للوضع الأفقي فقط</p>
+</div>
+
+<div id="tips">
+  <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> حركة ·
+  <kbd>Space</kbd> قفز/جيت باك · <kbd>فأرة</kbd> تصويب وإطلاق ·
+  <kbd>R</kbd> تعبئة · <kbd>F</kbd> مشاجرة · <kbd>G</kbd> قنبلة · <kbd>Q</kbd> علاج ·
+  <kbd>C</kbd> انبطاح · <kbd>V</kbd> أوامر · <kbd>M</kbd> خريطة · <kbd>N</kbd> إحصاءات الشبكة ·
+  <kbd>Esc</kbd> إيقاف
+</div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

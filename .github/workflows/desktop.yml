@@ -1,0 +1,187 @@
+# ============================================================================
+# بناء نسخة الكمبيوتر (Windows + Linux) — تلعب مع الجوال على نفس الواي فاي.
+#   • يُشغَّل تلقائيًا عند وسم يبدأ بـ pc-v
+#   • أو يدويًا من تبويب Actions ثم «Run workflow»
+# لا يحتاج اللاعب تثبيت Godot: الملفات الناتجة جاهزة للتشغيل.
+# ============================================================================
+name: بناء الكمبيوتر (Windows + Linux)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "pc-v*"     # مثلًا: pc-v1.0
+
+permissions:
+  contents: write
+
+jobs:
+  export-desktop:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BUILD_LOG: /tmp/pc-build.log
+    steps:
+      - name: جلب الشيفرة
+        uses: actions/checkout@v4
+
+      - name: تشخيص البيئة
+        run: |
+          set +e
+          {
+            echo "== بيئة بناء الكمبيوتر =="
+            echo "godot=$(godot --version 2>&1 | head -1)"
+            echo "home=$HOME"
+            echo "templates_home=$(ls -1 $HOME/.local/share/godot/export_templates 2>/dev/null | tr '\n' ' ')"
+            echo "templates_root=$(ls -1 /root/.local/share/godot/export_templates 2>/dev/null | tr '\n' ' ')"
+            echo "zip=$(command -v zip || echo MISSING)"
+          } | tee "$BUILD_LOG"
+
+      - name: تحضير قوالب التصدير في مجلد التشغيل
+        run: |
+          set -e
+          mkdir -p "$HOME/.local/share/godot" "$HOME/.config"
+          # صورة godot-ci تضع القوالب تحت /root — ننسخها إلى مستخدم التشغيل
+          if [ -d /root/.local/share/godot/export_templates ]; then
+            cp -r /root/.local/share/godot/export_templates "$HOME/.local/share/godot/" || true
+          fi
+          # قوالب 4.3.3 و 4.3.stable أسماء مختلفة — نضمن وجود 4.3.stable
+          TDIR="$HOME/.local/share/godot/export_templates"
+          ls -1 "$TDIR" || true
+          if [ ! -d "$TDIR/4.3.stable" ]; then
+            SRC=$(ls -d "$TDIR"/4.3* 2>/dev/null | head -1)
+            if [ -n "$SRC" ]; then cp -r "$SRC" "$TDIR/4.3.stable"; fi
+          fi
+          ls -1 "$TDIR/4.3.stable" | head -20 || true
+
+      - name: استيراد المشروع
+        run: |
+          set +e
+          godot --headless --path project --import 2>&1 | tail -30
+          echo "import_exit=$?"
+
+      - name: "تشغيل تجريبي حقيقي (headless) — بوابة: لا بناء لنسخة لا تُقلع"
+        run: |
+          set +e
+          : > /tmp/run.log
+          timeout 300 godot --headless --path project --quit-after 600 -- --m11-selftest 2>&1 | tee /tmp/run.log
+          echo "run_exit=$?"
+          ERRS=$(grep -cE "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent" /tmp/run.log || true)
+          MENU=$(grep -c "الإقلاع اكتمل" /tmp/run.log || true)
+          SELF=$(grep -c "M11-SELFTEST] OK" /tmp/run.log || true)
+          echo "script_errors=$ERRS menu_reached=$MENU selftest_ok=$SELF"
+          grep -E "SCRIPT ERROR|Parse Error|Invalid call|Nonexistent|\[M11\]" /tmp/run.log | head -30 || true
+          if [ "${ERRS:-0}" -ne 0 ] || [ "${MENU:-0}" -eq 0 ] || [ "${SELF:-0}" -eq 0 ]; then
+            echo "::error::اللعبة لم تُقلع أو الأزرار لا تعمل (أخطاء=$ERRS، قائمة=$MENU، أزرار=$SELF)"
+            exit 1
+          fi
+
+      - name: تصدير ويندوز
+        run: |
+          set +e
+          mkdir -p build/windows
+          godot --headless --path project --export-release "Windows Desktop" "$PWD/build/windows/M11.exe" > /tmp/win.log 2>&1
+          echo "win_exit=$?"
+          tail -25 /tmp/win.log
+          ls -la build/windows || true
+
+      - name: تصدير لينكس
+        run: |
+          set +e
+          mkdir -p build/linux
+          godot --headless --path project --export-release "Linux Desktop" "$PWD/build/linux/M11.x86_64" > /tmp/lin.log 2>&1
+          echo "lin_exit=$?"
+          tail -25 /tmp/lin.log
+          chmod +x build/linux/M11.x86_64 2>/dev/null || true
+          ls -la build/linux || true
+
+      - name: التحقق من اكتمال الحزمة (الملف التنفيذي + ملف البيانات .pck)
+        run: |
+          set +e
+          FAIL=0
+          check_pair () {
+            local dir="$1" exe="$2"
+            if [ ! -s "$dir/$exe" ]; then echo "::error::مفقود: $dir/$exe"; FAIL=1; return; fi
+            if [ ! -s "$dir/M11.pck" ]; then
+              echo "::error::ملف البيانات $dir/M11.pck مفقود — اللعبة لن تعمل بلا ملف البيان (PCK)"
+              FAIL=1
+            fi
+            local sz=$(stat -c%s "$dir/$exe")
+            if [ "$sz" -lt 5000000 ]; then echo "::error::حجم $dir/$exe صغير جدًا ($sz بايت)"; FAIL=1; fi
+            echo "✔ $dir/$exe ($((sz/1048576)) م.ب) + PCK $(stat -c%s "$dir/M11.pck" 2>/dev/null || echo 0) بايت"
+          }
+          check_pair build/windows M11.exe
+          check_pair build/linux M11.x86_64
+          [ "$FAIL" = "0" ] || exit 1
+          true
+
+      - name: تجهيز الحزم المضغوطة
+        run: |
+          set +e
+          cd build
+          if [ -f windows/M11.exe ]; then
+            (cd windows && zip -r -9 ../M11-Windows.zip . ) || echo "zip_win_failed"
+          fi
+          if [ -f linux/M11.x86_64 ]; then
+            (cd linux && zip -r -9 ../M11-Linux.zip . ) || echo "zip_lin_failed"
+          fi
+          echo "--- الناتج ---"
+          ls -la *.zip 2>/dev/null || echo "لا حزم مضغوطة"
+          # نسخة تعمل بلا فكّ ضغط على لينكس
+          [ -f linux/M11.x86_64 ] && cp linux/M11.x86_64 M11-Linux.bin || true
+
+      - name: التحقق من الناتج
+        run: |
+          set +e
+          ok=0
+          [ -s build/windows/M11.exe ] && { echo "✔ M11.exe $(du -h build/windows/M11.exe | cut -f1)"; ok=1; }
+          [ -s build/linux/M11.x86_64 ] && { echo "✔ M11.x86_64 $(du -h build/linux/M11.x86_64 | cut -f1)"; ok=1; }
+          if [ "$ok" = "0" ]; then echo "✘ لم يُنتج أي ملف تنفيذي"; fi
+          true
+
+      - name: رفع الأرتيفاكت
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M11-desktop
+          path: |
+            build/*.zip
+            build/windows/**
+            build/linux/**
+          if-no-files-found: warn
+
+      - name: تحديد وسم الإصدار المشترك
+        id: rel
+        if: startsWith(github.ref, 'refs/tags/pc-v')
+        run: |
+          # pc-v2.0.0 ← يُرفق الملفان في Release الإصدار v2.0.0 نفسه
+          REL="${GITHUB_REF_NAME#pc-}"
+          echo "tag=$REL" >> "$GITHUB_OUTPUT"
+          echo "وسم الإصدار المشترك: $REL"
+
+      - name: نشر نسخة الكمبيوتر في نفس Release الإصدار
+        if: startsWith(github.ref, 'refs/tags/pc-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: "ميكا ١١ — الإصدار ${{ steps.rel.outputs.tag }} (أندرويد + كمبيوتر) 🎮"
+          body_path: docs/RELEASE_NOTES_AR.md
+          generate_release_notes: false
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+          files: |
+            build/M11-Windows.zip
+            build/M11-Linux.zip
+
+      - name: سجل البناء عند الفشل
+        if: failure()
+        run: |
+          echo "== آخر ما كتبه Godot =="
+          tail -40 /tmp/win.log 2>/dev/null
+          tail -40 /tmp/lin.log 2>/dev/null
+          tail -40 /tmp/run.log 2>/dev/null
+          true
