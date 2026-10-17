@@ -71,11 +71,12 @@ WRITE_PROFILE WRITE_SECURE_SETTINGS WRITE_SETTINGS WRITE_SMS WRITE_SOCIAL_STREAM
 WRITE_USER_DICTIONARY WRITE_VOICEMAIL""".split()
 
 
-def preset_header(idx: int, name: str, runnable: bool, export_path: str) -> str:
+def preset_header(idx: int, name: str, runnable: bool, export_path: str,
+                  platform: str = "Android") -> str:
     return f"""[preset.{idx}]
 
 name="{name}"
-platform="Android"
+platform="{platform}"
 runnable={"true" if runnable else "false"}
 advanced_options=true
 dedicated_server=false
@@ -155,10 +156,62 @@ permissions/custom_permissions=PackedStringArray({custom})
 """
 
 
+# ---------------------------------------------------------------------------
+# إعدادات نسخة الكمبيوتر (Windows + Linux)
+#   • embed_pck=false حتى يرى اللاعب مجلد اللعبة كاملًا ويمكنه تعديل الإعدادات
+#     بدون إعادة بناء، ويسهل عليه نسخها على فلاشة.
+#   • المفاتيح مأخوذة حرفيًا من مصدر Godot 4.3:
+#       platform/windows/export/export_plugin.cpp
+#       platform/linuxbsd/export/export_plugin.cpp
+# ---------------------------------------------------------------------------
+def desktop_options(idx: int, kind: str) -> str:
+    common = f"""[preset.{idx}.options]
+
+custom_template/debug=""
+custom_template/release=""
+debug/export_console_wrapper=1
+binary_format/embed_pck=false
+binary_format/architecture="x86_64"
+"""
+    if kind == "windows":
+        return common + """
+codesign/enable=false
+codesign/timestamp=true
+codesign/timestamp_server_url=""
+codesign/digest_algorithm=1
+codesign/description=""
+codesign/custom_options=PackedStringArray()
+application/modify_resources=false
+application/icon="res://assets/atlases/app_icon.png"
+application/console_wrapper_icon=""
+application/icon_interpolation=4
+application/file_version=""
+application/product_version=""
+application/company_name="M11 Studio"
+application/product_name="Meka 11"
+application/file_description="Meka 11 - local arena shooter"
+application/copyright=""
+application/trademarks=""
+application/export_angle=0
+application/export_d3d12=0
+application/d3d12_agility_sdk_multiarch=true
+ssh_remote_deploy/enabled=false
+"""
+    return common + """
+ssh_remote_deploy/enabled=false
+ssh_remote_deploy/host="user@host_ip"
+ssh_remote_deploy/port="22"
+ssh_remote_deploy/extra_args_ssh=""
+ssh_remote_deploy/extra_args_scp=""
+ssh_remote_deploy/run_script=""
+ssh_remote_deploy/cleanup_script=""
+"""
+
+
 def main() -> int:
     header = (
         "; ============================================================================\n"
-        "; إعدادات التصدير — أندرويد (APK + AAB)\n"
+        "; إعدادات التصدير — أندرويد (APK + AAB) + كمبيوتر (Windows + Linux)\n"
         "; مُولّد آليًا بواسطة tools/gen_export_presets.py — لا تُحرّره يدويًا!\n"
         "; ملاحظة أمنية (القسم ٤ + القرار ٢٣): لا خدمات سحابية ولا تتبّع ولا إعلانات.\n"
         "; إذن INTERNET موجود لأن أندرويد يمنع أي اتصال محلي (حتى UDP داخل نفس\n"
@@ -170,6 +223,13 @@ def main() -> int:
         + "\n" + preset_options(0, False)
         + "\n" + preset_header(1, "Android AAB", False, "build/M11-v1.0.0.aab")
         + "\n" + preset_options(1, True)
+        # نسخة الكمبيوتر — تلعب مع الجوال على نفس الشبكة المحلية
+        + "\n" + preset_header(2, "Windows Desktop", True, "build/M11-windows.exe",
+                                platform="Windows Desktop")
+        + "\n" + desktop_options(2, "windows")
+        + "\n" + preset_header(3, "Linux Desktop", True, "build/M11-linux.x86_64",
+                                platform="Linux/X11")
+        + "\n" + desktop_options(3, "linux")
     )
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:

@@ -46,6 +46,9 @@ const MAX_COMBATANTS := 12
 
 # --- إعدادات اللعب ---
 var quality := 2                  # 0 منخفضة .. 3 قصوى
+# --- خاصة بنسخة الكمبيوتر (لا تؤثر على الجوال) ---
+var desktop_fullscreen := true    # ملء الشاشة عند الإقلاع على PC
+var pc_post_fx := true            # طبقة Bloom/تدريج ألوان على PC
 var fps_limit := 0                # 0 = غير محدود
 var language := "ar"
 var master_volume := 0.9
@@ -99,7 +102,7 @@ func save_settings() -> void:
 			"voice_volume", "vibration", "colorblind", "gyro_aim", "aim_assist", "bot_count",
 			"difficulty", "friendly_fire", "map_id", "mode_id", "op_key", "player_name", "loadout",
 			"throwable", "stick_size", "stick_alpha", "button_alpha", "claw_layout",
-			"joystick_mode", "left_handed"]:
+			"joystick_mode", "left_handed", "desktop_fullscreen", "pc_post_fx"]:
 		data[k] = get(k)
 	var f := FileAccess.open(PATH, FileAccess.WRITE)
 	if f:

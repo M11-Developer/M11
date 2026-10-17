@@ -13,14 +13,35 @@ var buttons: Dictionary = {}          # name -> Rect2 (بإحداثيات 480×2
 var button_state: Dictionary = {}
 var ads_toggled := false
 var view_size := Vector2(480, 270)
+var player_ref: Node2D = null     # يُضبط من main.gd — لتصويب الماوس على الكمبيوتر
+var _wheel_swap := 0              # تبديل السلاح بعجلة الماوس (PC)
 
 
 func _ready() -> void:
-	view_size = Vector2(Config.INTERNAL_W, Config.INTERNAL_H)
+	# نقرأ الحجم الحقيقي المعروض (قد يكون أعرض من 16:9 على الهواتف الطويلة)
+	# حتى تبقى الأزرار ملتصقة بزوايا الشاشة فعلًا بدل أن تتجمّع في المنتصف.
+	_sync_view_size()
+	rebuild_buttons()
+	get_viewport().size_changed.connect(_on_viewport_resized)
+
+
+func _sync_view_size() -> void:
+	var vp := get_viewport()
+	if vp == null:
+		view_size = Vector2(Config.INTERNAL_W, Config.INTERNAL_H)
+		return
+	var r := vp.get_visible_rect().size
+	if r.x > 1.0 and r.y > 1.0:
+		view_size = r
+
+
+func _on_viewport_resized() -> void:
+	_sync_view_size()
 	rebuild_buttons()
 
 
 func rebuild_buttons() -> void:
+	_sync_view_size()
 	buttons.clear()
 	var S := Config.stick_size
 	var right_x := view_size.x - 86.0
@@ -49,7 +70,18 @@ func _circle(center: Vector2, radius: float) -> Rect2:
 	return Rect2(center - Vector2(radius, radius), Vector2(radius * 2.0, radius * 2.0))
 
 
+func _desktop() -> bool:
+	return DisplayServer.is_touchscreen_available() == false and (
+		OS.has_feature("pc") or OS.has_feature("windows") or OS.has_feature("linuxbsd"))
+
+
 func _input(event: InputEvent) -> void:
+	# عجلة الماوس: تبديل سريع بين السلاحين (نسخة الكمبيوتر)
+	if event is InputEventMouseButton and event.pressed and _desktop():
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_wheel_swap = 1
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_wheel_swap = -1
 	if event is InputEventScreenTouch:
 		var pos: Vector2 = event.position * (view_size / get_viewport().get_visible_rect().size)
 		if event.pressed:
@@ -161,6 +193,16 @@ func build_command() -> Dictionary:
 		cmd["sprint"] = true
 	if Input.is_action_just_pressed("swap"):
 		cmd["swap"] = 1
+	# --- الكمبيوتر: التصويب بالماوس (مباشرة نحو المؤشر) ---
+	if _desktop() and player_ref != null and is_instance_valid(player_ref):
+		var target: Vector2 = player_ref.get_global_mouse_position()
+		var d: Vector2 = target - player_ref.global_position
+		if d.length() > 6.0:
+			cmd["aim"] = d.normalized()
+			cmd["aim_active"] = true
+	if _wheel_swap != 0:
+		cmd["swap"] = 1 if _wheel_swap > 0 else -1
+		_wheel_swap = 0
 	# اللمس
 	cmd["move_x"] += move_stick["vec"].x
 	cmd["move_y"] = move_stick["vec"].y

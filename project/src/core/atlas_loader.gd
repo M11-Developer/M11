@@ -84,19 +84,35 @@ func load_atlas(name: String) -> AtlasResource:
 		return null
 	var res := AtlasResource.new()
 	res.name = name
-	var tex := load(png)
+	var tex: Texture2D = load(png)
+	if tex == null:
+		push_warning("تعذّر تحميل صورة الأطلس: %s" % png)
+		tex = PlaceholderTexture2D.new()
 	res.texture = AtlasTexture.new()
 	res.texture.atlas = tex
 	res.texture.filter_clip = true
+	var data: Variant = null
 	var f := FileAccess.open(js, FileAccess.READ)
-	var data: Variant = JSON.parse_string(f.get_as_text())
-	f.close()
-	res.frames = data.get("frames", {})
-	res.offsets = data.get("offsets", {})
-	res.anchors = data.get("anchors", {})
-	res.meta = data
+	if f != null:
+		data = JSON.parse_string(f.get_as_text())
+		f.close()
+	# حماية: لو كان ملف JSON تالفًا أو فارغًا نكمل بأطلس فارغ بدل أن يتوقف الإقلاع
+	if not (data is Dictionary):
+		push_warning("ملف أطلس غير صالح: %s" % name)
+		data = {}
+	var d: Dictionary = data
+	if not (d.get("frames", {}) is Dictionary):
+		d["frames"] = {}
+	if not (d.get("offsets", {}) is Dictionary):
+		d["offsets"] = {}
+	if not (d.get("anchors", {}) is Dictionary):
+		d["anchors"] = {}
+	res.frames = d["frames"]
+	res.offsets = d["offsets"]
+	res.anchors = d["anchors"]
+	res.meta = d
 	atlases[name] = res
-	meta[name] = data
+	meta[name] = d
 	return res
 
 
