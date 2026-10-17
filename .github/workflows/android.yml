@@ -30,10 +30,6 @@ jobs:
       ANDROID_HOME: /usr/lib/android-sdk
       ANDROID_SDK_ROOT: /usr/lib/android-sdk
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
-      # Godot 4.3 يقرأ بيانات مفتاح الإصدار من متغيّرات البيئة أيضًا (احتياط ثانٍ)
-      GODOT_ANDROID_KEYSTORE_RELEASE_PATH: /github/workspace/release.keystore
-      GODOT_ANDROID_KEYSTORE_RELEASE_USER: m11
-      GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: m11localwar
     steps:
       - name: جلب الشيفرة
         uses: actions/checkout@v4
@@ -261,6 +257,12 @@ jobs:
           fi
           if [ -f "$REL_KS" ] && "$KEYTOOL" -list -keystore "$REL_KS" -storepass "$KS_PASS" 2>/dev/null | grep -q m11; then
             echo "✔ مفتاح الإصدار سليم ويحتوي على الاسم m11" | tee -a "$BUILD_LOG"
+          # نضبط متغيّرات Godot بالمسار الحقيقي داخل الحاوية ($GITHUB_WORKSPACE = /__w/…)
+          {
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$REL_KS"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=$KS_USER"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=$KS_PASS"
+          } >> "$GITHUB_ENV"
             bash tools/patch_presets.sh "$REL_KS" "$KS_USER" "$KS_PASS" \
               project/export_presets.cfg "$DEBUG_KS" androiddebugkey android 2>&1 | tee -a "$BUILD_LOG"
           else
