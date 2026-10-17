@@ -319,6 +319,27 @@ func back_to_menu() -> void:
 	AudioBus.play_music("menu_theme")
 
 
+## زر الرجوع في أندرويد: ترتيب منطقي بدل إغلاق اللعبة من أي شاشة.
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
+		return
+	if state == "playing":
+		toggle_pause()
+	elif state == "paused":
+		if menu != null and int(menu.screen) != 10:
+			menu.go_back()
+		else:
+			toggle_pause()
+	elif state == "results":
+		back_to_menu()
+	elif state == "menu":
+		if menu != null and int(menu.screen) != 0:
+			menu.go_back()
+		else:
+			# الشاشة الرئيسية: الرجوع يخرج من اللعبة (السلوك المتوقّع)
+			get_tree().quit()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F11:
 		if pc != null:

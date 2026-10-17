@@ -27,7 +27,7 @@ const DEFAULT_SETTINGS = {
   botCount: 7, difficulty: 2, friendlyFire: false, netOverlay: false,
   map: 'oasis', opKey: 'rashid', skinIndex: 0, loadout: ['jabha', 'n9'],
   throwable: 'grenade', port: 41980, webNet: 'bots', maxResend: 3,
-  lastIp: '', bigMinimap: false, showTouchControls: 'auto', crosshairColor: '#7CFFB2',
+  lastIp: '', bigMinimap: false, showTouchControls: 'auto', crosshairColor: '#7CFFB2', showFps: false,
   playerName: 'مقاتل', volumeIntro: true,
 };
 
@@ -132,6 +132,8 @@ class Game {
       this.menuWorld.addActor({ isBot: true, team: 0, name: BOT_NAMES[i], difficulty: 2, seed: 900 + i, opKey: Object.keys(this.charMeta.operators)[i % Math.max(1, Object.keys(this.charMeta.operators).length)] });
     }
     this.camera.setBounds(this.menuWorld.level);
+    // زر الرجوع في أندرويد/المتصفح يتصل بمنطق اللعبة (لا يخرج من التطبيق فجأة)
+    this.installBackHandler();
     setProgress(1, 'جاهز');
     setTimeout(() => {
       document.getElementById('loading')?.classList.add('hidden');
@@ -166,6 +168,36 @@ class Game {
 
   applyAudio() {
     audio.applySettings(this.audioSettings);
+  }
+
+  /**
+   * يعالج زر الرجوع (أندرويد/متصفح) بترتيب منطقي:
+   * لعب ← إيقاف، إيقاف ← رجوع داخل الشاشات أو استئناف، قوائم ← رجوع خطوة.
+   * يعيد true إذا استُهلك الزر.
+   */
+  handleBack() {
+    if (this.state === 'playing') { this.pause(); return true; }
+    if (this.state === 'paused') {
+      if (this.menus && this.menus.stack.length > 1) { this.menus.back(); return true; }
+      this.resume();
+      return true;
+    }
+    if (this.state === 'results') { this.state = 'menu'; this.menus.home(); return true; }
+    if (this.state === 'editor') { if (this.editor) this.editor.closed = true; return true; }
+    if (this.state === 'menu') {
+      if (this.menus && this.menus.stack.length > 1) { this.menus.back(); return true; }
+      return false;
+    }
+    return false;
+  }
+
+  /** يربط زر الرجوع بنظام أندرويد (window.m11Back) وبقائمة المتصفح */
+  installBackHandler() {
+    window.m11Back = () => (this.handleBack() ? '1' : '0');
+    window.addEventListener('popstate', () => {
+      if (this.handleBack()) history.pushState({ m11: 1 }, '');
+    });
+    try { history.pushState({ m11: 1 }, ''); } catch (e) { /* تجاهل */ }
   }
 
   resize() {

@@ -22,6 +22,8 @@ boot_splash/bg_color=Color(0.043, 0.051, 0.063, 1)
 boot_splash/show_image=true
 boot_splash/fullsize=false
 boot_splash/use_filter=false
+; زر الرجوع في أندرويد يُعالَج في main.gd بدل إغلاق اللعبة
+config/quit_on_go_back=false
 
 [autoload]
 

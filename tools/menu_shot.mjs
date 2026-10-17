@@ -114,6 +114,8 @@ if (winMode || loseMode) {
   // نبدأ من الرئيسية ثم ندفع الشاشة المطلوبة حتى تظهر عناصر الرجوع كما في اللعب الحقيقي
   if (screenName !== 'main') menus.push(screenName);
   menus.current.index = index;
+  // نُمرّر القائمة حتى يظهر الصف المختار (يثبت أن التمرير التلقائي يعمل)
+  menus.ensureVisible();
 }
 
 const input = { mouse: { x: -50, y: -50, down: false, wheel: 0 } };

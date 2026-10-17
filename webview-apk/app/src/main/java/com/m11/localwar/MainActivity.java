@@ -98,14 +98,24 @@ public class MainActivity extends Activity {
         web.saveState(outState);
     }
 
+    /**
+     * زر الرجوع: يُمرَّر أولًا لمنطق اللعبة (window.m11Back) — كان سابقًا
+     * يخرج من التطبيق فورًا من أي شاشة، وهذا سبب شكوى «لا يوجد زر رجوع».
+     * ترتيب اللعبة: لعب ← إيقاف، شاشة فرعية ← رجوع خطوة، الرئيسية ← تصغير التطبيق.
+     */
     @Override
     public void onBackPressed() {
-        // داخل اللعبة: الرجوع يتصرّف كزر داخلي إن أمكن، وإلا نخرج
-        if (web.canGoBack()) {
-            web.goBack();
-        } else {
+        if (web == null) {
             super.onBackPressed();
+            return;
         }
+        web.evaluateJavascript("(window.m11Back ? window.m11Back() : '0')", value -> {
+            boolean handled = value != null && value.contains("1");
+            if (!handled) {
+                // في الشاشة الرئيسية: نُصغّر التطبيق بدل قتله (لا يفقد اللاعب تقدمه)
+                moveTaskToBack(true);
+            }
+        });
     }
 
     @Override

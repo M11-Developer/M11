@@ -127,6 +127,10 @@ export class HUD {
     if (this.killcam) this.drawKillcam(ctx, world, opts);
     if (this.netOverlay) this.drawNetOverlay(ctx, world, view, opts);
     this.drawInteraction(ctx, world, view);
+    // عدّاد الإطارات (تشخيص اختياري — يُفعّل من الإعدادات)
+    if (opts.settings && opts.settings.showFps) {
+      this.num(ctx, `${Math.round(this.fps)} FPS`, W / 2, H - 3, { size: 7, color: '#7E8C99', align: 'center' });
+    }
     ctx.restore();
   }
 
@@ -456,7 +460,7 @@ export class HUD {
 
   drawKillFeed(ctx, world, opts = {}) {
     // على اللمس توجد أزرار إيقاف/خريطة أعلى اليمين، فنبدأ السجل أسفل منها
-    let y = opts.showTouchControls ? 34 : 22;
+    let y = opts.showTouchControls ? 48 : 22;
     const x = W - 10;
     for (let i = world.killFeed.length - 1; i >= 0 && i >= world.killFeed.length - 5; i--) {
       const k = world.killFeed[i];
