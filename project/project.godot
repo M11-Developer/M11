@@ -38,16 +38,31 @@ gdscript/warnings/unsafe_method_access=0
 
 [display]
 
+; ---------------------------------------------------------------------------
+; إعدادات الشاشة — مضبوطة لتغطية كامل الشاشة على كل الهواتف بلا أي حواف سوداء.
+; ملاحظة مهمة: window/handheld/orientation في Godot 4:
+;   0 = أفقي (Landscape)   1 = عمودي (Portrait) ← كان هذا خطأً سابقًا!
+;   2 = أفقي معكوس         3 = عمودي معكوس
+;   4 = أفقي تلقائي (Sensor Landscape) ← نستخدمه ليتبع دوران الجهاز
+; ---------------------------------------------------------------------------
 window/size/viewport_width=640
 window/size/viewport_height=360
+; على الحاسوب: نافذة 1280×720 عند التشغيل
 window/size/window_width_override=1280
 window/size/window_height_override=720
-window/stretch/mode="viewport"
-window/stretch/aspect="keep"
-window/stretch/scale_mode="integer"
-window/handheld/orientation=1
+; mode=canvas_items يحافظ على وضوح النصوص العربية (لا يكبّر صورة 640×360)
+; aspect=expand يجعل مساحة اللعب تتمدد مع نسبة شاشة الهاتف ⇒ لا حواف سوداء
+; scale_mode=fractional يضمن ملء الشاشة تمامًا على أي نسبة أبعاد
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/stretch/scale_mode="fractional"
+window/handheld/orientation=4
 window/vsync/vsync_mode=1
 window/size/resizable=true
+; ملء الشاشة الحقيقي على أندرويد (يُخفى شريط الحالة وأزرار النظام)
+window/size/borderless=true
+window/size/always_on_top=false
+window/subwindows/embed_subwindows=true
 
 [gui]
 

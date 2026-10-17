@@ -182,6 +182,19 @@ jobs:
           echo "imported=$IMP fonts=$FONTS classes=$CLASSES" | tee -a "$BUILD_LOG"
           true
 
+      - name: تشغيل تجريبي حقيقي (headless) — يكشف أخطاء الإقلاع
+        continue-on-error: true
+        run: |
+          set +e
+          : > /tmp/run.log
+          # نشغّل اللعبة فعليًا ٣٠٠ إطار بلا شاشة: أي خطأ وقت التشغيل يظهر هنا
+          timeout 240 godot --headless --path project --quit-after 300 2>&1 | tee /tmp/run.log | tee -a "$BUILD_LOG"
+          echo "run_exit=$?" | tee -a "$BUILD_LOG"
+          echo "--- أخطاء التشغيل ---"
+          grep -cE "SCRIPT ERROR|Invalid call|Nonexistent|Parse Error" /tmp/run.log || true
+          grep -E "SCRIPT ERROR|Invalid call|Nonexistent|Parse Error|Cannot|error" /tmp/run.log | head -20 || true
+          true
+
       - name: تثبيت قالب بناء أندرويد (Gradle)
         continue-on-error: true
         run: |
