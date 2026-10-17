@@ -167,7 +167,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.rel.outputs.tag }}
-          name: "ميكا ١١ — الإصدار النهائي ٢٫٠ (أندرويد + كمبيوتر) 🎮"
+          name: "ميكا ١١ — الإصدار ${{ steps.rel.outputs.tag }} (أندرويد + كمبيوتر) 🎮"
           body_path: docs/RELEASE_NOTES_AR.md
           generate_release_notes: false
           draft: false

@@ -23,6 +23,7 @@ var splash := 0.0
 var travelled := 0.0
 var life := 4.0
 var active := true
+var visual_only := false
 const STEP := 6.0
 
 
@@ -41,6 +42,7 @@ func setup(w: Node2D, data: Dictionary) -> void:
 	bounce = float(data.get("bounce", 0.0))
 	fuse = float(data.get("fuse", 0.0))
 	splash = float(data.get("splash", 0.0))
+	visual_only = bool(data.get("visual_only", false))
 	global_position = data.get("pos", Vector2.ZERO)
 	z_index = 5
 
@@ -49,6 +51,8 @@ func _physics_process(dt: float) -> void:
 	if not active:
 		queue_free()
 		return
+	# على العميل: الرصاص بصري فقط — الضرر والقتل يحسبهما المضيف وحده
+	var fake: bool = visual_only or (world != null and bool(world.get("net_client")))
 	life -= dt
 	if gravity:
 		velocity.y += Config.GRAVITY * 0.55 * dt
@@ -73,13 +77,14 @@ func _physics_process(dt: float) -> void:
 			if kind in ["grenade", "rocket"]:
 				_explode()
 				return
-			world.damage_tile(int(next.x / Config.TILE), int(next.y / Config.TILE), damage * 0.4)
+			if not fake:
+				world.damage_tile(int(next.x / Config.TILE), int(next.y / Config.TILE), damage * 0.4)
 			active = false
 			queue_free()
 			return
 		global_position = next
 		# إصابة المقاتلين
-		for a in world.actors:
+		for a in ([] if fake else world.actors):
 			if a == owner_actor or not a.alive:
 				continue
 			# العداوة تأتي من العالم: في «الكل ضد الكل» الجميع أعداء حتى لو تشابهت الفرق
@@ -127,8 +132,10 @@ func _physics_process(dt: float) -> void:
 func _explode() -> void:
 	active = false
 	var radius := splash if splash > 0.0 else 60.0
-	world.explode(global_position, radius, damage)
-	for a in world.actors:
+	var fake: bool = visual_only or (world != null and bool(world.get("net_client")))
+	if not fake:
+		world.explode(global_position, radius, damage)
+	for a in ([] if fake else world.actors):
 		if not a.alive:
 			continue
 		var d: float = a.global_position.distance_to(global_position)

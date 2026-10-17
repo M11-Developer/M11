@@ -19,6 +19,13 @@ const COYOTE_TIME := 0.1
 
 @export var is_bot := false
 @export var net_id := 0
+# --- الشبكة المحلية ---
+var is_remote := false        # مقاتل بعيد يتحكم به المضيف (على المضيف)
+var is_proxy := false         # نسخة عميل تُحدَّث من اللقطات
+var is_local_player := false  # لاعب هذا الجهاز (للتنبؤ على العميل)
+var net_cmd: Dictionary = {}  # أوامر التحكم الواردة من الشبكة
+var net_target := Vector2.ZERO
+var net_has_target := false
 
 var op_key := "rashid"
 var display_name := "مقاتل"
@@ -153,6 +160,10 @@ func _physics_process(dt: float) -> void:
 	muzzle_flash = maxf(0.0, muzzle_flash - dt)
 	if action_time > 0.0:
 		action_time = maxf(0.0, action_time - dt)
+	# مقاتل يعيش على جهاز آخر: لا فيزياء محلية — نتبعه بسلاسة
+	if is_proxy:
+		_proxy_tick(dt)
+		return
 	if not alive:
 		death_timer += dt
 		respawn_timer += dt
@@ -160,9 +171,52 @@ func _physics_process(dt: float) -> void:
 		return
 	var im: InputManager = _world.input_manager_get() if _world.input_manager == null else _world.input_manager
 	var cmd: Dictionary = _bot_cmd
-	if not is_bot:
+	if is_remote:
+		cmd = net_cmd
+	elif not is_bot:
 		cmd = im.build_command() if im != null else {}
 	update_with_command(dt, cmd)
+
+
+# ---------------------------------------------------------------- الشبكة
+func _proxy_tick(dt: float) -> void:
+	# الحركة تُقاد من اللقطة القادمة، مع استيفاء بسيط يمنع الاهتزاز
+	if net_has_target:
+		var d := net_target - global_position
+		var k := clampf(dt * 14.0, 0.0, 1.0)
+		global_position += d * k
+		velocity = (d / maxf(dt, 0.0001)).limit_length(400.0)
+	state_timer += dt
+	if not alive:
+		death_timer += dt
+	queue_redraw()
+
+
+func apply_net_target(pos: Vector2, vx: float, vy: float) -> void:
+	net_target = pos
+	net_has_target = true
+	velocity = Vector2(vx, vy)
+
+
+func apply_net_visual(aim: float, st: int, new_hp: float, flags: int) -> void:
+	aim_angle = aim
+	anim_state = st
+	hp = new_hp
+	var was_alive: bool = alive
+	alive = (flags & 2) != 0
+	facing_x = 1.0 if (flags & 1) != 0 else -1.0
+	jetpack_on = (flags & 4) != 0
+	ads = (flags & 8) != 0
+	crouching = (flags & 16) != 0
+	prone = (flags & 32) != 0
+	if not alive and death_timer <= 0.0:
+		death_timer = 0.001
+	elif alive and not was_alive:
+		# أُحيي على المضيف ⇒ نمسح عدّاد الموت كي يعود لرسم الوقوف فورًا
+		death_timer = 0.0
+		respawn_timer = 0.0
+		hit_flash = 0.0
+	queue_redraw()
 
 
 var _bot_cmd: Dictionary = {}

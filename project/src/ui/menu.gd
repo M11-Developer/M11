@@ -23,6 +23,7 @@ const S_CREDITS := 7
 const S_RESULTS := 8
 const S_CONTROLS := 9
 const S_PAUSE := 10
+const S_LOBBY := 11
 
 const MARGIN := 16.0
 const HEADER_H := 58.0
@@ -70,7 +71,15 @@ func _ready() -> void:
 	ip_edit.add_theme_font_size_override("font_size", 14)
 	ip_edit.text_submitted.connect(_on_manual_ip)
 	add_child(ip_edit)
+	# كانت الإشارة تُعرَّف ولا تُوصَل إطلاقًا ⇒ قائمة المضيفين تبقى فارغة دائمًا
+	if not NetMgr.host_found.is_connected(_on_host_found):
+		NetMgr.host_found.connect(_on_host_found)
 	_load_art()
+
+
+func _exit_tree() -> void:
+	if is_instance_valid(NetMgr) and NetMgr.host_found.is_connected(_on_host_found):
+		NetMgr.host_found.disconnect(_on_host_found)
 
 
 func _load_art() -> void:
@@ -118,6 +127,9 @@ func show_screen(s: int, push_history: bool = true) -> void:
 
 
 func go_back() -> void:
+	if screen == S_LOBBY:
+		_act("lan_leave")
+		return
 	if screen == S_PAUSE:
 		_act("resume")
 		return
@@ -172,12 +184,16 @@ func _on_manual_ip(text: String) -> void:
 	if ip.is_empty():
 		return
 	if NetMgr.join_host(ip, Config.NET_PORT):
-		toast("جارٍ الانضمام إلى %s …" % ip)
+		show_screen(S_LOBBY)
+		toast("جارٍ الانضمام إلى %s …" % ip, 4.0)
 	else:
 		toast("تعذّر الانضمام إلى %s — تحقّق من العنوان والشبكة" % ip)
 
 
 func _on_host_found(info: Dictionary) -> void:
+	for h in host_list:
+		if String(h.get("ip", "")) == String(info.get("ip", "")):
+			return
 	host_list.append(info)
 	toast("وُجد مضيف: %s (%d لاعبين)" % [info["host_name"], info["players"]])
 
@@ -289,6 +305,32 @@ func _rows() -> Array:
 					"hint": "%d لاعبين — %s" % [int(h.get("players", 0)), String(h.get("ip", ""))],
 					"id": "join", "arg": i, "color": M11UI.TEAL})
 			rows.append({"label": "رجوع", "hint": "Esc", "icon": "back", "id": "back"})
+		S_LOBBY:
+			rows = [{"header": true, "label": "الغرفة — منفذ %d" % Config.NET_PORT}]
+			var is_host := NetMgr.is_host()
+			if is_host:
+				var lobby: Array = NetMgr.lobby_roster()
+				rows.append({"header": true, "label": "اللاعبون (%d)" % lobby.size()})
+				for e in lobby:
+					var nm := String(e.get("name", "لاعب"))
+					if int(e.get("id", 0)) == NetMgr.local_id:
+						nm += " (أنت)"
+					rows.append({"label": nm, "hint": "فريق %d · %s" % [int(e.get("team", 0)) + 1, _op_name(String(e.get("op_key", "rashid")))],
+						"icon": "team", "id": "noop", "color": M11UI.TEAL})
+				var hint := "المباراة تبدأ فورًا" if lobby.size() > 1 else "ستلعب مع بوتات"
+				rows.append({"label": "بدء المباراة", "hint": hint, "icon": "play", "id": "lan_start", "color": M11UI.GOLD})
+				rows.append({"label": "معلومات الاتصال", "hint": "الجميع على نفس الشبكة", "id": "noop"})
+			else:
+				rows.append({"header": true, "label": "أنت: %s" % Config.player_name})
+				var seen: Array = NetMgr.last_setup.get("roster", []) if NetMgr.last_setup is Dictionary else []
+				for e in seen:
+					var nm2 := String(e.get("name", "لاعب"))
+					if int(e.get("id", 0)) == NetMgr.local_id:
+						nm2 += " (أنت)"
+					rows.append({"label": nm2, "hint": "فريق %d" % (int(e.get("team", 0)) + 1),
+						"icon": "team", "id": "noop", "color": M11UI.TEXT_DIM})
+				rows.append({"label": "بانتظار المضيف ليبدأ المباراة…", "hint": "اترك الشاشة مفتوحة", "icon": "play", "id": "noop", "color": M11UI.TEAL})
+			rows.append({"label": "مغادرة الغرفة", "hint": "Esc", "icon": "back", "id": "lan_leave", "color": M11UI.RED})
 		S_STATS:
 			var s: Dictionary = Save.profile.get("stats", {})
 			var ach: Array = Save.profile.get("achievements", [])
@@ -415,6 +457,7 @@ func _screen_title() -> String:
 		S_CREDITS: return "الائتمانات"
 		S_RESULTS: return "نتيجة المباراة"
 		S_PAUSE: return "إيقاف مؤقت"
+		S_LOBBY: return "غرفة الشبكة المحلية"
 	return "ميكا ١١"
 
 
@@ -431,6 +474,7 @@ func _screen_subtitle() -> String:
 		S_CREDITS: return "كل شيء هنا صُنع من الصفر بالكود"
 		S_RESULTS: return "أداءك في هذه المباراة"
 		S_PAUSE: return "المباراة متوقفة — لا يستمر شيء خلفك"
+		S_LOBBY: return "منفذ %d — على نفس الشبكة أو الهوت سبوت" % Config.NET_PORT
 	return ""
 
 
@@ -656,12 +700,23 @@ func _act(id: String, arg: Variant = null) -> void:
 			_rebuild_touch()
 			toast("استُعيد التحكم الافتراضي")
 		"host":
-			if NetMgr.start_host(Config.player_name):
-				toast("الغرفة جاهزة على المنفذ %d" % Config.NET_PORT)
-				if main: main.start_match({"mode": Config.mode_id})
+			if NetMgr.start_host(Config.player_name, Config.mode_id):
+				show_screen(S_LOBBY)
+				toast("الغرفة جاهزة — المنفذ %d" % Config.NET_PORT, 3.0)
+			else:
+				toast("تعذّر إنشاء الغرفة — تحقق من الشبكة والصلاحيات")
+		"lan_start":
+			if main and main.has_method("start_lan_match"):
+				main.start_lan_match()
 				visible = false
 			else:
-				toast("تعذّر إنشاء الغرفة — تحقق من الصلاحيات")
+				toast("تعذّر بدء المباراة")
+		"lan_leave":
+			NetMgr.leave()
+			if main and main.has_method("back_to_menu"):
+				main.back_to_menu()
+			show_screen(S_LAN, false)
+			toast("غادرت الغرفة")
 		"discover":
 			host_list.clear()
 			NetMgr.discover_hosts(3.0)
@@ -673,16 +728,23 @@ func _act(id: String, arg: Variant = null) -> void:
 		"join":
 			var h: Dictionary = host_list[clampi(int(arg), 0, maxi(0, host_list.size() - 1))]
 			if NetMgr.join_host(String(h.get("ip", "")), int(h.get("port", Config.NET_PORT))):
-				toast("جارٍ الاتصال بـ %s…" % String(h.get("host_name", "")))
+				show_screen(S_LOBBY)
+				toast("جارٍ الاتصال بـ %s…" % String(h.get("host_name", "")), 4.0)
 			else:
 				toast("فشل الاتصال")
 		"resume":
 			if main and main.has_method("toggle_pause"):
 				main.toggle_pause()
 		"rematch":
-			if main and main.has_method("start_match"):
+			if NetMgr.is_host():
+				if main and main.has_method("start_lan_match"):
+					main.start_lan_match()
+					visible = false
+			elif NetMgr.is_client():
+				toast("بانتظار المضيف لبدء مباراة جديدة")
+			elif main and main.has_method("start_match"):
 				main.start_match({"mode": String(result.get("mode", Config.mode_id))})
-			visible = false
+				visible = false
 		"menu":
 			if main and main.has_method("back_to_menu"):
 				main.back_to_menu()
@@ -927,7 +989,7 @@ func _art_for_screen() -> Texture2D:
 	match screen:
 		S_MAIN, S_MODES: art = hero_art if hero_art != null else key_art
 		S_MAPS: art = key_art if key_art != null else hero_art
-		S_LAN, S_OPERATORS: art = naval_art if naval_art != null else key_art
+		S_LAN, S_OPERATORS, S_LOBBY: art = naval_art if naval_art != null else key_art
 		S_RESULTS:
 			var won := int(result.get("winner_team", -1)) == 0
 			art = p_victory if won else p_defeat

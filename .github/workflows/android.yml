@@ -65,22 +65,13 @@ jobs:
             exit 1
           fi
 
-      - name: حفظ سجل الفحص في الفرع
+      - name: رفع سجل الفحص كأرتيفاكت
         if: always()
-        run: |
-          set +e
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git config user.email "ci@m11.local"
-          git config user.name "M11 CI"
-          git add -f docs/verify_log.txt
-          git commit -m "سجل فحص الإقلاع — تشغيل $GITHUB_RUN_ID" || echo "لا تغييرات"
-          for attempt in 1 2 3; do
-            git fetch origin arena/3dc6c87e-m11 >/dev/null 2>&1 || true
-            git rebase origin/arena/3dc6c87e-m11 >/dev/null 2>&1 || git rebase --abort 2>/dev/null || true
-            git push origin "HEAD:arena/3dc6c87e-m11" && break
-            sleep 4
-          done
-          true
+        uses: actions/upload-artifact@v4
+        with:
+          name: M11-verify-log
+          if-no-files-found: warn
+          path: docs/verify_log.txt
 
   export-android:
     needs: verify-boot
@@ -453,7 +444,7 @@ jobs:
         if: success() && (startsWith(github.ref, 'refs/tags/v') || inputs.makerelease == 'yes')
         uses: softprops/action-gh-release@v2
         with:
-          name: "ميكا ١١ — الإصدار النهائي ٢٫٠ (أندرويد + كمبيوتر) 🎮"
+          name: "ميكا ١١ — الإصدار ${{ github.ref_name }} (أندرويد) 🎮"
           body_path: docs/RELEASE_NOTES_AR.md
           generate_release_notes: false
           draft: false
@@ -470,36 +461,6 @@ jobs:
         run: |
           bash tools/diag_log.sh "$BUILD_LOG"
           bash tools/emit_annotations.sh /tmp/m11-diag.txt "." error 9 0 head
-
-      - name: رفع سجل البناء إلى الفرع (قناة قراءة موثوقة)
-        if: always()
-        run: |
-          set +e
-          cp "$BUILD_LOG" docs/build_log.txt 2>/dev/null || echo "(لا سجل)" > docs/build_log.txt
-          bash tools/diag_log.sh "$BUILD_LOG" > /dev/null 2>&1 || true
-          cp /tmp/m11-diag.txt docs/build_diag.txt 2>/dev/null || true
-          git config --global --add safe.directory "$GITHUB_WORKSPACE" 2>/dev/null || true
-          git config --global --add safe.directory /__w/M11/M11 2>/dev/null || true
-          git config user.name "M11 CI"
-          git config user.email "ci@m11.local"
-          mkdir -p docs
-          git add -f docs/build_log.txt || true
-          [ -f docs/build_diag.txt ] && git add -f docs/build_diag.txt || true
-          git commit -m "CI: سجل البناء [skip ci]" -q || echo "لا تغييرات"
-          # GITHUB_REF_NAME في بناء الوسم يساوي اسم الوسم لا اسم الفرع — لذلك
-          # ندفع دائمًا إلى فرع العمل الثابت لهذه الجلسة.
-          TARGET_BRANCH="arena/3dc6c87e-m11"
-          # نُعيد الأساس على الفرع أولًا حتى لا يفشل الدفع عند وجود التزامات جديدة عليه
-          for attempt in 1 2 3; do
-            git fetch origin "$TARGET_BRANCH" >/dev/null 2>&1 || true
-            git rebase "origin/$TARGET_BRANCH" >/dev/null 2>&1 || git rebase --abort 2>/dev/null || true
-            if git push origin "HEAD:${TARGET_BRANCH}" 2>/tmp/push.err; then
-              echo "::notice title=LOG-PUSH::تم رفع السجل إلى ${TARGET_BRANCH}"
-              break
-            fi
-            echo "محاولة $attempt فشلت: $(tail -2 /tmp/push.err | tr '\n' ' ')"
-            sleep 4
-          done
 
       # ---------- قناة التشخيص: تُنشر دائمًا لأن سجلات Actions قد تكون محجوبة ----------
       - name: سجل التصدير (أهم الأسطر)

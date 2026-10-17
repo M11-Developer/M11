@@ -19,20 +19,25 @@ OUT = os.path.join(ROOT, "project", "export_presets.cfg")
 
 PKG = "com.m11.localwar"
 APP_NAME = "ميكا ١١"
-VERSION_CODE = 1
-VERSION_NAME = "1.0.0"
+VERSION_CODE = 220
+VERSION_NAME = "2.2.0"
 EXCLUDE = "assets/raw/*, assets/processed/*, docs/*, tools/*, *.md, .github/*"
 
 # الأذونات المطلوبة فقط (كل الباقي false صراحةً ليكون الملف واضحًا للمبتدئ)
+# ملاحظة مهمة: القائمة تُقارن مع ALL_PERMISSIONS وهي بأحرف كبيرة — كانت
+# المقارنة سابقةً تفشل دائمًا (أحرف صغيرة) فتُكتب كل الأذونات false، وهذا سبب
+# تعذّر اللعب الجماعي على أندرويد في النسخ الماضية.
 PERMISSIONS_TRUE = [
     # الشبكة المحلية: أندرويد يمنع فتح أي مقبس شبكة بلا إذن الإنترنت
-    "internet",
+    "INTERNET",
+    # معرفة حالة الشبكة لإظهار «متصل/غير متصل» وعدم محاولة الاتصال بلا شبكة
+    "ACCESS_NETWORK_STATE",
     # قراءة حالة الواي فاي لاختيار أفضل منفذ وإظهار حالة الاتصال
-    "access_wifi_state",
-    # استقبال/إرسال حزم البث (discovery) على منفذ 41980
-    "change_wifi_multicast_state",
-    # الدردشة الصوتية (اختيارية — يستطيع اللاعب إيقافها)
-    "record_audio",
+    "ACCESS_WIFI_STATE",
+    # استقبال/إرسال حزم البث (discovery) على منفذ 41981
+    "CHANGE_WIFI_MULTICAST_STATE",
+    # أندرويد 13+ (TIRAMISU): مطلوب للوصول إلى معلومات الواي فاي المحلية
+    "NEARBY_WIFI_DEVICES",
 ]
 
 # أذونات حديثة لا يعرفها Godot 4.3 في قائمته، نضيفها يدويًا:
@@ -110,6 +115,7 @@ def preset_options(idx: int, is_aab: bool) -> str:  # noqa: C901
     perms = "\n".join(f"permissions/{p}={'true' if p in PERMISSIONS_TRUE else 'false'}"
                       for p in ALL_PERMISSIONS)
     custom = ", ".join(f'"{p}"' for p in CUSTOM_PERMISSIONS)
+    custom_line = f"permissions/custom_permissions=PackedStringArray({custom})" if custom else ""
     return f"""[preset.{idx}.options]
 
 custom_template/debug=""
@@ -152,7 +158,7 @@ apk_expansion/enable=false
 apk_expansion/SALT=""
 apk_expansion/public_key=""
 {perms}
-permissions/custom_permissions=PackedStringArray({custom})
+{custom_line}
 """
 
 
@@ -219,9 +225,9 @@ def main() -> int:
         "; ============================================================================\n\n"
     )
     body = (
-        preset_header(0, "Android APK", True, "build/M11-v1.0.0.apk")
+        preset_header(0, "Android APK", True, "build/M11-v2.2.0.apk")
         + "\n" + preset_options(0, False)
-        + "\n" + preset_header(1, "Android AAB", False, "build/M11-v1.0.0.aab")
+        + "\n" + preset_header(1, "Android AAB", False, "build/M11-v2.2.0.aab")
         + "\n" + preset_options(1, True)
         # نسخة الكمبيوتر — تلعب مع الجوال على نفس الشبكة المحلية
         + "\n" + preset_header(2, "Windows Desktop", True, "build/M11-windows.exe",

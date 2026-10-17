@@ -1,7 +1,9 @@
 ; ============================================================================
 ; ميكا ١١ — ملف مشروع Godot 4.3+
 ; إعدادات القسم 2 من دفتر المشروع: 480×270 منطقيًا (لعبة بيكسل)، تكبير صحيح،
-; قفل أفقي، أندرويد 8.0+ (minSdk 26 / targetSdk 35)، بلا إذن الإنترنت.
+; قفل أفقي، أندرويد 8.0+ (minSdk 26 / targetSdk 35).
+; إذن الشبكة (INTERNET) مطلوب تقنيًا لفتح مقابس UDP محلية فقط —
+; لا يتصل التطبيق بأي خدمة على الإنترنت ولا يرسل أي بيانات خارج شبكتك.
 ;
 ; للتشغيل:  Godot 4.3 → Import → اختر هذا المجلد → Run
 ; للتصدير:  Project ▸ Export ▸ Android (attachments/export_presets.cfg)
@@ -13,7 +15,7 @@ config_version=5
 
 config/name="ميكا ١١"
 config/description="لعبة تصويب عربية ثنائية الأبعاد للشبكة المحلية — بلا إنترنت."
-config/version="2.1.1"
+config/version="2.2.0"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://assets/atlases/app_icon.png"

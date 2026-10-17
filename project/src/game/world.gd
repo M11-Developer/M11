@@ -138,6 +138,10 @@ var pickups: Array = []
 var zone := {"active": false, "center": Vector2.ZERO, "radius": 0.0, "target": 0.0, "state": "idle", "timer": 45.0}
 var mode_id := "dm"
 var seed_value := 12345
+# --- الشبكة المحلية ---
+var net_client := false      # نسخة عميل: لا ذكاء اصطناعي، الحركة من اللقطات
+var net_host := false        # مضيف: يبثّ اللقطات ويطبّق أوامر اللاعبين البعيدين
+
 var match_time := 0.0
 var match_state := "warmup"
 var warmup := 3.0
@@ -607,14 +611,17 @@ func set_quality(q: int) -> void:
 
 # ---------------------------------------------------------------- التحديث
 func _process(dt: float) -> void:
-	match_time += dt
+	# العميل لا يحسب الوقت ولا نهاية المباراة — كل شيء من المضيف
+	if not net_client:
+		match_time += dt
 	if match_state == "warmup":
 		warmup -= dt
 		if warmup <= 0.0:
 			match_state = "playing"
-	if match_state == "playing":
+	if match_state == "playing" and not net_client:
 		_check_match_end()
-	if zone["active"] and match_state == "playing":
+	# المنطقة المتقلّصة يحاكيها المضيف فقط؛ العميل يرى حالتها من رسائل الحالة
+	if zone["active"] and match_state == "playing" and not net_client:
 		_update_zone(dt)
 	# رسم التضاريس يتبع الكاميرا — كان الرسم يحدث مرة واحدة عند البناء فقط
 	var cam := get_viewport().get_camera_2d()
@@ -623,10 +630,11 @@ func _process(dt: float) -> void:
 		_last_cam = cam_pos
 		terrain.queue_redraw()
 	# إعادة الإحياء: كانت maybe_respawn موجودة ولا تُستدعى أبدًا ⇒ تبقى ميتًا للأبد
-	for a in actors:
-		if not a.alive and bool(mode_def().get("respawn", true)):
-			if a.has_method("maybe_respawn"):
-				a.maybe_respawn(dt)
+	if not net_client:
+		for a in actors:
+			if not a.alive and bool(mode_def().get("respawn", true)):
+				if a.has_method("maybe_respawn"):
+					a.maybe_respawn(dt)
 	# سجل القتل يتلاشى تدريجيًا
 	for i in range(kill_feed.size() - 1, -1, -1):
 		kill_feed[i]["life"] = float(kill_feed[i]["life"]) - dt
@@ -691,6 +699,7 @@ func _compute_standings() -> Array:
 	var list: Array = []
 	for a in actors:
 		list.append({
+			"net_id": int(a.net_id),
 			"name": String(a.display_name), "kills": int(a.kills), "deaths": int(a.deaths),
 			"assists": int(a.assists), "team": int(a.team), "is_bot": bool(a.is_bot),
 			"is_player": not bool(a.is_bot), "score": int(a.kills) * 100 - int(a.deaths) * 25,
@@ -778,9 +787,9 @@ func pick_spawn_point(for_team: int) -> Vector2:
 	return best
 
 
-func add_actor(is_bot: bool, data: Dictionary) -> Node2D:
+func add_actor(is_bot: bool, data: Dictionary) -> Actor:
 	var scene: PackedScene = preload("res://scenes/Actor.tscn")
-	var a: CharacterBody2D = scene.instantiate()
+	var a: Actor = scene.instantiate()
 	a.is_bot = is_bot
 	entities.add_child(a)
 	a.setup(self, data)
@@ -810,6 +819,132 @@ func nearest_hostile(a: Actor) -> Actor:
 
 func input_manager_get() -> InputManager:
 	return get_node_or_null("/root/Main/InputManager")
+
+
+# ---------------------------------------------------------------- الشبكة
+func actor_by_net_id(id: int) -> Actor:
+	for a in actors:
+		if int(a.net_id) == id:
+			return a
+	return null
+
+
+func net_roster() -> Array:
+	var list: Array = []
+	for a in actors:
+		var wids: Array = []
+		for w in a.weapons:
+			wids.append(String(w["id"]) if w != null else "")
+		list.append({
+			"id": int(a.net_id), "name": String(a.display_name), "team": int(a.team),
+			"op_key": String(a.op_key), "bot": bool(a.is_bot), "weapons": wids,
+		})
+	return list
+
+
+func apply_net_command(id: int, c: Dictionary) -> void:
+	var a = actor_by_net_id(id)
+	if a == null or a.is_bot:
+		return
+	a.is_remote = true
+	a.net_cmd = {
+		"move_x": float(c.get("mx", 0.0)), "move_y": float(c.get("my", 0.0)),
+		"aim": Vector2(float(c.get("ax", 0.0)), float(c.get("ay", 0.0))),
+		"aim_active": bool(c.get("aim_active", false)),
+		"jump": bool(c.get("jump", false)), "jump_held": bool(c.get("jump", false)),
+		"jet": bool(c.get("jet", false)), "fire": bool(c.get("fire", false)),
+		"ads": bool(c.get("ads", false)), "sprint": bool(c.get("sprint", false)),
+		"crouch": bool(c.get("crouch", false)), "prone": bool(c.get("prone", false)),
+		"reload": bool(c.get("reload", false)), "melee": bool(c.get("melee", false)),
+		"grenade": bool(c.get("grenade", false)), "heal": bool(c.get("heal", false)),
+		"swap": int(c.get("swap", 0)), "roll": false, "slide": false,
+	}
+
+
+## يفكّ اللقطة إلى صفوف مفهومة — دالة واحدة يستخدمها التطبيق والاختبار الذاتي
+func decode_snapshot(data: PackedByteArray) -> Array:
+	var rows: Array = []
+	if data.size() < 1:
+		return rows
+	var count: int = int(data[0])
+	var o := 1
+	for i in count:
+		if o + 11 > data.size():
+			break
+		rows.append({
+			"id": int(data[o]),
+			"pos": Vector2(float(data.decode_s16(o + 1)) / 4.0, float(data.decode_s16(o + 3)) / 4.0),
+			"aim": (float(data[o + 5]) / 255.0) * TAU,
+			"state": int(data[o + 6]),
+			"hp": float(data[o + 7]),
+			"flags": int(data[o + 8]),
+			"vel": Vector2(float(data.decode_s8(o + 9)) * 4.0, float(data.decode_s8(o + 10)) * 4.0),
+		})
+		o += 11
+	return rows
+
+
+func apply_snapshot(data: PackedByteArray) -> void:
+	for row in decode_snapshot(data):
+		var id: int = int(row["id"])
+		var rp: Vector2 = row["pos"]
+		var rv: Vector2 = row["vel"]
+		var px: float = rp.x
+		var py: float = rp.y
+		var vx: float = rv.x
+		var vy: float = rv.y
+		var aim: float = float(row["aim"])
+		var st: int = int(row["state"])
+		var hpv: float = float(row["hp"])
+		var flags: int = int(row["flags"])
+		var a = actor_by_net_id(id)
+		if a == null:
+			# شخصية لم نكن نعرفها (بوت من المضيف أو لاعب انضم أثناء المباراة)
+			if not net_client:
+				continue
+			a = add_actor(id >= 10, {
+				"name": ("بوت %d" % id) if id >= 10 else ("لاعب %d" % id),
+				"team": 0, "op_key": "rashid", "is_bot": id >= 10,
+				"net_id": id, "weapons": Config.loadout,
+			})
+			a.is_proxy = true
+			a.is_remote = true
+		if a.is_local_player:
+			# تنبؤ محلي: لا نلغي حركة اللاعب إلا إذا انحرف كثيرًا
+			if a.global_position.distance_to(Vector2(px, py)) > 56.0:
+				a.global_position = Vector2(px, py)
+				a.velocity = Vector2(vx, vy)
+			a.hp = hpv
+			var was_alive: bool = a.alive
+			a.alive = (flags & 2) != 0
+			if not a.alive and a.death_timer <= 0.0:
+				a.death_timer = 0.001
+			elif a.alive and not was_alive:
+				a.death_timer = 0.0
+				a.respawn_timer = 0.0
+				a.hit_flash = 0.0
+		else:
+			a.apply_net_target(Vector2(px, py), vx, vy)
+			a.apply_net_visual(aim, st, hpv, flags)
+
+
+func notify_shot(actor, data: Dictionary) -> void:
+	if not net_host or actor == null:
+		return
+	if not NetMgr.is_host():
+		return
+	NetMgr.broadcast_shot(int(actor.net_id), Vector2(data.get("pos", actor.global_position)),
+		float(data.get("angle", 0.0)), String(data.get("weapon", "ar")),
+		float(data.get("speed", 900.0)))
+
+
+func spawn_remote_shot(pos: Vector2, angle: float, speed: float) -> void:
+	# مؤثر بصري فقط — الضرر يصل عبر اللقطات من المضيف
+	spawn_projectile({
+		"owner": null, "pos": pos, "velocity": Vector2(cos(angle), sin(angle)) * speed,
+		"damage": 0.0, "damage_head": 0.0, "range": 900.0, "penetration": 0,
+		"weapon_id": "", "team": -1, "visual_only": true,
+	})
 
 
 # ---------------------------------------------------------------- الشبكة

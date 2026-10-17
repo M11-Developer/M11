@@ -28,8 +28,143 @@ func _ready() -> void:
 	var guard := get_tree().create_timer(8.0)
 	guard.timeout.connect(_ensure_menu)
 	_set_boot_progress(0.05)
+	_connect_net()
 	_boot()
 	_setup_desktop()
+
+
+# ---------------------------------------------------------------- الشبكة
+func _connect_net() -> void:
+	var sigs := {
+		"match_setup": _on_net_match_setup,
+		"snapshot_received": _on_net_snapshot,
+		"state_received": _on_net_state,
+		"shot_fx": _on_net_shot,
+		"disconnected_from_host": _on_net_disconnect,
+		"match_over": _on_match_finished,
+		"peer_left": _on_net_peer_left,
+		"peer_joined": _on_net_peer_joined,
+		"roster_received": _on_net_roster,
+	}
+	for sig in sigs.keys():
+		if NetMgr.has_signal(sig) and not NetMgr.is_connected(sig, sigs[sig]):
+			NetMgr.connect(sig, sigs[sig])
+
+
+## يُنادى من القائمة: المضيف يبدأ المباراة ويُبلغ بقية اللاعبين.
+func start_lan_match() -> void:
+	if not NetMgr.is_host():
+		return
+	var seed_v := (int(Time.get_unix_time_from_system()) ^ (randi() & 0x7FFFFFFF)) & 0x7FFFFFFF
+	var mode_id: String = Config.mode_id
+	var map_id: String = Config.map_id
+	var bots := Config.bot_count if NetMgr.peers.size() <= 1 else 0
+	start_match({"mode": mode_id, "map": map_id, "seed": seed_v, "bots": bots, "net": true})
+	if world == null:
+		return
+	NetMgr.request_start({
+		"mode": mode_id, "map": map_id, "seed": seed_v,
+		"host_name": Config.player_name, "started": true,
+		"roster": world.net_roster(),
+	})
+
+
+func _on_net_match_setup(cfg: Dictionary) -> void:
+	# رسالة الإعداد تصل أيضًا لحظة الانضمام قبل بدء المضيف للمباراة ⇒ نبقى في اللوبي
+	if not bool(cfg.get("started", false)):
+		return
+	if state == "playing" and world != null:
+		return
+	NetMgr.local_id = int(cfg.get("your_id", NetMgr.local_id))
+	start_match({
+		"mode": String(cfg.get("mode", Config.mode_id)),
+		"map": String(cfg.get("map", Config.map_id)),
+		"seed": int(cfg.get("seed", 12345)),
+		"bots": 0, "net": true, "roster": cfg.get("roster", []),
+	})
+
+
+func _on_net_snapshot(data: PackedByteArray) -> void:
+	if world != null and is_instance_valid(world) and state in ["playing", "paused"]:
+		world.apply_snapshot(data)
+
+
+func _on_net_state(st: Dictionary) -> void:
+	if world == null or not is_instance_valid(world):
+		return
+	if st.has("time"):
+		world.match_time = float(st["time"])
+	if st.has("scores") and st["scores"] is Array and st["scores"].size() >= 2:
+		world.team_scores = [int(st["scores"][0]), int(st["scores"][1])]
+	if st.has("state"):
+		world.match_state = String(st["state"])
+	var z: Variant = st.get("zone", null)
+	if z is Dictionary and not z.is_empty():
+		world.zone = z
+	if st.has("standings") and st["standings"] is Array:
+		world.last_standings = st["standings"]
+		for row in st["standings"]:
+			var a = world.actor_by_net_id(int(row.get("net_id", -1)))
+			if a != null:
+				a.kills = int(row.get("kills", 0))
+				a.deaths = int(row.get("deaths", 0))
+				a.assists = int(row.get("assists", 0))
+
+
+func _on_net_shot(_id: int, pos: Vector2, angle: float, _weapon: String, speed: float) -> void:
+	if world != null and is_instance_valid(world) and world.has_method("spawn_remote_shot"):
+		world.spawn_remote_shot(pos, angle, speed)
+
+
+func _on_net_disconnect() -> void:
+	if state == "playing" or state == "paused":
+		back_to_menu()
+		# بعد العودة للقائمة (لأن show_screen يمسح الرسائل السابقة)
+		if menu != null and menu.has_method("toast"):
+			menu.toast("انقطع الاتصال بالمضيف", 3.5)
+		return
+	# في اللوبي: نعود لشاشة الشبكة برسالة واضحة بدل البقاء في انتظار أبدي
+	if menu != null and is_instance_valid(menu):
+		if int(menu.get("screen")) == 11:
+			menu.show_screen(5, false)
+		if menu.has_method("toast"):
+			menu.toast("تعذّر الاتصال بالمضيف — تحقّق من الشبكة", 3.5)
+	NetMgr.leave()
+
+
+func _on_net_peer_joined(id: int, info: Dictionary) -> void:
+	if not NetMgr.is_host() or world == null or not is_instance_valid(world):
+		return
+	if state != "playing" and state != "paused":
+		return
+	if world.actor_by_net_id(id) != null:
+		return
+	var ra = world.add_actor(false, {
+		"name": String(info.get("name", "لاعب %d" % id)), "team": int(info.get("team", 1)),
+		"op_key": String(info.get("op_key", "rashid")), "is_bot": false,
+		"weapons": Config.loadout, "net_id": id,
+	})
+	ra.is_remote = true
+	if hud != null and hud.has_method("toast"):
+		hud.toast("انضم %s إلى المباراة" % String(info.get("name", "")), M11UI.TEAL, 2.5)
+
+
+func _on_net_roster(list: Array) -> void:
+	# قائمة لاعبي اللوبي كما يراها المضيف — يراها العميل في شاشة الغرفة
+	NetMgr.last_setup["roster"] = list
+	NetMgr.last_setup["started"] = false
+
+
+func _on_net_peer_left(id: int) -> void:
+	if world == null or not is_instance_valid(world):
+		return
+	var a = world.actor_by_net_id(id)
+	if a != null:
+		var nm := String(a.display_name)
+		world.actors.erase(a)
+		a.queue_free()
+		if hud != null and hud.has_method("toast"):
+			hud.toast("غادر %s المباراة" % nm, M11UI.TEXT_MUTED, 2.0)
 
 
 func _boot() -> void:
@@ -158,7 +293,10 @@ func _run_selftest() -> void:
 		if world.actors.size() < 2:
 			print("[M11-SELFTEST] FAIL: عدد المقاتلين غير كافٍ")
 			ok = false
-	# ٢) الرجوع للقائمة
+	# ٢) اختبار الشبكة: ترميز/فكّ اللقطة + فتح الغرفة + تحليل رسالة الاكتشاف
+	if ok:
+		ok = _selftest_net()
+	# ٣) الرجوع للقائمة
 	back_to_menu()
 	await get_tree().process_frame
 	if state != "menu" or menu == null or not menu.visible:
@@ -168,6 +306,53 @@ func _run_selftest() -> void:
 		print("[M11-SELFTEST] الرجوع للقائمة ناجح")
 	print("[M11-SELFTEST] %s" % ("OK" if ok else "FAIL"))
 	get_tree().quit(0 if ok else 1)
+
+
+## اختبار ذاتي للشبكة يعمل بلا شاشة وبجهاز واحد: يضمن أن ما يرسله المضيف
+## يمكن لعميل فكّه بنفس الدقة (أخطر خطأ محتمل في اللعب الجماعي: انحراف اللقطات).
+func _selftest_net() -> bool:
+	var ok := true
+	# أ) الترميز والفكّ
+	var snap: PackedByteArray = world.build_snapshot()
+	var rows: Array = world.decode_snapshot(snap)
+	if rows.size() != world.actors.size():
+		print("[M11-SELFTEST] FAIL: عدد صفوف اللقطة %d != عدد المقاتلين %d" % [rows.size(), world.actors.size()])
+		return false
+	for i in world.actors.size():
+		var a = world.actors[i]
+		var row: Dictionary = rows[i]
+		if int(row["id"]) != int(a.net_id):
+			print("[M11-SELFTEST] FAIL: رقم الشبكة غير مطابق %d != %d" % [int(row["id"]), int(a.net_id)])
+			ok = false
+		var rpos: Vector2 = row["pos"]
+		var d: float = rpos.distance_to(a.global_position)
+		if d > 0.5:
+			print("[M11-SELFTEST] FAIL: انحراف الموضع %.2f بكسل للمقاتل %d" % [d, int(a.net_id)])
+			ok = false
+		if absf(float(row["hp"]) - float(a.hp)) > 1.0:
+			print("[M11-SELFTEST] FAIL: الصحة غير مطابقة")
+			ok = false
+	# ب) فتح الغرفة ثم إغلاقها (يتأكد أن المقبس والاكتشاف يعملان على هذا النظام)
+	if NetMgr.start_host("اختبار"):
+		if NetMgr.local_id != 1 or not NetMgr.is_host():
+			print("[M11-SELFTEST] FAIL: حالة المضيف غير صحيحة")
+			ok = false
+		NetMgr.leave()
+	else:
+		print("[M11-SELFTEST] FAIL: تعذّر فتح غرفة على المنفذ %d" % Config.NET_PORT)
+		ok = false
+	# ج) تحليل رسالة الإعلان كما يقرأها العميل
+	var probe := "M11!2|مضيف|3|8|tdm|oasis"
+	var body := probe.substr(4)
+	if body.begins_with("2|"):
+		body = body.substr(2)
+	var parts := body.split("|")
+	if parts.size() < 5 or parts[0] != "مضيف" or int(parts[1]) != 3:
+		print("[M11-SELFTEST] FAIL: تحليل رسالة الاكتشاف")
+		ok = false
+	if ok:
+		print("[M11-SELFTEST] الشبكة: اللقطة والغرفة والاكتشاف سليمة")
+	return ok
 
 
 func _prewarm() -> void:
@@ -183,6 +368,11 @@ func start_match(opts: Dictionary = {}) -> void:
 	game_layer.add_child(world)
 	var map_id: String = opts.get("map", Config.map_id)
 	var mode_id: String = opts.get("mode", Config.mode_id)
+	var is_net: bool = bool(opts.get("net", false))
+	var net_host: bool = is_net and NetMgr.is_host()
+	var net_client: bool = is_net and NetMgr.is_client()
+	world.net_host = net_host
+	world.net_client = net_client
 	world.setup(mode_id, map_id, int(opts.get("seed", randi())))
 	# كانت الجودة تُحفظ في الإعدادات ولا تُمرَّر للعالم — الآن تُطبَّق فورًا
 	if world.has_method("set_quality"):
@@ -198,6 +388,8 @@ func start_match(opts: Dictionary = {}) -> void:
 		"weapons": Config.loadout, "net_id": NetMgr.local_id,
 	}
 	var player = world.add_actor(false, data)
+	if net_client:
+		player.is_local_player = true
 	var cam := Camera2D.new()
 	# نقطة أصل الجسم أعلى الرأس؛ نرفع الكاميرا لمنتصف الصدر حتى يكون
 	# اللاعب في منتصف الشاشة عموديًا (كانت الكاميرا عند قدمي/رأس الجسم تمامًا)
@@ -211,8 +403,37 @@ func start_match(opts: Dictionary = {}) -> void:
 	cam.limit_bottom = world.map_h * Config.TILE
 	player.add_child(cam)
 	cam.make_current()
-	# البوتات
-	var bots := int(opts.get("bots", Config.bot_count))
+	# اللاعبون البعيدون على المضيف: أجسام حقيقية تُحاكى بأوامر الشبكة
+	if net_host:
+		for pid in NetMgr.peers.keys():
+			if int(pid) == NetMgr.local_id:
+				continue
+			var info: Dictionary = NetMgr.peers[pid]
+			var ra = world.add_actor(false, {
+				"name": String(info.get("name", "لاعب %d" % pid)),
+				"team": int(info.get("team", 1)),
+				"op_key": String(info.get("op_key", "rashid")),
+				"is_bot": false, "weapons": Config.loadout, "net_id": int(pid),
+			})
+			ra.is_remote = true
+	# على العميل: كل شخصية في قائمة الغرفة تصبح «ظلًّا» يتحرّك باللقطات
+	if net_client:
+		var roster: Array = opts.get("roster", [])
+		for entry in roster:
+			var rid := int(entry.get("id", -1))
+			if rid < 0 or rid == NetMgr.local_id:
+				continue
+			var proxy = world.add_actor(false, {
+				"name": String(entry.get("name", "لاعب %d" % rid)),
+				"team": int(entry.get("team", 0)),
+				"op_key": String(entry.get("op_key", "rashid")),
+				"is_bot": false, "net_id": rid,
+				"weapons": entry.get("weapons", Config.loadout),
+			})
+			proxy.is_proxy = true
+			proxy.is_remote = true
+	# البوتات (لا بوتات على العميل — المضيف هو من يحرّكها)
+	var bots := 0 if net_client else int(opts.get("bots", Config.bot_count))
 	for i in bots:
 		var team := 0 if i % 2 == 0 else 1 if M11Data.MODES.get(mode_id, {}).get("teams", 1) > 1 else 0
 		var bot = world.add_actor(true, {
@@ -253,9 +474,16 @@ func start_match(opts: Dictionary = {}) -> void:
 	var im := get_node_or_null("InputManager")
 	if im and im.has_method("rebuild_buttons"):
 		im.rebuild_buttons()
+	if is_net:
+		NetMgr.attach_world(world, player)
+		if net_host and hud != null and hud.has_method("toast"):
+			hud.toast("غرفة الشبكة المحلية — منفذ %d" % Config.NET_PORT, M11UI.TEAL, 4.0)
 
 
 func _on_match_finished(res: Dictionary) -> void:
+	# المضيف يبلّغ العملاء بالنتيجة قبل التجميد
+	if NetMgr.is_host():
+		NetMgr.send_result(res)
 	# 1) تجميد اللعب فورًا حتى لا تستمر البوتات بالقتال خلف شاشة النتائج
 	get_tree().paused = true
 	state = "results"
@@ -295,6 +523,9 @@ func _on_match_finished(res: Dictionary) -> void:
 func back_to_menu() -> void:
 	# رجوع نظيف: نوقف الإيقاف المؤقت، نحذف العالم، ونعيد القائمة
 	get_tree().paused = false
+	NetMgr.clear_world()
+	if NetMgr.in_session():
+		NetMgr.leave()
 	if world:
 		world.queue_free()
 		world = null
